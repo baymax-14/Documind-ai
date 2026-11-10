@@ -17,8 +17,13 @@ const seedDocs = [
 const acceptedTypes = new Set(['pdf', 'doc', 'docx', 'txt'])
 const maxFileSize = 25 * 1024 * 1024
 
+function fileIdentity(file) {
+  return [file.name.toLocaleLowerCase(), file.size, file.lastModified || 0].join('::')
+}
+
 function formatSize(bytes) {
-  return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`
+  if (bytes < 1024) return `${bytes} B`
+  return bytes < 1024 * 1024 ? `${Math.round(bytes / 1024)} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`
 }
 
 function App() {
@@ -98,28 +103,57 @@ function App() {
   }, [docs, query, filter, ascending])
 
   function addFiles(files) {
-    const incoming = Array.from(files)
-    const valid = incoming.filter((file) => {
+    const incoming = Array.from(files || [])
+    const seen = new Set(docs.filter((doc) => !doc.sample).map(fileIdentity))
+    const accepted = []
+    const rejected = { unsupported: 0, oversized: 0, duplicate: 0 }
+
+    incoming.forEach((file) => {
       const extension = file.name.split('.').pop()?.toLowerCase()
-      return acceptedTypes.has(extension) && file.size <= maxFileSize
+      if (!acceptedTypes.has(extension)) {
+        rejected.unsupported += 1
+        return
+      }
+      if (file.size > maxFileSize) {
+        rejected.oversized += 1
+        return
+      }
+
+      const identity = fileIdentity(file)
+      if (seen.has(identity)) {
+        rejected.duplicate += 1
+        return
+      }
+      seen.add(identity)
+      accepted.push(file)
     })
-    const rejected = incoming.length - valid.length
-    if (valid.length) {
+
+    if (accepted.length) {
       setFileBurst((current) => current + 1)
-      setDocs((current) => [...valid.map((file, index) => ({
+      setDocs((current) => [...accepted.map((file, index) => ({
         name: file.name,
         type: file.name.split('.').pop().toUpperCase(),
         size: file.size,
+        lastModified: file.lastModified,
         added: Date.now() + index,
         sample: false,
       })), ...current])
-      setNotice(`${valid.length} file name${valid.length === 1 ? '' : 's'} listed for this session. No file bytes were read or uploaded.`)
-    } else if (rejected) {
-      setNotice('Choose PDF, DOC, DOCX, or TXT files up to 25 MB.')
     }
-    if (valid.length && rejected) setNotice(`${valid.length} file name${valid.length === 1 ? '' : 's'} listed. ${rejected} unsupported or oversized file${rejected === 1 ? ' was' : 's were'} skipped.`)
-  }
 
+    const skipped = Object.values(rejected).reduce((total, count) => total + count, 0)
+    if (!accepted.length && !skipped) return
+
+    const details = [
+      rejected.unsupported && `${rejected.unsupported} unsupported`,
+      rejected.oversized && `${rejected.oversized} over 25 MB`,
+      rejected.duplicate && `${rejected.duplicate} already listed`,
+    ].filter(Boolean).join(', ')
+    const added = accepted.length
+      ? `${accepted.length} file name${accepted.length === 1 ? '' : 's'} listed for this session`
+      : ''
+    const skippedMessage = details ? `${added ? '; ' : ''}${details} skipped` : ''
+    setNotice(`${added}${skippedMessage}. No file bytes were read or uploaded.`)
+  }
   function closeMobileMenu() {
     setMobileMenuOpen(false)
     mobileMenuButtonRef.current?.focus()
@@ -207,7 +241,9 @@ function App() {
               <div className="doc-main"><h3 title={doc.name}>{doc.name}</h3><p className="doc-subtitle">{doc.sample ? 'Demo example' : 'Selected this session'}, {formatSize(doc.size)}</p></div>
               <span className={`doc-status ${doc.sample ? 'sample-status' : 'session-status'}`}>{doc.sample ? 'Sample' : 'Session'}</span>
             </article>)}
-          </div> : <div className="empty-search"><FolderOpen size={23} /><strong>No matching documents</strong><span>Try another file name or choose a different file type.</span></div>}
+          </div> : docs.length
+            ? <div className="empty-search"><FolderOpen size={23} /><strong>No matching documents</strong><span>Try another file name or choose a different file type.</span></div>
+            : <div className="empty-search"><FolderOpen size={23} /><strong>No documents yet</strong><span>Choose files above to add names for this session.</span></div>}
         </section>
 
         <footer className="page-footer"><span>DocuMind AI. Local prototype.</span><span>Files are not uploaded or processed.</span></footer>
