@@ -6,7 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin'
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin'
 import { Link } from 'react-router-dom'
-import { ArrowRight, ArrowUpRight, FolderOpen, LayoutGrid, Sparkles } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, FileSearch, FolderOpen, LayoutGrid, MessageSquareText, Sparkles } from 'lucide-react'
 import Brand from './Brand.jsx'
 import './landing.css'
 
@@ -50,6 +50,28 @@ function WorkspacePreview() {
           </ul>
           <p className="preview-footnote">Example files only · Nothing has been analyzed</p>
         </div>
+      </div>
+    </div>
+  </section>
+}
+
+function CapabilitiesBar() {
+  return <section className="capabilities-bar" aria-label="Key capabilities">
+    <div className="capabilities-inner">
+      <div className="capability-item reveal-on-scroll" style={{ '--reveal-delay': '0ms' }}>
+        <span className="capability-icon cap-mint"><FileSearch size={20} aria-hidden="true" /></span>
+        <div><h3>Semantic search</h3><p>Find passages across documents by meaning, not just keywords.</p></div>
+        <span className="capability-tag">Planned</span>
+      </div>
+      <div className="capability-item reveal-on-scroll" style={{ '--reveal-delay': '70ms' }}>
+        <span className="capability-icon cap-sky"><MessageSquareText size={20} aria-hidden="true" /></span>
+        <div><h3>Document chat</h3><p>Ask questions and get answers grounded in your uploaded documents.</p></div>
+        <span className="capability-tag">Planned</span>
+      </div>
+      <div className="capability-item reveal-on-scroll" style={{ '--reveal-delay': '140ms' }}>
+        <span className="capability-icon cap-butter"><FolderOpen size={20} aria-hidden="true" /></span>
+        <div><h3>Local workspace</h3><p>Select and browse files right in your browser. No uploads needed.</p></div>
+        <span className="capability-tag tag-available">Available</span>
       </div>
     </div>
   </section>
@@ -203,8 +225,15 @@ function LandingPage() {
             </section>
           </div>
 
+          <CapabilitiesBar />
           <HowItWorks />
         </main>
+
+        <section className="landing-cta reveal-on-scroll" aria-label="Call to action">
+          <h2>Ready to work smarter with your documents?</h2>
+          <p>Start browsing demo files or add your own in the local workspace.</p>
+          <Link className="button-primary" to="/workspace">Open your workspace <ArrowRight size={18} aria-hidden="true" /></Link>
+        </section>
 
         <footer className="landing-footer">
           <Link className="footer-brand" to="/">DocuMind AI</Link>

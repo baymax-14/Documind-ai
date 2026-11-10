@@ -21,6 +21,13 @@ function formatSize(bytes) {
   return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`
 }
 
+function getGreeting() {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Good morning'
+  if (hour < 17) return 'Good afternoon'
+  return 'Good evening'
+}
+
 function App() {
   const [dark, setDark] = useState(false)
   const [query, setQuery] = useState('')
@@ -32,6 +39,7 @@ function App() {
   const [fileBurst, setFileBurst] = useState(0)
   const [dragging, setDragging] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const greeting = getGreeting()
   const fileRef = useRef(null)
   const searchRef = useRef(null)
   const mobileMenuButtonRef = useRef(null)
@@ -171,7 +179,7 @@ function App() {
         <div className="top-actions"><span className="environment-tag">Local prototype</span><button className="icon-button theme-button desktop-theme" aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'} onClick={() => setDark(!dark)}>{dark ? <Sun size={19} /> : <Moon size={19} />}</button></div>
 
         <section className="welcome-row">
-          <div><h1>Your document workspace</h1><p className="subtitle">Select files for this session or browse the demo examples below.</p></div>
+          <div><p className="greeting">{greeting}, Anand</p><h1>Your document workspace</h1><p className="subtitle">Select files for this session or browse the demo examples below.</p></div>
         </section>
 
         <section className="upload-panel" onDragEnter={(event) => { event.preventDefault(); setDragging(true) }} onDragOver={(event) => event.preventDefault()} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setDragging(false) }} onDrop={(event) => { event.preventDefault(); setDragging(false); addFiles(event.dataTransfer.files) }}>
@@ -207,7 +215,7 @@ function App() {
               <div className="doc-main"><h3 title={doc.name}>{doc.name}</h3><p className="doc-subtitle">{doc.sample ? 'Demo example' : 'Selected this session'}, {formatSize(doc.size)}</p></div>
               <span className={`doc-status ${doc.sample ? 'sample-status' : 'session-status'}`}>{doc.sample ? 'Sample' : 'Session'}</span>
             </article>)}
-          </div> : <div className="empty-search"><FolderOpen size={23} /><strong>No matching documents</strong><span>Try another file name or choose a different file type.</span></div>}
+          </div> : <div className="empty-search"><FolderOpen size={28} /><strong>No matching documents</strong><span>Try another file name or choose a different file type.</span><button className="secondary-button empty-reset" onClick={() => { setQuery(''); setFilter('All files') }}>Clear filters</button></div>}
         </section>
 
         <footer className="page-footer"><span>DocuMind AI. Local prototype.</span><span>Files are not uploaded or processed.</span></footer>
