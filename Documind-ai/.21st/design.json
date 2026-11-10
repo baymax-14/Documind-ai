@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "project": {
+    "name": "documind-ai",
+    "productType": "document workspace",
+    "stack": [
+      "react",
+      "tailwind-v4",
+      "vite"
+    ]
+  },
+  "sources": {
+    "tokens": [
+      "DESIGN.md",
+      "src/styles.css"
+    ],
+    "components": [],
+    "assets": [
+      "src/assets"
+    ],
+    "instructions": [
+      "DESIGN.md",
+      "PRODUCT.md"
+    ]
+  },
+  "design": {
+    "colorMode": "light-and-dark",
+    "colors": {
+      "--butter": {
+        "source": "DESIGN.md",
+        "value": "#FFD23F"
+      },
+      "--sky": {
+        "source": "DESIGN.md",
+        "value": "#74B9FF"
+      },
+      "--paper": {
+        "source": "DESIGN.md",
+        "value": "#FFFDF5"
+      },
+      "--mint": {
+        "source": "DESIGN.md",
+        "value": "#88D498"
+      },
+      "--ink": {
+        "source": "DESIGN.md",
+        "value": "#000000"
+      }
+    },
+    "typography": {
+      "--heading": {
+        "source": "DESIGN.md",
+        "value": "Space Grotesk"
+      },
+      "--body": {
+        "source": "DESIGN.md",
+        "value": "DM Sans"
+      }
+    },
+    "spacing": {},
+    "radius": {},
+    "shadows": {
+      "--shadow": {
+        "value": "rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px",
+        "source": "src/index.css"
+      }
+    },
+    "motion": {},
+    "density": "focused workspace"
+  },
+  "components": {
+    "installed": [],
+    "preferredPrimitives": [],
+    "patterns": []
+  },
+  "constraints": {
+    "must": [
+      "Preserve the Neo-Brutalist Pastel Harmony palette and typography in DESIGN.md.",
+      "Clearly label all seeded documents as demo content.",
+      "Selected file metadata remains in the page session; uploads, parsing, persistence, AI answers, citations and backend services are not connected.",
+      "Keep responsive layout, keyboard navigation and visible focus states."
+    ],
+    "avoid": [
+      "Do not imply selected documents are uploaded or analyzed.",
+      "No decorative status dots or invented product metrics."
+    ]
+  },
+  "decisions": [],
+  "evidence": [
+    {
+      "fact": "design.colorMode:light-and-dark",
+      "source": "src/index.css, src/app.css"
+    },
+    {
+      "fact": "design.tokens",
+      "source": "src/app.css"
+    },
+    {
+      "fact": "design.tokens",
+      "source": "src/index.css"
+    },
+    {
+      "fact": "project.instructions",
+      "source": "DESIGN.md"
+    },
+    {
+      "fact": "project.instructions",
+      "source": "PRODUCT.md"
+    },
+    {
+      "fact": "project.stack:react",
+      "source": "package.json"
+    },
+    {
+      "fact": "project.stack:tailwind-v4",
+      "source": "package.json"
+    },
+    {
+      "fact": "project.stack:vite",
+      "source": "package.json"
+    }
+  ],
+  "generatedAt": "2026-11-10T18:29:28.977Z"
+}

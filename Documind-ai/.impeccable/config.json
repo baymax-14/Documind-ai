@@ -11,6 +11,24 @@
         ],
         "createdAt": "2026-11-10T15:37:02.338Z",
         "reason": "PRD specifies Space Grotesk for headings; design system preserves the documented product typography choice."
+      },
+      {
+        "rule": "overused-font",
+        "value": "space grotesk",
+        "files": [
+          "src/styles.css"
+        ],
+        "createdAt": "2026-11-10T16:52:51.774Z",
+        "reason": "DESIGN.md specifies Space Grotesk for DocuMind headings; the landing page follows the documented design system."
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/landing.css"
+        ],
+        "createdAt": "2026-11-10T16:52:53.167Z",
+        "reason": "Line 112 is a black structural divider between the demo workspace navigation rail and content, not a colored side-tab accent."
       }
     ]
   }

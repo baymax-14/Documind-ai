@@ -1,0 +1,23 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "Documind-ai/src/landing.css"
+        ],
+        "createdAt": "2026-11-10T17:58:42.429Z",
+        "reason": "DESIGN.md specifies a black 2px divider separating the demo navigation rail from dashboard content; this is structural, not a colored side-tab accent."
+      },
+      {
+        "rule": "overused-font",
+        "value": "space grotesk",
+        "createdAt": "2026-11-10T18:19:34.506Z",
+        "reason": "DESIGN.md mandates Space Grotesk for display and headings; user requested preserving the established design system."
+      }
+    ]
+  }
+}
