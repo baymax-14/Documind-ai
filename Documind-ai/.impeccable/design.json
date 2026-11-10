@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-10T15:31:37Z",
+  "title": "Design System: DocuMind AI",
+  "extensions": {
+    "colorMeta": {
+      "ink": { "role": "neutral", "displayName": "Pitch Black", "canonical": "#000000", "tonalRamp": ["#000000", "#171713", "#25251F"] },
+      "cream": { "role": "neutral", "displayName": "Warm Cream", "canonical": "#FFFDF5", "tonalRamp": ["#FFFDF5", "#F8F4E9", "#F1EBDC"] },
+      "white": { "role": "neutral", "displayName": "Paper White", "canonical": "#FFFFFF", "tonalRamp": ["#FFFFFF", "#F7F7F4", "#ECECE7"] },
+      "mint": { "role": "primary", "displayName": "Soft Mint", "canonical": "#88D498", "tonalRamp": ["#E8F7EB", "#88D498", "#26733B"] },
+      "sky": { "role": "secondary", "displayName": "Sky Blue", "canonical": "#74B9FF", "tonalRamp": ["#E9F4FF", "#74B9FF", "#14568E"] },
+      "butter": { "role": "tertiary", "displayName": "Butter Yellow", "canonical": "#FFD23F", "tonalRamp": ["#FFF4C9", "#FFD23F", "#6D5200"] },
+      "mint-tint": { "role": "surface", "displayName": "Mint Tint", "canonical": "#D8F0DC", "tonalRamp": ["#E8F7EB", "#D8F0DC", "#C4E5CA"] },
+      "sky-tint": { "role": "surface", "displayName": "Sky Tint", "canonical": "#D4EAFF", "tonalRamp": ["#E9F4FF", "#D4EAFF", "#C0DFFF"] },
+      "butter-tint": { "role": "surface", "displayName": "Butter Tint", "canonical": "#FFE99A", "tonalRamp": ["#FFF4C9", "#FFE99A", "#F5DB79"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Workspace Display", "purpose": "Compact page titles in the application shell." },
+      "body": { "displayName": "Interface Text", "purpose": "Document names, explanatory copy, and controls." }
+    },
+    "shadows": [
+      { "name": "panel-hard", "value": "3px 3px 0 #000000", "purpose": "Structural offset for selected metric panels." },
+      { "name": "action-hard", "value": "4px 4px 0 #000000", "purpose": "Depth cue for the primary action and active navigation." },
+      { "name": "action-pressed", "value": "0 0 0 #000000", "purpose": "Shadow collapses when an action is pressed." }
+    ],
+    "motion": [
+      { "name": "mechanical-snap", "value": "120ms ease", "purpose": "Short transform and shadow feedback on buttons." },
+      { "name": "reduced-motion", "value": "0.01ms", "purpose": "Respect prefers-reduced-motion for transitions and scrolling." }
+    ],
+    "breakpoints": [
+      { "name": "phone", "value": "480px" },
+      { "name": "mobile-shell", "value": "760px" },
+      { "name": "stacked-workspace", "value": "900px" },
+      { "name": "compact-rail", "value": "1120px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main action for adding documents.",
+      "html": "<button class=\"ds-primary\">Add documents</button>",
+      "css": ".ds-primary { min-height: 46px; padding: 12px 16px; border: 2px solid #000; border-radius: 4px; background: #88D498; color: #000; font: 700 14px/1.4 'DM Sans', sans-serif; box-shadow: 4px 4px 0 #000; cursor: pointer; } .ds-primary:active { transform: translate(4px, 4px); box-shadow: 0 0 0 #000; } .ds-primary:focus-visible { outline: 3px solid #74B9FF; outline-offset: 3px; }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "Filename search in the document library.",
+      "html": "<input class=\"ds-search\" aria-label=\"Search documents by file name\" placeholder=\"Search by file name\" />",
+      "css": ".ds-search { width: 100%; min-height: 42px; padding: 8px 10px; border: 2px solid #000; background: #fff; color: #000; font: 400 16px/1.5 'DM Sans', sans-serif; } .ds-search:focus-visible { outline: 3px solid #74B9FF; outline-offset: 3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Paper Workbench",
+    "overview": "A warm reading surface meets the explicit geometry of a working desk. Black strokes and compact controls make actions easy to find; mint, sky, and butter mark action and state without suggesting unfinished AI behavior is live. The dashboard stays compact and practical, while document content remains calm to scan.",
+    "keyCharacteristics": ["Cream canvas and black structure", "Three pastel accents", "Square geometry and tactile offset shadows", "Readable interface typography", "Honest sample and prototype labels"],
+    "rules": [
+      { "name": "The Honest Surface Rule", "body": "Label samples and distinguish local page-session behavior from server capabilities.", "section": "components" },
+      { "name": "The Three Pastels Rule", "body": "Use mint, sky, and butter; do not add gradients, glow, or glass.", "section": "colors" }
+    ],
+    "dos": ["Do use the exact user-specified color values.", "Do keep controls keyboard accessible and respect reduced motion."],
+    "donts": ["Don't imply prototype files are uploaded, persisted, parsed, or analyzed.", "Don't use gradients, glow, or glass effects."]
+  }
+}

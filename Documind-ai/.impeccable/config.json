@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "space grotesk",
+        "files": [
+          "D:\\anand\\Documind-ai\\DocuMind-ai\\src\\styles.css"
+        ],
+        "createdAt": "2026-11-10T15:37:02.338Z",
+        "reason": "PRD specifies Space Grotesk for headings; design system preserves the documented product typography choice."
+      }
+    ]
+  }
+}

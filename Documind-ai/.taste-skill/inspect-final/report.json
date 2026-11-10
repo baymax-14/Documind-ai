@@ -1,0 +1,1818 @@
+{
+ "url": "http://127.0.0.1:4173",
+ "at": "2026-11-10T15:34:32.069Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 2,
+   "filled": [
+    0.58,
+    0.58
+   ],
+   "motion": {
+    "elements": 0,
+    "css": 0,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 1044,
+     "screens": 1.2,
+     "words": 195,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 22,
+     "sections": 4,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Workspace overview",
+     "words": 2,
+     "chars": 18,
+     "lines": 1,
+     "size": 32,
+     "vw": 2.2,
+     "font": "Space Grotesk",
+     "weight": 700,
+     "tracking": -0.04,
+     "leading": 1.12,
+     "top": 80,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Workspace overview",
+     "words": 2,
+     "lines": 1,
+     "size": 32,
+     "font": "Space Grotesk"
+    },
+    "headings": [
+     {
+      "text": "Workspace overview",
+      "words": 2,
+      "chars": 18,
+      "lines": 1,
+      "size": 32,
+      "vw": 2.2,
+      "font": "Space Grotesk",
+      "weight": 700,
+      "tracking": -0.035,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.23,
+      "top": 80,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "4",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 28,
+      "vw": 1.9,
+      "font": "Space Grotesk",
+      "weight": 500,
+      "tracking": 0,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.01,
+      "top": 423,
+      "tag": "strong",
+      "kind": "heading"
+     },
+     {
+      "text": "0",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 28,
+      "vw": 1.9,
+      "font": "Space Grotesk",
+      "weight": 500,
+      "tracking": 0,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.01,
+      "top": 423,
+      "tag": "strong",
+      "kind": "heading"
+     },
+     {
+      "text": "0",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 28,
+      "vw": 1.9,
+      "font": "Space Grotesk",
+      "weight": 500,
+      "tracking": 0,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.01,
+      "top": 423,
+      "tag": "strong",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 4,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 1,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.81,
+       "mono": false
+      },
+      {
+       "family": "Space Grotesk",
+       "share": 0.19,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      19,
+      20,
+      25,
+      28,
+      32
+     ],
+     "sizeCount": 11,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 13,
+      "leading": 1.55,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 14.5
+     },
+     "measureChars": 37,
+     "max": {
+      "size": 32,
+      "vw": 2.2,
+      "font": "Space Grotesk",
+      "text": "Workspace overview"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.01,
+     "centerShare": 0.04,
+     "smallText": 15
+    },
+    "eyebrows": [
+     {
+      "text": "Files in this workspace",
+      "above": "4",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 13,
+      "top": 402
+     },
+     {
+      "text": "Added this session",
+      "above": "0",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 13,
+      "top": 402
+     },
+     {
+      "text": "AI analyses",
+      "above": "0",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 13,
+      "top": 402
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#fffdf5",
+     "bodyBgHsl": {
+      "h": 48,
+      "s": 1,
+      "l": 0.98
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fffdf5",
+       "top": 0,
+       "hsl": {
+        "h": 48,
+        "s": 1,
+        "l": 0.98
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#000000",
+       "share": 0.62
+      },
+      {
+       "color": "#48463f",
+       "share": 0.29
+      },
+      {
+       "color": "#282720",
+       "share": 0.07
+      },
+      {
+       "color": "#45433d",
+       "share": 0.02
+      },
+      {
+       "color": "#3b3934",
+       "share": 0.01
+      }
+     ],
+     "button": {
+      "bg": "#ffffff",
+      "hsl": {
+       "h": 0,
+       "s": 0,
+       "l": 1
+      },
+      "fg": "#000000"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 9,
+     "inHero": 9,
+     "radius": 4,
+     "height": 39,
+     "withShadow": 3,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Overview",
+      "Documents 4",
+      "AI assistant Planned",
+      "Compare Planned",
+      "AM Anand Workspace owner"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 5,
+     "shadowOverlay": 1,
+     "shadowSamples": [
+      "button.primary-button → rgb(0, 0, 0) 4px 4px 0px 0px",
+      "button.secondary-button → rgb(0, 0, 0) 3px 3px 0px 0px",
+      "div.stat-card.stat-mint → rgb(0, 0, 0) 3px 3px 0px 0px",
+      "div.stat-card.stat-blue → rgb(0, 0, 0) 3px 3px 0px 0px"
+     ],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 3,
+       "iconTopped": false,
+       "rounded": false,
+       "top": 381
+      }
+     ]
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 900,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "space grotesk"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 1044,
+    "margins": {
+     "left": 306,
+     "right": 58
+    },
+    "sections": [
+     {
+      "sel": "section.upload-panel",
+      "tag": "section",
+      "top": 175,
+      "height": 188,
+      "words": 65,
+      "media": 0,
+      "middle": 97,
+      "heading": {
+       "text": "Add documents to your workspace",
+       "size": 20,
+       "tag": "h2"
+      },
+      "left": 389,
+      "right": 79,
+      "textLeft": 389,
+      "textRight": 79,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "section#documents.library-section",
+      "tag": "section",
+      "top": 534,
+      "height": 411,
+      "words": 49,
+      "media": 0,
+      "middle": 400,
+      "heading": {
+       "text": "Documents",
+       "size": 25,
+       "tag": "h2"
+      },
+      "left": 306,
+      "right": 63,
+      "textLeft": 306,
+      "textRight": 67,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Workspace overview",
+      "size": 32,
+      "top": 80,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 377,
+      "n": 4
+     },
+     {
+      "x": 306,
+      "n": 2
+     },
+     {
+      "x": 389,
+      "n": 2
+     }
+    ],
+    "leftBlocks": 8,
+    "bodySize": 13,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0.12,
+    "voidBox": {
+     "x": 600,
+     "y": 660,
+     "w": 660,
+     "h": 240
+    }
+   },
+   "app": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "dark": false,
+    "ground": "#fffdf5",
+    "sidebar": {
+     "w": 248,
+     "tag": "aside",
+     "links": 6,
+     "share": 0.17
+    },
+    "topbar": null,
+    "canvas": {
+     "left": 58,
+     "right": 58
+    },
+    "hero": {
+     "text": "Workspace overview",
+     "words": 2,
+     "chars": 18,
+     "lines": 1,
+     "size": 32,
+     "vw": 2.2,
+     "font": "Space Grotesk",
+     "weight": 700,
+     "tracking": -0.04,
+     "leading": 1.12,
+     "top": 80,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 1,
+    "layout": {
+     "panels": 5,
+     "firstScreen": 5,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 5,
+     "radii": [
+      [
+       0,
+       5
+      ]
+     ],
+     "heavyBorders": 5,
+     "borderSamples": [
+      "#000000 on #88d498 (11.92:1)",
+      "#000000 on #ffd23f (14.54:1)",
+      "#000000 on #d8f0dc (17.42:1)"
+     ],
+     "heavyShadows": 3,
+     "softShadows": 0,
+     "shadowSamples": [
+      "rgb(0, 0, 0) 3px 3px 0px 0px",
+      "rgb(0, 0, 0) 3px 3px 0px 0px",
+      "rgb(0, 0, 0) 3px 3px 0px 0px"
+     ],
+     "glass": 0
+    },
+    "chips": {
+     "count": 1,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 46,
+       "size": 31,
+       "radius": "0px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 0,
+     "tabularShare": null,
+     "kpiMax": null
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.38,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      19,
+      20,
+      25,
+      32
+     ]
+    },
+    "title": {
+     "text": "Workspace overview",
+     "size": 32,
+     "top": 80
+    },
+    "colourShare": 0.183
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 2,
+   "filled": [
+    0.5,
+    0.54
+   ],
+   "motion": {
+    "elements": 0,
+    "css": 0,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 1340,
+     "screens": 1.3,
+     "words": 195,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 22,
+     "sections": 4,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Workspace overview",
+     "words": 2,
+     "chars": 18,
+     "lines": 1,
+     "size": 24,
+     "vw": 3.1,
+     "font": "Space Grotesk",
+     "weight": 700,
+     "tracking": -0.03,
+     "leading": 1.12,
+     "top": 80,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Workspace overview",
+     "words": 2,
+     "lines": 1,
+     "size": 24,
+     "font": "Space Grotesk"
+    },
+    "headings": [
+     {
+      "text": "0",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 28,
+      "vw": 3.6,
+      "font": "Space Grotesk",
+      "weight": 500,
+      "tracking": 0,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.02,
+      "top": 646,
+      "tag": "strong",
+      "kind": "heading"
+     },
+     {
+      "text": "4",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 28,
+      "vw": 3.6,
+      "font": "Space Grotesk",
+      "weight": 500,
+      "tracking": 0,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.02,
+      "top": 655,
+      "tag": "strong",
+      "kind": "heading"
+     },
+     {
+      "text": "0",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 28,
+      "vw": 3.6,
+      "font": "Space Grotesk",
+      "weight": 500,
+      "tracking": 0,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.02,
+      "top": 655,
+      "tag": "strong",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 3,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 1,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.81,
+       "mono": false
+      },
+      {
+       "family": "Space Grotesk",
+       "share": 0.19,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      19,
+      20,
+      24,
+      25,
+      28
+     ],
+     "sizeCount": 11,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 13,
+      "leading": 1.55,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 14.5
+     },
+     "measureChars": 65,
+     "max": {
+      "size": 28,
+      "vw": 3.6,
+      "font": "Space Grotesk",
+      "text": "4"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.01,
+     "centerShare": 0.04,
+     "smallText": 15
+    },
+    "eyebrows": [
+     {
+      "text": "AI analyses",
+      "above": "0",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 13,
+      "top": 625
+     },
+     {
+      "text": "Files in this workspace",
+      "above": "4",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 13,
+      "top": 616
+     },
+     {
+      "text": "Added this session",
+      "above": "0",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 13,
+      "top": 616
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#fffdf5",
+     "bodyBgHsl": {
+      "h": 48,
+      "s": 1,
+      "l": 0.98
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fffdf5",
+       "top": 0,
+       "hsl": {
+        "h": 48,
+        "s": 1,
+        "l": 0.98
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#000000",
+       "share": 0.62
+      },
+      {
+       "color": "#48463f",
+       "share": 0.29
+      },
+      {
+       "color": "#282720",
+       "share": 0.07
+      },
+      {
+       "color": "#45433d",
+       "share": 0.02
+      },
+      {
+       "color": "#3b3934",
+       "share": 0.01
+      }
+     ],
+     "button": {
+      "bg": "#ffffff",
+      "hsl": {
+       "h": 0,
+       "s": 0,
+       "l": 1
+      },
+      "fg": "#000000"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 9,
+     "inHero": 9,
+     "radius": 4,
+     "height": 39,
+     "withShadow": 3,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Overview",
+      "Documents 4",
+      "AI assistant Planned",
+      "Compare Planned",
+      "AM Anand Workspace owner"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 5,
+     "shadowOverlay": 1,
+     "shadowSamples": [
+      "button.primary-button → rgb(0, 0, 0) 4px 4px 0px 0px",
+      "button.secondary-button → rgb(0, 0, 0) 3px 3px 0px 0px",
+      "div.stat-card.stat-mint → rgb(0, 0, 0) 3px 3px 0px 0px",
+      "div.stat-card.stat-blue → rgb(0, 0, 0) 3px 3px 0px 0px"
+     ],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 3,
+       "iconTopped": false,
+       "rounded": false,
+       "top": 599
+      }
+     ]
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 1024,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "space grotesk"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 1340,
+    "margins": {
+     "left": 248,
+     "right": 28
+    },
+    "sections": [
+     {
+      "sel": "section.upload-panel",
+      "tag": "section",
+      "top": 190,
+      "height": 391,
+      "words": 65,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Add documents to your workspace",
+       "size": 20,
+       "tag": "h2"
+      },
+      "left": 301,
+      "right": 74,
+      "textLeft": 301,
+      "textRight": 74,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "section.stats-row",
+      "tag": "section",
+      "top": 599,
+      "height": 141,
+      "words": 21,
+      "media": 0,
+      "middle": 88,
+      "heading": null,
+      "left": 267,
+      "right": 69,
+      "textLeft": 267,
+      "textRight": 69,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "section#documents.library-section",
+      "tag": "section",
+      "top": 779,
+      "height": 462,
+      "words": 49,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Documents",
+       "size": 25,
+       "tag": "h2"
+      },
+      "left": 248,
+      "right": 33,
+      "textLeft": 248,
+      "textRight": 37,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Workspace overview",
+      "size": 24,
+      "top": 80,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 319,
+      "n": 4
+     },
+     {
+      "x": 248,
+      "n": 2
+     },
+     {
+      "x": 331,
+      "n": 2
+     }
+    ],
+    "leftBlocks": 8,
+    "bodySize": 13,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "dark": false,
+    "ground": "#fffdf5",
+    "sidebar": {
+     "w": 220,
+     "tag": "aside",
+     "links": 6,
+     "share": 0.29
+    },
+    "topbar": null,
+    "canvas": {
+     "left": 28,
+     "right": 28
+    },
+    "hero": {
+     "text": "Workspace overview",
+     "words": 2,
+     "chars": 18,
+     "lines": 1,
+     "size": 24,
+     "vw": 3.1,
+     "font": "Space Grotesk",
+     "weight": 700,
+     "tracking": -0.03,
+     "leading": 1.12,
+     "top": 80,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 1,
+    "layout": {
+     "panels": 7,
+     "firstScreen": 7,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 7,
+     "radii": [
+      [
+       0,
+       7
+      ]
+     ],
+     "heavyBorders": 7,
+     "borderSamples": [
+      "#000000 on #ffffff (21:1)",
+      "#000000 on #ffd23f (14.54:1)",
+      "#000000 on #88d498 (11.92:1)"
+     ],
+     "heavyShadows": 3,
+     "softShadows": 0,
+     "shadowSamples": [
+      "rgb(0, 0, 0) 3px 3px 0px 0px",
+      "rgb(0, 0, 0) 3px 3px 0px 0px",
+      "rgb(0, 0, 0) 3px 3px 0px 0px"
+     ],
+     "glass": 0
+    },
+    "chips": {
+     "count": 1,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 46,
+       "size": 31,
+       "radius": "0px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 0,
+     "tabularShare": null,
+     "kpiMax": null
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.38,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      19,
+      20,
+      24,
+      25
+     ]
+    },
+    "title": {
+     "text": "Workspace overview",
+     "size": 24,
+     "top": 80
+    },
+    "colourShare": 0.266
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 2,
+   "filled": [
+    0.65,
+    0.76
+   ],
+   "motion": {
+    "elements": 0,
+    "css": 0,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 1530,
+     "screens": 1.8,
+     "words": 166,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 22,
+     "sections": 4,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Workspace overview",
+     "words": 2,
+     "chars": 18,
+     "lines": 1,
+     "size": 24,
+     "vw": 6.2,
+     "font": "Space Grotesk",
+     "weight": 700,
+     "tracking": -0.03,
+     "leading": 1.12,
+     "top": 126,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Workspace overview",
+     "words": 2,
+     "lines": 1,
+     "size": 24,
+     "font": "Space Grotesk"
+    },
+    "headings": [
+     {
+      "text": "Workspace overview",
+      "words": 2,
+      "chars": 18,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Space Grotesk",
+      "weight": 700,
+      "tracking": -0.035,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.78,
+      "top": 126,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "4",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 25,
+      "vw": 6.4,
+      "font": "Space Grotesk",
+      "weight": 500,
+      "tracking": 0,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.04,
+      "top": 731,
+      "tag": "strong",
+      "kind": "heading"
+     },
+     {
+      "text": "0",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 25,
+      "vw": 6.4,
+      "font": "Space Grotesk",
+      "weight": 500,
+      "tracking": 0,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.04,
+      "top": 731,
+      "tag": "strong",
+      "kind": "heading"
+     },
+     {
+      "text": "0",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 25,
+      "vw": 6.4,
+      "font": "Space Grotesk",
+      "weight": 500,
+      "tracking": 0,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.04,
+      "top": 859,
+      "tag": "strong",
+      "kind": "heading"
+     },
+     {
+      "text": "Documents",
+      "words": 1,
+      "chars": 9,
+      "lines": 1,
+      "size": 23,
+      "vw": 5.9,
+      "font": "Space Grotesk",
+      "weight": 700,
+      "tracking": -0.025,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.69,
+      "top": 956,
+      "tag": "h2",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 5,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 1,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.77,
+       "mono": false
+      },
+      {
+       "family": "Space Grotesk",
+       "share": 0.23,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      18,
+      19,
+      23,
+      24,
+      25
+     ],
+     "sizeCount": 10,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 13,
+      "leading": 1.55,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 14.5
+     },
+     "measureChars": 45,
+     "max": {
+      "size": 25,
+      "vw": 6.4,
+      "font": "Space Grotesk",
+      "text": "4"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.01,
+     "centerShare": 0.04,
+     "smallText": 11
+    },
+    "eyebrows": [
+     {
+      "text": "Local prototype",
+      "above": "Workspace overview",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 12,
+      "top": 75
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#fffdf5",
+     "bodyBgHsl": {
+      "h": 48,
+      "s": 1,
+      "l": 0.98
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fffdf5",
+       "top": 0,
+       "hsl": {
+        "h": 48,
+        "s": 1,
+        "l": 0.98
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#000000",
+       "share": 0.67
+      },
+      {
+       "color": "#48463f",
+       "share": 0.24
+      },
+      {
+       "color": "#282720",
+       "share": 0.08
+      }
+     ],
+     "button": {
+      "bg": "#ffffff",
+      "hsl": {
+       "h": 0,
+       "s": 0,
+       "l": 1
+      },
+      "fg": "#000000"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 4,
+     "inHero": 2,
+     "radius": 4,
+     "height": 46,
+     "withShadow": 2,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Add documents",
+      "Choose files"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 5,
+     "shadowOverlay": 0,
+     "shadowSamples": [
+      "button.primary-button → rgb(0, 0, 0) 4px 4px 0px 0px",
+      "button.secondary-button → rgb(0, 0, 0) 3px 3px 0px 0px",
+      "div.stat-card.stat-mint → rgb(0, 0, 0) 3px 3px 0px 0px",
+      "div.stat-card.stat-blue → rgb(0, 0, 0) 3px 3px 0px 0px"
+     ],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 0,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "dm sans",
+     "space grotesk"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 1530,
+    "margins": {
+     "left": 16,
+     "right": 16
+    },
+    "sections": [
+     {
+      "sel": "section.welcome-row",
+      "tag": "section",
+      "top": 126,
+      "height": 127,
+      "words": 10,
+      "media": 0,
+      "middle": 0,
+      "heading": null,
+      "left": 16,
+      "right": 16,
+      "textLeft": 16,
+      "textRight": 68,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "section.upload-panel",
+      "tag": "section",
+      "top": 275,
+      "height": 401,
+      "words": 65,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Add documents to your workspace",
+       "size": 18,
+       "tag": "h2"
+      },
+      "left": 37,
+      "right": 36,
+      "textLeft": 66,
+      "textRight": 36,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "section.stats-row",
+      "tag": "section",
+      "top": 694,
+      "height": 231,
+      "words": 21,
+      "media": 0,
+      "middle": 25,
+      "heading": null,
+      "left": 31,
+      "right": 45,
+      "textLeft": 31,
+      "textRight": 45,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "section#documents.library-section",
+      "tag": "section",
+      "top": 956,
+      "height": 458,
+      "words": 47,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Documents",
+       "size": 23,
+       "tag": "h2"
+      },
+      "left": 16,
+      "right": 21,
+      "textLeft": 16,
+      "textRight": 25,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Workspace overview",
+      "size": 24,
+      "top": 126,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 76,
+      "n": 6
+     },
+     {
+      "x": 16,
+      "n": 2
+     }
+    ],
+    "leftBlocks": 8,
+    "bodySize": 13,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "dark": false,
+    "ground": "#fffdf5",
+    "sidebar": null,
+    "topbar": {
+     "h": 58
+    },
+    "canvas": {
+     "left": 16,
+     "right": 16
+    },
+    "hero": {
+     "text": "Workspace overview",
+     "words": 2,
+     "chars": 18,
+     "lines": 1,
+     "size": 24,
+     "vw": 6.2,
+     "font": "Space Grotesk",
+     "weight": 700,
+     "tracking": -0.03,
+     "leading": 1.12,
+     "top": 126,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 1,
+    "layout": {
+     "panels": 5,
+     "firstScreen": 4,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 5,
+     "radii": [
+      [
+       0,
+       5
+      ]
+     ],
+     "heavyBorders": 5,
+     "borderSamples": [
+      "#000000 on #88d498 (11.92:1)",
+      "#000000 on #ffd23f (14.54:1)",
+      "#000000 on #d8f0dc (17.42:1)"
+     ],
+     "heavyShadows": 3,
+     "softShadows": 0,
+     "shadowSamples": [
+      "rgb(0, 0, 0) 3px 3px 0px 0px",
+      "rgb(0, 0, 0) 3px 3px 0px 0px",
+      "rgb(0, 0, 0) 3px 3px 0px 0px"
+     ],
+     "glass": 0
+    },
+    "chips": {
+     "count": 1,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 46,
+       "size": 31,
+       "radius": "0px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 0,
+     "tabularShare": null,
+     "kpiMax": null
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.38,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      18,
+      19,
+      23,
+      24
+     ]
+    },
+    "title": {
+     "text": "Workspace overview",
+     "size": 24,
+     "top": 126
+    },
+    "colourShare": 0.388
+   },
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "FAIL",
+   "id": "button-fx",
+   "width": 1440,
+   "message": "Buttons with shadow/glow.",
+   "fix": "Flat fill, one colour.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "palette-cream",
+   "width": 1440,
+   "message": "Yellow-cream background (page background #fffdf5, section #fffdf5).",
+   "fix": "Use the drawn palette. If you want warmth, take a low-chroma stone or bone, not a yellow cream.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "heavy-shadow",
+   "width": 1440,
+   "message": "3 panel shadow(s) heavy enough to read as floating: rgb(0, 0, 0) 3px 3px 0px 0px | rgb(0, 0, 0) 3px 3px 0px 0px | rgb(0, 0, 0) 3px 3px 0px 0px",
+   "fix": "Panels sit on the ground: separate them with a fill one step from the ground or a quiet 1px border. A shadow, if any, is under 8% black with a small blur. Real overlays (menus, dialogs, popovers) may float.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "heavy-borders",
+   "width": 1440,
+   "message": "5 panel borders are dark against their ground: #000000 on #88d498 (11.92:1) | #000000 on #ffd23f (14.54:1) | #000000 on #d8f0dc (17.42:1)",
+   "fix": "A panel border is a whisper: about 1.1–1.3:1 against its ground on a light screen (#e5e7eb–#ededed on white), and about 1.2–1.5:1 on a dark one (#1a1a1a on #000, #2e2e2e on #111). Darker lines turn the screen into a grid of boxes; keep the stronger line for controls.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "colour-sprawl",
+   "width": 1440,
+   "message": "18% of the first screen is strongly coloured.",
+   "fix": "Keep the screen neutral and spend colour on data and status: the studied screens sit near 3%, and only tinted styles reach 10–15%, as pale tints rather than saturated fills.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "D:\\anand\\Documind-ai\\Documind-ai\\.taste-skill\\inspect-final\\desktop-fold.jpg",
+   "pages": [
+    "D:\\anand\\Documind-ai\\Documind-ai\\.taste-skill\\inspect-final\\desktop-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "D:\\anand\\Documind-ai\\Documind-ai\\.taste-skill\\inspect-final\\tablet-fold.jpg",
+   "pages": [
+    "D:\\anand\\Documind-ai\\Documind-ai\\.taste-skill\\inspect-final\\tablet-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "D:\\anand\\Documind-ai\\Documind-ai\\.taste-skill\\inspect-final\\mobile-fold.jpg",
+   "pages": [
+    "D:\\anand\\Documind-ai\\Documind-ai\\.taste-skill\\inspect-final\\mobile-page-01.jpg"
+   ],
+   "film": []
+  }
+ ]
+}
