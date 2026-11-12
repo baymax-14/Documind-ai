@@ -41,6 +41,20 @@ The supplied PRD is at `C:\Users\USER\Downloads\DocuMind_AI_Updated_PRD_Neobruta
 - Make document upload and understanding straightforward.
 - Keep document reading accessible and low-distraction.
 
+## AI Architecture Decision & Phase 5 Technical Evaluation
+
+- **Selected Path**: **On-Device Model (Local WebGPU / In-Browser Inference)**.
+- **Runtime Selected**: **WebLLM (`@mlc-ai/web-llm`)** utilizing Apache TVM WebGPU compilation.
+- **Evaluated & Selected Model**:
+  - Primary: `Qwen2.5-0.5B-Instruct-q4f32_1-MLC` (~350 MB download, ~800 MB VRAM, Apache 2.0 license). Proven accurate instruction following and excerpt synthesis.
+  - Lightweight alternative: `SmolLM2-360M-Instruct-q4f32_1-MLC` (~230 MB download, ~600 MB VRAM, Apache 2.0 license).
+- **Network Boundaries & Weight Caching**:
+  - Model weights are downloaded only upon explicit user action from verified HuggingFace CDN endpoints and cached persistently via the browser's Cache API (`webllm/model`).
+  - Subsequent runs operate 100% offline without network calls.
+  - **Zero user data transmission**: Document files, extracted passages, and user queries never leave the browser runtime.
+- **Graceful Fallback Mode**: When WebGPU hardware acceleration is unavailable, when model download is declined, or during download/loading states, DocuMind AI seamlessly falls back to the deterministic local Evidence Preview mode.
+- **Grounding Standards**: Strict requirement for passage-level citations linking directly to exact document locators (`Page X`, `Section Y`), explicit no-evidence responses when no matching chunks are found, and instant cancellation support via `AbortController`.
+
 ## Accessibility & Inclusion
 
 The PRD requires readable contrast, scalable text, keyboard navigation, visible focus, semantic markup, accessible control names, status communication beyond color alone, responsive layouts, and reduced-motion support.

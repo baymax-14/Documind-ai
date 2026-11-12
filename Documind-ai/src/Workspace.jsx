@@ -39,7 +39,9 @@ import {
   SearchResultsView,
   searchDocuments,
   retrieveEvidenceChunks,
-  generateGroundedAnswer,
+    checkWebGPUSupport,
+  initializeOnDeviceEngine,
+  generateAnswerWithFallback,
   SEED_DOCS,
 } from './features/documents/index.js'
 
@@ -86,6 +88,66 @@ function App() {
   const [isAiGenerating, setIsAiGenerating] = useState(false)
   const [pendingConsent, setPendingConsent] = useState(null) // { question, chunks }
   const abortControllerRef = useRef(null)
+
+  // Phase 6: On-Device AI Model State
+  const [modelStatus, setModelStatus] = useState('not_configured')
+  const [modelProgress, setModelProgress] = useState({ progress: 0, text: '' })
+  const [modelError, setModelError] = useState('')
+  const engineRef = useRef(null)
+  const modelAbortRef = useRef(null)
+
+  useEffect(() => {
+    checkWebGPUSupport().then((res) => {
+      if (!res.supported) {
+        setModelStatus('unsupported')
+      }
+    })
+  }, [])
+
+  async function handleStartModelDownload() {
+    setModelStatus('downloading')
+    setModelError('')
+    setModelProgress({ progress: 0.05, text: 'Starting download…' })
+    modelAbortRef.current = new AbortController()
+
+    try {
+      const engine = await initializeOnDeviceEngine({
+        onProgress: (p) => setModelProgress(p),
+        signal: modelAbortRef.current.signal,
+      })
+      engineRef.current = engine
+      setModelStatus('ready')
+      setNotice('On-device model ready for inference.')
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        setModelStatus('not_configured')
+        setNotice('Model setup cancelled.')
+      } else {
+        setModelStatus('error')
+        setModelError(err.message || 'Failed to initialize model.')
+      }
+    } finally {
+      modelAbortRef.current = null
+    }
+  }
+
+  function handleCancelModelDownload() {
+    if (modelAbortRef.current) {
+      modelAbortRef.current.abort()
+      modelAbortRef.current = null
+      setModelStatus('not_configured')
+      setNotice('Model download cancelled.')
+    }
+  }
+
+  async function handleUnloadModel() {
+    if (engineRef.current?.unload) {
+      await engineRef.current.unload()
+    }
+    engineRef.current = null
+    setModelStatus('not_configured')
+    setNotice('Model unloaded from GPU memory. Reverted to Evidence Preview.')
+  }
 
   const greeting = getGreeting()
   const fileRef = useRef(null)
@@ -270,11 +332,12 @@ function App() {
     abortControllerRef.current = new AbortController()
 
     try {
-      const response = await generateGroundedAnswer(
+      const response = await generateAnswerWithFallback({
         question,
-        chunks,
-        abortControllerRef.current.signal
-      )
+        retrievedChunks: chunks,
+        engine: engineRef.current,
+        signal: abortControllerRef.current.signal,
+      })
 
       const assistantMsg = {
         id: crypto.randomUUID(),
@@ -282,6 +345,7 @@ function App() {
         text: response.answer,
         citations: response.citations,
         hasEvidence: response.hasEvidence,
+        isRealModel: response.isRealModel,
         timestamp: Date.now(),
       }
       setAiMessages((prev) => [...prev, assistantMsg])
@@ -760,14 +824,29 @@ function App() {
 
             {/* AI Assistant View (Active when searchMode === 'ai') */}
             {searchMode === 'ai' && (
-              <AiAssistantView
-                messages={aiMessages}
-                isGenerating={isAiGenerating}
-                onAskQuestion={handleInitiateAiQuestion}
-                onCancelGeneration={handleCancelAiGeneration}
-                onClearChat={() => setAiMessages([])}
-                onInspectCitation={handleInspectPassage}
-              />
+              <Suspense
+                fallback={
+                  <div className="ai-chat-section" style={{ minHeight: 280, display: 'grid', placeItems: 'center' }}>
+                    <Loader size={20} className="spin-icon" />
+                  </div>
+                }
+              >
+                <AiAssistantView
+                  messages={aiMessages}
+                  isGenerating={isAiGenerating}
+                  onAskQuestion={handleInitiateAiQuestion}
+                  onCancelGeneration={handleCancelAiGeneration}
+                  onClearChat={() => setAiMessages([])}
+                  onInspectCitation={handleInspectPassage}
+                  modelStatus={modelStatus}
+                  modelProgress={modelProgress}
+                  modelError={modelError}
+                  onStartModelDownload={handleStartModelDownload}
+                  onCancelModelDownload={handleCancelModelDownload}
+                  onUnloadModel={handleUnloadModel}
+                  onUseEvidencePreview={() => setModelStatus('not_configured')}
+                />
+              </Suspense>
             )}
 
             {/* Search and Toolbar (Active when NOT in AI mode) */}
@@ -948,6 +1027,7 @@ function App() {
             initialChunkIndex={readerChunkIndex}
             initialQuery={readerQuery}
             onClose={() => setReaderDoc(null)}
+            fromAssistant={searchMode === 'ai'}
           />
         )}
 

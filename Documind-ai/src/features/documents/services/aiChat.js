@@ -64,6 +64,11 @@ export function retrieveEvidenceChunks(documents, question, maxChunks = 3) {
  * @returns {Promise<{ answer: string, excerpts: Array<any>, citations: Array<any>, hasEvidence: boolean }>}
  */
 export async function generateGroundedAnswer(question, retrievedChunks, signal) {
+  // Check if already aborted
+  if (signal?.aborted) {
+    throw new DOMException('Retrieval cancelled by user.', 'AbortError')
+  }
+
   // Simulate local retrieval latency (400ms) with cancellation support
   await new Promise((resolve, reject) => {
     const timeout = setTimeout(resolve, 400)

@@ -17,19 +17,23 @@ function PrivacyNotice({ onAccept }) {
         <ul className="privacy-points">
           <li>
             <Info size={15} aria-hidden="true" />
-            <span>Chosen files are <strong>read in this browser</strong>. No file bytes or extracted text leave your device.</span>
+            <span>Chosen files are <strong>read entirely in this browser</strong>. No file bytes, extracted text, or query prompts ever leave your device.</span>
           </li>
           <li>
             <Info size={15} aria-hidden="true" />
-            <span>Files are staged in memory until you choose <strong>Add to local library</strong> to save them in your browser's IndexedDB.</span>
+            <span>Files are staged in memory until you choose <strong>Add to local library</strong> to save them in your browser's local IndexedDB.</span>
           </li>
           <li>
             <Info size={15} aria-hidden="true" />
             <span>Saved documents persist across reloads. You can <strong>delete individual documents or clear your library</strong> at any time.</span>
           </li>
+          <li>
+            <Info size={15} aria-hidden="true" />
+            <span>Optional on-device AI uses local WebGPU hardware. Model weights are downloaded once and cached locally for offline synthesis; documents and prompts remain 100% on-device.</span>
+          </li>
         </ul>
         <p className="privacy-note">
-          This is a local-first workspace. Cloud sync, server backends, and AI analysis are not connected.
+          This is a local-first workbench. Zero data is transmitted to cloud AI services or third-party servers.
         </p>
       </div>
       <button className="primary-button privacy-accept" onClick={onAccept}>
@@ -40,4 +44,3 @@ function PrivacyNotice({ onAccept }) {
 }
 
 export default PrivacyNotice
-

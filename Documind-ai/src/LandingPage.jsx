@@ -38,7 +38,7 @@ function WorkspacePreview() {
           <div className="preview-welcome"><div><h2>Workspace overview</h2><p>Demo documents for research.</p></div><span className="preview-demo-tag">Demo</span></div>
           <div className="preview-stats" aria-label="Demo workspace status">
             <div className="preview-stat mint"><span>Demo files</span><strong>3</strong></div>
-            <div className="preview-stat blue"><span>AI models</span><strong>0</strong><small>Not connected</small></div>
+            <div className="preview-stat blue"><span>On-device AI</span><strong>Local</strong><small>WebGPU ready</small></div>
           </div>
           <div className="preview-library-heading"><h3>Documents</h3><span>Demo content</span></div>
           <ul className="preview-files" aria-label="Sample documents, all demo content">
@@ -65,7 +65,7 @@ function CapabilitiesBar() {
       </div>
       <div className="capability-item reveal-on-scroll" style={{ '--reveal-delay': '70ms' }}>
         <span className="capability-icon cap-sky"><MessageSquareText size={20} aria-hidden="true" /></span>
-        <div><h3>Document assistant</h3><p>Ask questions to retrieve exact excerpts and citations from your documents.</p></div>
+        <div><h3>On-device assistant</h3><p>Synthesize answers with local WebGPU models or inspect verifiable evidence excerpts.</p></div>
         <span className="capability-tag tag-available">Available</span>
       </div>
       <div className="capability-item reveal-on-scroll" style={{ '--reveal-delay': '140ms' }}>
@@ -100,7 +100,7 @@ function HowItWorks() {
         <span className="step-status">Available in this release</span>
       </li>
       <li className="step-item step-citations reveal-on-scroll" style={{ '--reveal-delay': '140ms' }}>
-        <div><h3>Grounded evidence excerpts</h3><p>Review candidate source passages with verifiable citations linked directly to exact document locators. No remote AI model connected.</p></div>
+        <div><h3>Grounded answers & citations</h3><p>Synthesize answers with on-device WebGPU models or review source excerpts. Every response cites exact document locators with zero cloud data transmission.</p></div>
         <span className="step-status">Available in this release</span>
       </li>
     </ol>
@@ -212,14 +212,14 @@ function LandingPage() {
                   <span className="hero-heading-line" data-scramble-text="Understand your" aria-hidden="true">Understand your</span>
                   <span className="hero-heading-line" data-scramble-text="documents faster." aria-hidden="true">documents faster.</span>
                 </h1>
-                <p className="hero-support reveal-on-scroll" style={{ '--reveal-delay': '70ms' }}>A workspace for research and reports. Extract and search document text entirely in your browser; remote services and cloud AI models are not connected.</p>
+                <p className="hero-support reveal-on-scroll" style={{ '--reveal-delay': '70ms' }}>A workspace for research and reports. Extract, search, and synthesize document text entirely in your browser with on-device AI; user files and queries never leave your machine.</p>
                 <div className="hero-actions reveal-on-scroll" style={{ '--reveal-delay': '140ms' }}>
                   <Link className="button-primary" to="/workspace">Open your workspace <ArrowRight size={18} aria-hidden="true" /></Link>
                   <a className="text-link" href="#how-it-works">See how it works <ArrowRight size={16} aria-hidden="true" /></a>
                 </div>
-                <aside className="prototype-note reveal-on-scroll" style={{ '--reveal-delay': '210ms' }} aria-label="Prototype limitation">
-                  <strong>Local prototype</strong>
-                  <p>Files added to the workspace are parsed on-device and stored in your browser's IndexedDB. Remote server uploads and third-party AI models are not connected.</p>
+                <aside className="prototype-note reveal-on-scroll" style={{ '--reveal-delay': '210ms' }} aria-label="Privacy guarantee">
+                  <strong>Local &amp; private</strong>
+                  <p>Files added to the workspace are parsed on-device and stored in your browser's IndexedDB. Optional on-device AI runs directly on your WebGPU; weights are cached locally and no data is ever sent to external servers.</p>
                 </aside>
               </div>
             </section>
@@ -237,7 +237,7 @@ function LandingPage() {
 
         <footer className="landing-footer">
           <Link className="footer-brand" to="/">DocuMind AI</Link>
-          <p>Local prototype · Files are processed on-device and never sent to a server.</p>
+          <p>Local-first workspace · Files and queries run on-device and are never sent to a server.</p>
           <a href="#how-it-works">How it works <ArrowUpRight size={14} aria-hidden="true" /></a>
         </footer>
       </div>

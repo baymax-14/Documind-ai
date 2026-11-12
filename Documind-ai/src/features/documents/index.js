@@ -18,6 +18,14 @@ export {
   retrieveEvidenceChunks,
   generateGroundedAnswer,
 } from './services/aiChat.js'
+export {
+  checkWebGPUSupport,
+  buildGroundedMessages,
+  initializeOnDeviceEngine,
+  generateAnswerWithFallback,
+  DEFAULT_MODEL_ID,
+  EVALUATED_MODELS,
+} from './services/onDeviceModel.js'
 export { useDocumentImport } from './hooks/useDocumentImport.js'
 export { default as PrivacyNotice } from './components/PrivacyNotice.jsx'
 export { default as DocumentReader } from './components/DocumentReader.jsx'

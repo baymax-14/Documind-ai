@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
+  ArrowLeft,
   BookOpen,
   Check,
   Copy,
@@ -63,8 +64,9 @@ function HighlightedText({ text, query }) {
  * @param {number} [props.initialChunkIndex] - Chunk to scroll into view.
  * @param {string} [props.initialQuery] - Search query to highlight.
  * @param {() => void} props.onClose - Dismiss callback.
+ * @param {boolean} [props.fromAssistant] - Whether opened from assistant citation.
  */
-function DocumentReader({ doc, initialChunkIndex = 0, initialQuery = '', onClose }) {
+function DocumentReader({ doc, initialChunkIndex = 0, initialQuery = '', onClose, fromAssistant = false }) {
   const [filterQuery, setFilterQuery] = useState(initialQuery)
   const [selectedChunk, setSelectedChunk] = useState(initialChunkIndex)
   const [copied, setCopied] = useState(false)
@@ -157,6 +159,17 @@ function DocumentReader({ doc, initialChunkIndex = 0, initialQuery = '', onClose
           </div>
 
           <div className="reader-top-actions">
+            {fromAssistant && (
+              <button
+                className="reader-action-btn reader-return-btn"
+                onClick={onClose}
+                title="Return to Assistant conversation (Esc)"
+              >
+                <ArrowLeft size={14} aria-hidden="true" />
+                <span>Back to Assistant</span>
+              </button>
+            )}
+
             <div className="reader-search-input">
               <Search size={14} aria-hidden="true" />
               <input

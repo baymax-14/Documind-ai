@@ -5,7 +5,9 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
+      external: ['@mlc-ai/web-llm'],
       output: {
         manualChunks(id) {
           if (id.includes('node_modules/gsap') || id.includes('node_modules/@gsap')) {

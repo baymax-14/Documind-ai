@@ -27,7 +27,10 @@ npm run dev
 - No file bytes or extracted text leave your browser. All storage is on-device.
 - Full-text evidence search across extracted document chunks with highlighted matches and source locators (page numbers for PDF, section/paragraph locators for DOCX/TXT).
 - Extracted-text Document Reader view with interactive section jumper rail, in-document search filter, and clipboard copy.
-- Grounded AI Document Assistant with deterministic RAG retrieval, explicit per-query excerpt consent inspection, and interactive citation anchors linking directly to source passages.
+- Grounded AI Document Assistant with dual inference modes:
+  - **On-Device AI Model**: In-browser local LLM (`Qwen2.5-0.5B-Instruct` via WebGPU/WebLLM) running 100% client-side. Model weights (~350 MB) download once into browser Cache API for offline inference. User documents, extracted text, and prompts never leave your device.
+  - **Deterministic Evidence Preview**: Instant zero-download fallback that retrieves and presents exact source passages and page/paragraph locators when WebGPU is unavailable or model download is deferred.
+  - **Strict Source Grounding**: Every generated statement or excerpt is anchored to passage-level citations linked directly into the Document Reader.
 - Search documents by filename, filter by file type, sort by recent or filename, and switch between list and grid views.
 - Switch between light and dark appearances.
 - Sample documents are clearly marked. Cloud sync, external backend servers, and multi-document comparison are planned capabilities and are not connected.
