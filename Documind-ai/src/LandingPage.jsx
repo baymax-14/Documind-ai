@@ -31,14 +31,14 @@ function WorkspacePreview() {
           <div className="preview-workspace"><span>A</span><div><strong>Research workspace</strong><small>Demo</small></div></div>
           <div className="preview-nav active"><LayoutGrid size={14} aria-hidden="true" /> Overview</div>
           <div className="preview-nav"><FolderOpen size={14} aria-hidden="true" /> Documents <b>3</b></div>
-          <div className="preview-nav preview-muted"><Sparkles size={14} aria-hidden="true" /> AI answers <small>Planned</small></div>
+          <div className="preview-nav preview-muted"><Sparkles size={14} aria-hidden="true" /> Assistant <small>Prototype</small></div>
           <div className="preview-rail-note">Files are not uploaded or analyzed.</div>
         </aside>
         <div className="preview-content">
           <div className="preview-welcome"><div><h2>Workspace overview</h2><p>Demo documents for research.</p></div><span className="preview-demo-tag">Demo</span></div>
           <div className="preview-stats" aria-label="Demo workspace status">
             <div className="preview-stat mint"><span>Demo files</span><strong>3</strong></div>
-            <div className="preview-stat blue"><span>AI analyses</span><strong>0</strong><small>Not connected</small></div>
+            <div className="preview-stat blue"><span>AI models</span><strong>0</strong><small>Not connected</small></div>
           </div>
           <div className="preview-library-heading"><h3>Documents</h3><span>Demo content</span></div>
           <ul className="preview-files" aria-label="Sample documents, all demo content">
@@ -65,7 +65,7 @@ function CapabilitiesBar() {
       </div>
       <div className="capability-item reveal-on-scroll" style={{ '--reveal-delay': '70ms' }}>
         <span className="capability-icon cap-sky"><MessageSquareText size={20} aria-hidden="true" /></span>
-        <div><h3>Document chat</h3><p>Ask questions and get answers strictly grounded in document evidence.</p></div>
+        <div><h3>Document assistant</h3><p>Ask questions to retrieve exact excerpts and citations from your documents.</p></div>
         <span className="capability-tag tag-available">Available</span>
       </div>
       <div className="capability-item reveal-on-scroll" style={{ '--reveal-delay': '140ms' }}>
@@ -100,7 +100,7 @@ function HowItWorks() {
         <span className="step-status">Available in this release</span>
       </li>
       <li className="step-item step-citations reveal-on-scroll" style={{ '--reveal-delay': '140ms' }}>
-        <div><h3>Grounded AI answers</h3><p>Review candidate source excerpts and receive answers strictly anchored in citations back to exact passages.</p></div>
+        <div><h3>Grounded evidence excerpts</h3><p>Review candidate source passages with verifiable citations linked directly to exact document locators. No remote AI model connected.</p></div>
         <span className="step-status">Available in this release</span>
       </li>
     </ol>
@@ -212,14 +212,14 @@ function LandingPage() {
                   <span className="hero-heading-line" data-scramble-text="Understand your" aria-hidden="true">Understand your</span>
                   <span className="hero-heading-line" data-scramble-text="documents faster." aria-hidden="true">documents faster.</span>
                 </h1>
-                <p className="hero-support reveal-on-scroll" style={{ '--reveal-delay': '70ms' }}>A workspace for research and reports. Extract document text entirely in your browser; remote services and AI answers are not connected.</p>
+                <p className="hero-support reveal-on-scroll" style={{ '--reveal-delay': '70ms' }}>A workspace for research and reports. Extract and search document text entirely in your browser; remote services and cloud AI models are not connected.</p>
                 <div className="hero-actions reveal-on-scroll" style={{ '--reveal-delay': '140ms' }}>
                   <Link className="button-primary" to="/workspace">Open your workspace <ArrowRight size={18} aria-hidden="true" /></Link>
                   <a className="text-link" href="#how-it-works">See how it works <ArrowRight size={16} aria-hidden="true" /></a>
                 </div>
                 <aside className="prototype-note reveal-on-scroll" style={{ '--reveal-delay': '210ms' }} aria-label="Prototype limitation">
                   <strong>Local prototype</strong>
-                  <p>Files added to the workspace are parsed on-device and stored in your browser's IndexedDB. Remote server uploads, AI answers, and citations are not connected.</p>
+                  <p>Files added to the workspace are parsed on-device and stored in your browser's IndexedDB. Remote server uploads and third-party AI models are not connected.</p>
                 </aside>
               </div>
             </section>

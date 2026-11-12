@@ -5,11 +5,9 @@ import {
   BookOpen,
   Check,
   Copy,
-  ExternalLink,
+  FileText,
   Loader,
-  MessageSquare,
-  RotateCcw,
-  Send,
+  Search,
   Shield,
   Sparkles,
   StopCircle,
@@ -19,13 +17,14 @@ import {
 const SUGGESTED_PROMPTS = [
   'What were the key drivers behind Q3 market growth?',
   'What are the brand typography and color rules?',
-  'What frustrations did biochemistry researchers report?',
+  'What feedback did customer interviews reveal?',
   'What is DocuMind\'s core product thesis and vision?',
 ]
 
 /**
- * AI Assistant Chat view with deterministic RAG retrieval, citation linking,
- * and strict grounding in document evidence.
+ * Document Evidence Assistant view.
+ * Local keyword retrieval presenting exact excerpts, locators, and verifiable citations.
+ * Operates purely locally on-device without an external AI model.
  *
  * @param {Object} props
  * @param {Array<{ id: string, sender: 'user' | 'assistant', text: string, citations?: Array<any>, hasEvidence?: boolean, timestamp: number }>} props.messages
@@ -75,7 +74,7 @@ function AiAssistantView({
   }
 
   return (
-    <section className="ai-chat-section" aria-label="AI Document Assistant">
+    <section className="ai-chat-section" aria-label="Document Evidence Assistant">
       {/* Top Banner */}
       <header className="ai-chat-header">
         <div className="ai-chat-title">
@@ -83,14 +82,14 @@ function AiAssistantView({
             <Sparkles size={17} aria-hidden="true" />
           </span>
           <div>
-            <h3>AI Document Assistant</h3>
-            <p>Grounded strictly in local document evidence with verifiable citations.</p>
+            <h3>Document Evidence Assistant</h3>
+            <p>Local keyword retrieval showing exact excerpts and citations. No external AI model is connected.</p>
           </div>
         </div>
 
         <div className="ai-header-controls">
-          <span className="ai-model-tag" title="Zero API key required. Processing runs locally on-device.">
-            <Shield size={12} aria-hidden="true" /> Simulated Local RAG
+          <span className="ai-model-tag" title="Runs purely in-browser using local keyword matching. No data leaves your machine.">
+            <Shield size={12} aria-hidden="true" /> Local Retrieval · No External Model
           </span>
           {messages.length > 0 && (
             <button
@@ -113,9 +112,9 @@ function AiAssistantView({
             <div className="ai-welcome-badge">
               <BookOpen size={28} aria-hidden="true" />
             </div>
-            <h4>Ask questions about your documents</h4>
+            <h4>Search and preview document excerpts</h4>
             <p>
-              DocuMind AI retrieves relevant passages from your library and constructs answers anchored in source evidence. Every claim links back to its exact document page or section.
+              Ask questions to retrieve matching passages from your library. This prototype uses local keyword search to find relevant text chunks and citation locators—no remote AI model or external API is used.
             </p>
 
             <div className="ai-suggested-prompts">
@@ -147,45 +146,62 @@ function AiAssistantView({
                 <div className="ai-message-bubble">
                   <div className="ai-msg-meta">
                     <span className="ai-sender-name">
-                      {msg.sender === 'user' ? 'You' : 'DocuMind Assistant'}
+                      {msg.sender === 'user' ? 'You' : 'Evidence Assistant (Local Preview)'}
                     </span>
                     {msg.sender === 'assistant' && (
                       <button
                         className="ai-copy-btn"
                         onClick={() => handleCopy(msg.text, idx)}
-                        title="Copy answer"
-                        aria-label="Copy answer to clipboard"
+                        title="Copy text"
+                        aria-label="Copy text to clipboard"
                       >
                         {copiedIndex === idx ? <Check size={12} /> : <Copy size={12} />}
                       </button>
                     )}
                   </div>
 
-                  <div className="ai-msg-text">
-                    <p>{msg.text}</p>
-                  </div>
+                  {/* Main Response or Excerpt Cards */}
+                  {msg.sender === 'user' ? (
+                    <div className="ai-msg-text">
+                      <p>{msg.text}</p>
+                    </div>
+                  ) : msg.citations && msg.citations.length > 0 ? (
+                    <div>
+                      <div className="ai-msg-text">
+                        <p>
+                          Found {msg.citations.length} relevant passage{msg.citations.length === 1 ? '' : 's'} matching your query from local documents:
+                        </p>
+                      </div>
 
-                  {/* Citation Anchors if present */}
-                  {msg.citations && msg.citations.length > 0 && (
-                    <div className="ai-citations-drawer">
-                      <span className="ai-citations-heading">
-                        Cited Evidence ({msg.citations.length}):
-                      </span>
-                      <div className="ai-citations-chips">
+                      {/* Explicit per-excerpt card with exact citation button */}
+                      <div className="ai-excerpts-container">
                         {msg.citations.map((c) => (
-                          <button
-                            key={c.id}
-                            className="ai-citation-chip"
-                            onClick={() => onInspectCitation(c.docId, c.chunkIndex)}
-                            title={`Inspect cited passage in ${c.docName} at ${c.locator}`}
-                          >
-                            <span className="citation-num">[{c.id}]</span>
-                            <span className="citation-doc">{c.docName}</span>
-                            <span className="citation-loc">{c.locator}</span>
-                            <ArrowUpRight size={12} aria-hidden="true" />
-                          </button>
+                          <article key={c.id} className="ai-excerpt-card">
+                            <div className="ai-excerpt-header">
+                              <button
+                                className="ai-citation-chip"
+                                onClick={() => onInspectCitation(c.docId, c.chunkIndex)}
+                                title={`Open ${c.docName} at ${c.locator} in reader`}
+                              >
+                                <span className="citation-num">[{c.id}]</span>
+                                <span className="citation-doc">{c.docName}</span>
+                                <span className="citation-loc">
+                                  <FileText size={10} style={{ display: 'inline', marginRight: 3 }} />
+                                  {c.locator}
+                                </span>
+                                <ArrowUpRight size={12} aria-hidden="true" />
+                              </button>
+                            </div>
+                            <blockquote className="ai-excerpt-quote">
+                              "{c.text.trim()}"
+                            </blockquote>
+                          </article>
                         ))}
                       </div>
+                    </div>
+                  ) : (
+                    <div className="ai-msg-text">
+                      <p>{msg.text}</p>
                     </div>
                   )}
 
@@ -203,12 +219,12 @@ function AiAssistantView({
                 <div className="ai-message-bubble ai-generating-bubble">
                   <div className="ai-generating-content">
                     <Loader size={16} className="spin-icon" aria-hidden="true" />
-                    <span>Retrieving evidence passages & synthesizing grounded answer…</span>
+                    <span>Retrieving local passages and locating source excerpts…</span>
                   </div>
                   <button
                     className="ai-cancel-generation-btn"
                     onClick={onCancelGeneration}
-                    title="Stop answer generation"
+                    title="Stop excerpt retrieval"
                   >
                     <StopCircle size={14} aria-hidden="true" /> Stop
                   </button>
@@ -230,7 +246,7 @@ function AiAssistantView({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask a question about your documents… (Press Enter to send)"
+            placeholder="Ask a question to find relevant excerpts… (Press Enter)"
             aria-label="Ask a question about your documents"
             disabled={isGenerating}
           />
@@ -239,10 +255,10 @@ function AiAssistantView({
           type="submit"
           className="primary-button ai-send-btn"
           disabled={!input.trim() || isGenerating}
-          aria-label="Send question to AI assistant"
+          aria-label="Retrieve document excerpts"
         >
-          <Send size={16} aria-hidden="true" />
-          <span>Ask AI</span>
+          <Search size={16} aria-hidden="true" />
+          <span>Preview Excerpts</span>
         </button>
       </form>
     </section>
@@ -250,4 +266,3 @@ function AiAssistantView({
 }
 
 export default AiAssistantView
-

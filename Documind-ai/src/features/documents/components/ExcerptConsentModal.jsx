@@ -9,7 +9,7 @@ import {
 
 /**
  * Modal dialog that explicitly surfaces candidate document chunks
- * and asks for user approval before generating an AI grounded answer.
+ * and asks for user review before displaying retrieved excerpts.
  *
  * @param {Object} props
  * @param {string} props.question - The question asked by user.
@@ -41,8 +41,8 @@ function ExcerptConsentModal({ question, chunks, onApprove, onCancel }) {
               <ShieldCheck size={20} aria-hidden="true" />
             </span>
             <div>
-              <h3 id="consent-title">Review Document Excerpts</h3>
-              <p>Verify the source passages being referenced for your question.</p>
+              <h3 id="consent-title">Review Retrieved Excerpts</h3>
+              <p>Inspect the local source passages retrieved for your query before displaying them.</p>
             </div>
           </div>
           <button className="consent-close-btn" onClick={onCancel} aria-label="Cancel">
@@ -52,15 +52,15 @@ function ExcerptConsentModal({ question, chunks, onApprove, onCancel }) {
 
         <div className="consent-modal-body">
           <div className="consent-question-box">
-            <span className="consent-label">Your Question:</span>
+            <span className="consent-label">Your Query:</span>
             <p className="consent-question-text">"{question}"</p>
           </div>
 
           <div className="consent-excerpts-header">
             <span className="consent-label">
-              Retrieved Source Passages ({chunks.length}):
+              Retrieved Local Passages ({chunks.length}):
             </span>
-            <span className="consent-retrieval-tag">Minimum necessary chunks</span>
+            <span className="consent-retrieval-tag">Keyword match preview</span>
           </div>
 
           <div className="consent-chunks-list">
@@ -83,7 +83,7 @@ function ExcerptConsentModal({ question, chunks, onApprove, onCancel }) {
           <div className="consent-privacy-banner">
             <Info size={15} aria-hidden="true" />
             <span>
-              <strong>Simulated Grounded AI Engine:</strong> In this release, reasoning runs locally in-browser. Zero file bytes or excerpts leave your machine.
+              <strong>Local Keyword Retrieval Prototype:</strong> In this release, passage retrieval runs locally in-browser. Zero file bytes or excerpts leave your machine, and no external AI model is connected.
             </span>
           </div>
         </div>
@@ -93,7 +93,7 @@ function ExcerptConsentModal({ question, chunks, onApprove, onCancel }) {
             Cancel
           </button>
           <button className="primary-button consent-approve-btn" onClick={onApprove}>
-            <span>Approve & Generate Answer</span>
+            <span>Confirm & View Excerpts</span>
             <ArrowRight size={15} aria-hidden="true" />
           </button>
         </footer>
@@ -103,4 +103,3 @@ function ExcerptConsentModal({ question, chunks, onApprove, onCancel }) {
 }
 
 export default ExcerptConsentModal
-

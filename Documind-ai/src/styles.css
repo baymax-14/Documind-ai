@@ -412,6 +412,12 @@ button:disabled { color: var(--muted); opacity: .55; cursor: not-allowed; }
 .citation-loc { padding: 1px 4px; border: 1px solid var(--ink); background: var(--paper); font-size: 10px; }
 .ai-no-evidence-badge { margin-top: 10px; padding: 6px 10px; border: 1px solid var(--ink); background: var(--butter-tint); font-size: 12px; color: var(--ink); }
 
+/* Explicit Excerpt Cards */
+.ai-excerpts-container { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.ai-excerpt-card { padding: 10px 12px; border: 1.5px solid var(--ink); background: var(--paper); box-shadow: 2px 2px 0 var(--ink); /* taste-skill-ignore: required hard-offset neobrutalist depth */ }
+.ai-excerpt-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.ai-excerpt-quote { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--ink); font-style: normal; border-left: 3px solid var(--mint); padding-left: 10px; }
+
 /* Generating Bubble */
 .ai-generating-bubble { background: var(--butter-tint); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .ai-generating-content { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--ink); }
@@ -427,7 +433,7 @@ button:disabled { color: var(--muted); opacity: .55; cursor: not-allowed; }
 
 /* Dark mode adjustments for Milestone 4 */
 .dark .consent-modal, .dark .consent-modal-header, .dark .consent-modal-footer { background: var(--night-surface); }
-.dark .consent-question-box, .dark .consent-chunk-card { background: var(--night-paper); }
+.dark .consent-question-box, .dark .consent-chunk-card, .dark .ai-excerpt-card { background: var(--night-paper); }
 .dark .consent-privacy-banner { color: var(--ink-on-pastel); }
 .dark .ai-chat-section, .dark .ai-chat-header, .dark .ai-chat-input-bar { background: var(--night-surface); }
 .dark .msg-assistant .ai-message-bubble { background: var(--night-surface); }

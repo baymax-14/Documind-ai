@@ -304,7 +304,7 @@ function App() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
       setIsAiGenerating(false)
-      setNotice('Answer generation stopped.')
+      setNotice('Excerpt retrieval stopped.')
     }
   }
   function closeMobileMenu() {
@@ -365,7 +365,7 @@ function App() {
             type="button"
             onClick={() => setSearchMode('ai')}
           >
-            <Sparkles size={17} /> AI Assistant <span className="nav-count">{aiMessages.length || 'New'}</span>
+            <Sparkles size={17} /> Evidence Assistant <span className="nav-count">{aiMessages.length || 'New'}</span>
           </button>
           <a className="nav-link" href="#documents" onClick={() => setSearchMode('files')}>
             <FolderOpen size={17} /> Documents <span className="nav-count">{libraryDocs.length}</span>
@@ -460,7 +460,7 @@ function App() {
                   closeMobileMenu()
                 }}
               >
-                <Sparkles size={17} /> AI Assistant
+                <Sparkles size={17} /> Evidence Assistant
               </button>
               <a
                 className="nav-link"
@@ -499,7 +499,7 @@ function App() {
               <p className="greeting">{greeting}, Anand</p>
               <h1>Your document workspace</h1>
               <p className="subtitle">
-                Search passages, inspect cited locators, and query the grounded AI assistant on your documents.
+                Search passages, inspect cited locators, and preview grounded evidence excerpts from your documents.
               </p>
             </div>
           </section>
@@ -670,8 +670,8 @@ function App() {
           <section className="library-section" id="documents">
             <div className="section-heading">
               <div>
-                <h2>Documents, Evidence & AI</h2>
-                <p>Browse saved documents, search extracted passages, or query the grounded assistant.</p>
+                <h2>Documents, Evidence & Assistant</h2>
+                <p>Browse saved documents, search extracted passages, or preview grounded evidence excerpts.</p>
               </div>
               <div className="library-counts">
                 <span className="count-label">{demoCount} demo</span>
@@ -753,7 +753,7 @@ function App() {
                 onClick={() => setSearchMode('ai')}
               >
                 <Sparkles size={15} aria-hidden="true" />
-                <span>AI Assistant</span>
+                <span>Evidence Assistant</span>
               </button>
             </div>
 
@@ -925,7 +925,7 @@ function App() {
               DocuMind AI · Stored in this browser's local database.
             </span>
             <span>
-              On-device grounded AI & local evidence search. Zero data transmitted to third-party endpoints.
+              Local evidence search & grounded excerpt preview. Zero data transmitted to third-party endpoints.
             </span>
           </footer>
         </div>
