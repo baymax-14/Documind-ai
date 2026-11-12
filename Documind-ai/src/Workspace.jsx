@@ -307,7 +307,6 @@ function App() {
       setNotice('Answer generation stopped.')
     }
   }
-
   function closeMobileMenu() {
     setMobileMenuOpen(false)
     mobileMenuButtonRef.current?.focus()
