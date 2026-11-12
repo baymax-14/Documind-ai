@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
 import { Physics2DPlugin } from 'gsap/Physics2DPlugin'
@@ -36,15 +36,16 @@ import {
   FILE_ACCEPT,
   useDocumentImport,
   PrivacyNotice,
-  DocumentReader,
   SearchResultsView,
-  ExcerptConsentModal,
-  AiAssistantView,
   searchDocuments,
   retrieveEvidenceChunks,
   generateGroundedAnswer,
   SEED_DOCS,
 } from './features/documents/index.js'
+
+const DocumentReader = lazy(() => import('./features/documents/components/DocumentReader.jsx'))
+const AiAssistantView = lazy(() => import('./features/documents/components/AiAssistantView.jsx'))
+const ExcerptConsentModal = lazy(() => import('./features/documents/components/ExcerptConsentModal.jsx'))
 
 gsap.registerPlugin(useGSAP, Physics2DPlugin)
 
