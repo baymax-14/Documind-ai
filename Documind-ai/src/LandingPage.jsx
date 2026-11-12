@@ -60,13 +60,13 @@ function CapabilitiesBar() {
     <div className="capabilities-inner">
       <div className="capability-item reveal-on-scroll" style={{ '--reveal-delay': '0ms' }}>
         <span className="capability-icon cap-mint"><FileSearch size={20} aria-hidden="true" /></span>
-        <div><h3>Semantic search</h3><p>Find passages across documents by meaning, not just keywords.</p></div>
-        <span className="capability-tag">Planned</span>
+        <div><h3>Evidence search</h3><p>Find exact passages and cited locators across extracted documents.</p></div>
+        <span className="capability-tag tag-available">Available</span>
       </div>
       <div className="capability-item reveal-on-scroll" style={{ '--reveal-delay': '70ms' }}>
         <span className="capability-icon cap-sky"><MessageSquareText size={20} aria-hidden="true" /></span>
-        <div><h3>Document chat</h3><p>Ask questions and get answers grounded in your uploaded documents.</p></div>
-        <span className="capability-tag">Planned</span>
+        <div><h3>Document chat</h3><p>Ask questions and get answers strictly grounded in document evidence.</p></div>
+        <span className="capability-tag tag-available">Available</span>
       </div>
       <div className="capability-item reveal-on-scroll" style={{ '--reveal-delay': '140ms' }}>
         <span className="capability-icon cap-butter"><FolderOpen size={20} aria-hidden="true" /></span>
@@ -81,7 +81,7 @@ function HowItWorks() {
   return <section className="how-section" id="how-it-works" aria-labelledby="how-heading">
     <div className="how-intro reveal-on-scroll">
       <h2 id="how-heading">A simple path through your research</h2>
-      <p>Start with local file selection. AI questions and cited answers are planned for a later milestone.</p>
+      <p>Start with local file selection, search evidence passages, and ask questions with verifiable citations.</p>
     </div>
     <svg className="workflow-route" viewBox="0 0 1000 56" role="presentation" aria-hidden="true">
       <path id="workflow-motion-path" d="M165 33 C300 33 350 17 500 17 C650 17 700 33 835 33" />
@@ -92,16 +92,16 @@ function HowItWorks() {
     </svg>
     <ol className="steps-list">
       <li className="step-item step-available reveal-on-scroll" style={{ '--reveal-delay': '0ms' }}>
-        <div><h3>Add documents</h3><p>Select a supported file to see its name in your workspace session. It stays local and is not uploaded or processed.</p></div>
+        <div><h3>Add documents</h3><p>Select PDF, DOCX, or TXT files to extract text locally in your browser. Files stay on your device and are never sent to a server.</p></div>
         <span className="step-status">Available in this prototype</span>
       </li>
-      <li className="step-item step-questions reveal-on-scroll" style={{ '--reveal-delay': '70ms' }}>
-        <div><h3>Ask questions</h3><p>Ask about the material once document analysis and AI answers are connected.</p></div>
-        <span className="step-status">Not connected</span>
+      <li className="step-item step-available reveal-on-scroll" style={{ '--reveal-delay': '70ms' }}>
+        <div><h3>Search evidence</h3><p>Search across extracted document chunks and jump directly into the reader at the cited page or paragraph.</p></div>
+        <span className="step-status">Available in this release</span>
       </li>
       <li className="step-item step-citations reveal-on-scroll" style={{ '--reveal-delay': '140ms' }}>
-        <div><h3>Review cited answers</h3><p>Check an answer against its source passages when citations and source review are available.</p></div>
-        <span className="step-status">Not connected</span>
+        <div><h3>Grounded AI answers</h3><p>Review candidate source excerpts and receive answers strictly anchored in citations back to exact passages.</p></div>
+        <span className="step-status">Available in this release</span>
       </li>
     </ol>
   </section>
@@ -212,14 +212,14 @@ function LandingPage() {
                   <span className="hero-heading-line" data-scramble-text="Understand your" aria-hidden="true">Understand your</span>
                   <span className="hero-heading-line" data-scramble-text="documents faster." aria-hidden="true">documents faster.</span>
                 </h1>
-                <p className="hero-support reveal-on-scroll" style={{ '--reveal-delay': '70ms' }}>A workspace for research and reports. This local prototype lets you select files and browse demo examples; document analysis is not connected.</p>
+                <p className="hero-support reveal-on-scroll" style={{ '--reveal-delay': '70ms' }}>A workspace for research and reports. Extract document text entirely in your browser; remote services and AI answers are not connected.</p>
                 <div className="hero-actions reveal-on-scroll" style={{ '--reveal-delay': '140ms' }}>
                   <Link className="button-primary" to="/workspace">Open your workspace <ArrowRight size={18} aria-hidden="true" /></Link>
                   <a className="text-link" href="#how-it-works">See how it works <ArrowRight size={16} aria-hidden="true" /></a>
                 </div>
                 <aside className="prototype-note reveal-on-scroll" style={{ '--reveal-delay': '210ms' }} aria-label="Prototype limitation">
                   <strong>Local prototype</strong>
-                  <p>Files selected in the workspace stay in that browser session. Uploads, persistence, document processing, AI answers, and citations are not connected.</p>
+                  <p>Files added to the workspace are parsed on-device and stored in your browser's IndexedDB. Remote server uploads, AI answers, and citations are not connected.</p>
                 </aside>
               </div>
             </section>
@@ -237,7 +237,7 @@ function LandingPage() {
 
         <footer className="landing-footer">
           <Link className="footer-brand" to="/">DocuMind AI</Link>
-          <p>Local prototype · Files are not uploaded or analyzed.</p>
+          <p>Local prototype · Files are processed on-device and never sent to a server.</p>
           <a href="#how-it-works">How it works <ArrowUpRight size={14} aria-hidden="true" /></a>
         </footer>
       </div>
