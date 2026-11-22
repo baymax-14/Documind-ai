@@ -18,7 +18,6 @@ import {
 } from 'lucide-react'
 import {
   groupDocumentByPages,
-  estimateBoundingBox,
   calculateZoomMetrics,
   bboxToStyle,
 } from '../services/visualGrounding.js'
@@ -212,6 +211,13 @@ export default function PageVisualPreview({
           </button>
         </div>
 
+        {/* Center Document Context */}
+        <div className="visual-toolbar-center">
+          <span className="visual-doc-badge" title={doc.name}>
+            {doc.name}
+          </span>
+        </div>
+
         {/* Zoom Controls */}
         <div className="visual-zoom-controls">
           <button
@@ -333,10 +339,6 @@ export default function PageVisualPreview({
               {/* Page Body with Text Content and Bounding Box Highlights */}
               <div className="page-card-surface">
                 {activePage.chunks.map((chunk) => {
-                  const bbox = estimateBoundingBox(
-                    chunk,
-                    activePage.chunks.map((c) => c.text).join('\n\n')
-                  )
                   const isCited =
                     highlightChunkIndex !== undefined &&
                     highlightChunkIndex === chunk.index
@@ -350,18 +352,10 @@ export default function PageVisualPreview({
                     >
                       <div className="chunk-locator-pill">
                         <span>{chunk.locator}</span>
+                        {isCited && <span className="chunk-cited-tag">Cited Evidence</span>}
                         <ExternalLink size={11} aria-hidden="true" />
                       </div>
                       <p className="chunk-body-text">{chunk.text}</p>
-
-                      {/* Visual Bounding Box Region for Chunks */}
-                      <div
-                        className={`visual-bbox-overlay ${isCited ? 'bbox-highlighted' : ''}`}
-                        style={bboxToStyle(bbox)}
-                        aria-hidden="true"
-                      >
-                        <span className="bbox-label">{chunk.locator}</span>
-                      </div>
                     </div>
                   )
                 })}

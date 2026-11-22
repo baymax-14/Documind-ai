@@ -2,6 +2,7 @@ import { useLayoutEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import LandingPage from './LandingPage.jsx'
 import Workspace from './Workspace.jsx'
+import ErrorBoundary from './ErrorBoundary.jsx'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -18,14 +19,18 @@ function ScrollToTop() {
 }
 
 function App() {
-  return <BrowserRouter>
-    <ScrollToTop />
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/workspace" element={<Workspace />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  </BrowserRouter>
+  return (
+    <ErrorBoundary>
+      <BrowserRouter>
+        <ScrollToTop />
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/workspace" element={<Workspace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
+  )
 }
 
 export default App

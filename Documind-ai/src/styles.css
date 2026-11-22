@@ -4440,6 +4440,19 @@ button:disabled {
 /* ==========================================================================
    Document Workflows Modal (Summary & Structured Extraction)
    ========================================================================== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 3vw, 36px);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(2px);
+  overflow-y: auto;
+}
+
 .workflow-modal-card {
   width: min(94vw, 880px);
   max-height: 88vh;
@@ -5130,7 +5143,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   height: 100%;
-  gap: 12px;
+  gap: 0;
 }
 
 .visual-toolbar {
@@ -5142,6 +5155,29 @@ button:disabled {
   border-bottom: 2px solid var(--ink);
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.visual-toolbar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.visual-doc-badge {
+  font-family: var(--heading);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  padding: 3px 10px;
+  border-radius: var(--radius);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 380px;
 }
 
 .visual-page-stepper {
@@ -5439,6 +5475,19 @@ button:disabled {
   margin-bottom: 6px;
 }
 
+.chunk-cited-tag {
+  font-family: var(--heading);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  background: var(--ink);
+  color: var(--surface);
+  padding: 1px 5px;
+  border-radius: 2px;
+  margin-left: 2px;
+}
+
 .chunk-body-text {
   margin: 0;
   font-size: 14px;
@@ -5478,6 +5527,63 @@ button:disabled {
   height: 100%;
   gap: 12px;
   color: var(--muted);
+}
+
+/* Dark mode overrides for Visual Page Preview */
+.dark .visual-preview-container {
+  background: var(--night-canvas);
+}
+
+.dark .visual-page-card {
+  background: var(--night-surface);
+  color: var(--ink);
+  border-color: var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.dark .page-card-header {
+  border-bottom-color: var(--border);
+  color: var(--muted);
+}
+
+.dark .page-card-footer {
+  border-top-color: var(--border);
+  color: var(--muted);
+}
+
+.dark .visual-viewport {
+  background: var(--night-canvas);
+}
+
+.dark .visual-doc-badge {
+  background: var(--night-surface);
+  color: var(--ink);
+  border-color: var(--border);
+}
+
+.dark .visual-chunk-block {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.dark .visual-chunk-block:hover {
+  background: rgba(116, 185, 255, 0.1);
+  border-color: var(--sky);
+}
+
+.dark .visual-chunk-block.chunk-cited {
+  background: rgba(253, 224, 71, 0.14);
+  border-color: var(--butter);
+}
+
+.dark .chunk-locator-pill {
+  background: var(--night-surface);
+  color: var(--ink);
+  border-color: var(--border);
+}
+
+.dark .chunk-cited-tag {
+  background: var(--butter);
+  color: var(--ink-on-pastel);
 }
 
 /* ==========================================================================

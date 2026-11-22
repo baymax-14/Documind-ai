@@ -26,6 +26,22 @@ import {
   downloadMarkdownFile,
 } from '../services/export.js'
 
+function inferBestSchema(doc) {
+  if (!doc) return 'RESEARCH_PAPER'
+  const name = (doc.name || '').toLowerCase()
+  const text = (doc.text || '').toLowerCase().slice(0, 600)
+  if (name.includes('brand') || name.includes('product') || name.includes('design') || text.includes('product vision') || text.includes('typography')) {
+    return 'PRODUCT_DESIGN'
+  }
+  if (name.includes('market') || name.includes('q3') || name.includes('q4') || text.includes('market analysis') || text.includes('revenue')) {
+    return 'MARKET_ANALYSIS'
+  }
+  if (name.includes('legal') || name.includes('compliance') || name.includes('privacy') || text.includes('agreement') || text.includes('data-retention')) {
+    return 'LEGAL_AGREEMENT'
+  }
+  return 'RESEARCH_PAPER'
+}
+
 export default function DocumentWorkflowsModal({
   document,
   initialTab = 'summary', // 'summary' | 'extract'
@@ -34,16 +50,17 @@ export default function DocumentWorkflowsModal({
   onInspectPassage,
 }) {
   const [activeTab, setActiveTab] = useState(initialTab)
-  const [selectedSchemaId, setSelectedSchemaId] = useState('RESEARCH_PAPER')
+  const [selectedSchemaId, setSelectedSchemaId] = useState(() => inferBestSchema(document))
   const [copied, setCopied] = useState(false)
 
-  // Sync initial tab when opened
+  // Sync initial tab and best schema when opened
   useEffect(() => {
     if (isOpen) {
       setActiveTab(initialTab)
+      setSelectedSchemaId(inferBestSchema(document))
       setCopied(false)
     }
-  }, [isOpen, initialTab])
+  }, [isOpen, initialTab, document])
 
   // Close on Escape
   useEffect(() => {
@@ -181,7 +198,7 @@ export default function DocumentWorkflowsModal({
 
           {/* Action Export Buttons */}
           <div className="workflow-tab-actions">
-            {activeTab === 'summary' ? (
+            {activeTab === 'summary' && (
               <>
                 <button
                   type="button"
@@ -202,7 +219,8 @@ export default function DocumentWorkflowsModal({
                   <span>Export</span>
                 </button>
               </>
-            ) : (
+            )}
+            {activeTab === 'extract' && (
               <>
                 <button
                   type="button"

@@ -79,4 +79,21 @@ describe('Structured Schema-Based Extraction Service', () => {
     assert.equal(parsed.documentName, 'Q3 Market Research.pdf')
     assert.equal(parsed.fields.length, EXTRACTION_SCHEMAS.MARKET_ANALYSIS.fields.length)
   })
+
+  it('extracts brand & product design schema with valid evidence fields', () => {
+    const doc = SEED_DOCS.find((d) => d.id === 'demo-2') // Product Strategy 2025.docx
+    assert.ok(doc)
+
+    const result = extractStructuredData({
+      document: doc,
+      schemaId: 'PRODUCT_DESIGN',
+    })
+
+    assert.equal(result.schemaName, 'Brand & Product Guidelines Schema')
+    assert.equal(result.fields.length, EXTRACTION_SCHEMAS.PRODUCT_DESIGN.fields.length)
+    const visionField = result.fields.find((f) => f.key === 'vision_principles')
+    assert.ok(visionField)
+    assert.equal(visionField.hasEvidence, true)
+    assert.match(visionField.value, /DocuMind AI|thesis|evidence/i)
+  })
 })

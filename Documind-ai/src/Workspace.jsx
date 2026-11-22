@@ -10,6 +10,7 @@ import {
   Cloud,
   Cpu,
   Database,
+  Eye,
   FilePlus2,
   FileSearch,
   FileText,
@@ -79,7 +80,31 @@ function getGreeting() {
 }
 
 function App() {
-  const [dark, setDark] = useState(false)
+  const [dark, setDark] = useState(() => {
+    try {
+      const saved = localStorage.getItem('documind_theme')
+      if (saved) return saved === 'dark'
+      return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false
+    } catch {
+      return false
+    }
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('documind_theme', dark ? 'dark' : 'light')
+    } catch {
+      // Ignore private browsing or quota errors
+    }
+    if (dark) {
+      document.documentElement.classList.add('dark')
+      document.body.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      document.body.classList.remove('dark')
+    }
+  }, [dark])
+
   const [query, setQuery] = useState('')
   const [searchMode, setSearchMode] = useState('files') // 'files' | 'evidence' | 'ai' | 'compare'
   const [view, setView] = useState('list')

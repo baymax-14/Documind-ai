@@ -38,6 +38,17 @@ export const EXTRACTION_SCHEMAS = {
       { key: 'strategic_recommendations', label: 'Strategic Recommendations', query: 'recommendations roadmap maintain optimize deliver priority action' },
     ],
   },
+  PRODUCT_DESIGN: {
+    id: 'PRODUCT_DESIGN',
+    name: 'Brand & Product Guidelines Schema',
+    description: 'Extracts core principles, visual identity, architecture specifications, and guidelines.',
+    fields: [
+      { key: 'vision_principles', label: 'Product Vision & Core Principles', query: 'vision principles thesis core mission values purpose identity' },
+      { key: 'visual_design', label: 'Visual Design & Brand Identity', query: 'brand design typography color typography palette logo layout style visual' },
+      { key: 'architecture_specs', label: 'Architecture & Specifications', query: 'architecture milestones components modules workers data technical' },
+      { key: 'operational_rules', label: 'Operational Rules & Recommendations', query: 'recommendations guidelines retention compliance rules privacy standards' },
+    ],
+  },
 }
 
 /**
