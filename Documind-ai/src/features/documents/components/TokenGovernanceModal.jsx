@@ -116,7 +116,7 @@ export default function TokenGovernanceModal({
               <div className="token-progress-track">
                 <div
                   className={`token-progress-fill ${percentUsed > 90 ? 'fill-danger' : percentUsed > 70 ? 'fill-warning' : 'fill-ok'}`}
-                  style={{ width: `${percentUsed}%` }}
+                  style={{ transform: `scaleX(${percentUsed / 100})` }}
                 />
               </div>
 

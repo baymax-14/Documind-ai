@@ -385,7 +385,7 @@ button:disabled { color: var(--muted); opacity: .55; cursor: not-allowed; }
 .ai-model-download-title { display: flex; align-items: center; gap: 8px; font: 700 13px/1.2 var(--heading); }
 .ai-download-percent { font: 700 13px/1.2 var(--heading); }
 .ai-progress-track { width: 100%; height: 10px; border: 1.5px solid var(--ink); background: var(--paper); overflow: hidden; }
-.ai-progress-fill { height: 100%; background: var(--mint); transition: width 180ms ease; }
+.ai-progress-fill { height: 100%; width: 100%; background: var(--mint); transform-origin: left center; transition: transform 180ms linear; }
 .ai-model-download-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
 .ai-download-step { font-size: 12px; color: var(--muted); }
 .ai-cancel-dl-btn { font-size: 12px; padding: 3px 10px; }
@@ -866,8 +866,10 @@ button:disabled { color: var(--muted); opacity: .55; cursor: not-allowed; }
 }
 .diag-progress-fill {
   height: 100%;
+  width: 100%;
   background: var(--mint);
-  transition: width 200ms ease;
+  transform-origin: left center;
+  transition: transform 200ms linear;
 }
 .diag-desc {
   margin: 0;
@@ -2677,7 +2679,17 @@ button:disabled { color: var(--muted); opacity: .55; cursor: not-allowed; }
 
 .token-progress-fill {
   height: 100%;
-  transition: width 240ms ease;
+  width: 100%;
+  transform-origin: left center;
+  transition: transform 240ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-progress-fill,
+  .diag-progress-fill,
+  .token-progress-fill {
+    transition: none;
+  }
 }
 
 .fill-ok {

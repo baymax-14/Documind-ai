@@ -153,7 +153,10 @@ function StorageHardwareModal({
               </div>
 
               <div className="diag-progress-bar" role="progressbar" aria-valuenow={usagePercent} aria-valuemin="0" aria-valuemax="100">
-                <div className="diag-progress-fill" style={{ width: `${Math.max(2, usagePercent)}%` }} />
+                <div
+                  className="diag-progress-fill"
+                  style={{ transform: `scaleX(${usagePercent === 0 ? 0 : Math.max(2, usagePercent) / 100})` }}
+                />
               </div>
 
                 <p className="diag-desc">

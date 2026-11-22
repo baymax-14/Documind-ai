@@ -221,7 +221,7 @@ function AiAssistantView({
           <div className="ai-progress-track">
             <div
               className="ai-progress-fill"
-              style={{ width: `${Math.round((modelProgress?.progress || 0) * 100)}%` }}
+              style={{ transform: `scaleX(${Math.min(1, Math.max(0, modelProgress?.progress || 0))})` }}
             />
           </div>
           <div className="ai-model-download-footer">
