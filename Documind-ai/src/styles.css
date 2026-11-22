@@ -5159,15 +5159,44 @@ button:disabled {
 }
 
 .visual-page-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-family: var(--heading);
   font-size: 13px;
   font-weight: 700;
-  padding: 5px 12px;
+  padding: 4px 10px;
   background: var(--butter);
   border: 2px solid var(--ink);
   border-radius: var(--radius);
   box-shadow: 2px 2px 0 var(--ink);
+  color: var(--ink-on-pastel);
   white-space: nowrap;
+}
+
+.visual-page-input {
+  width: 44px;
+  height: 24px;
+  padding: 0 2px;
+  border: 1.5px solid var(--ink);
+  background: var(--surface);
+  color: var(--ink);
+  font: 700 12px/1 var(--heading);
+  text-align: center;
+  border-radius: 2px;
+  margin: 0 2px;
+}
+
+.visual-page-input:focus {
+  outline: 2px solid var(--sky);
+}
+
+.doc-pages-btn {
+  background: var(--surface);
+}
+
+.doc-pages-btn:hover {
+  background: var(--mint-tint);
 }
 
 .visual-zoom-controls {

@@ -73,13 +73,21 @@ function HighlightedText({ text, query }) {
  * @param {string} [props.initialQuery] - Search query to highlight.
  * @param {() => void} props.onClose - Dismiss callback.
  * @param {boolean} [props.fromAssistant] - Whether opened from assistant citation.
+ * @param {'text' | 'visual' | 'tables'} [props.initialViewMode='text'] - Initial view mode.
  */
-function DocumentReader({ doc, initialChunkIndex = 0, initialQuery = '', onClose, fromAssistant = false }) {
+function DocumentReader({
+  doc,
+  initialChunkIndex = 0,
+  initialQuery = '',
+  onClose,
+  fromAssistant = false,
+  initialViewMode = 'text',
+}) {
   const reduceMotion = useReducedMotion()
   const [filterQuery, setFilterQuery] = useState(initialQuery)
   const [selectedChunk, setSelectedChunk] = useState(initialChunkIndex)
   const [copied, setCopied] = useState(false)
-  const [viewMode, setViewMode] = useState('text')
+  const [viewMode, setViewMode] = useState(initialViewMode)
 
   const readerRef = useRef(null)
   const chunkRefs = useRef(new Map())
@@ -205,21 +213,21 @@ function DocumentReader({ doc, initialChunkIndex = 0, initialQuery = '', onClose
             <div className="reader-view-toggle-bar">
               <button
                 type="button"
-                className={`reader-toggle-btn ${viewMode === 'text' ? 'active' : ''}`}
-                onClick={() => setViewMode('text')}
-                title="View text passages"
+                className={`reader-toggle-btn ${viewMode === 'visual' ? 'active' : ''}`}
+                onClick={() => setViewMode('visual')}
+                title="View document page by page with citation bounding boxes"
               >
-                <FileText size={13} />
-                <span>Text</span>
+                <Eye size={13} />
+                <span>Page by Page</span>
               </button>
               <button
                 type="button"
-                className={`reader-toggle-btn ${viewMode === 'visual' ? 'active' : ''}`}
-                onClick={() => setViewMode('visual')}
-                title="View high-fidelity page preview with citation bounding boxes"
+                className={`reader-toggle-btn ${viewMode === 'text' ? 'active' : ''}`}
+                onClick={() => setViewMode('text')}
+                title="View continuous text passages"
               >
-                <Eye size={13} />
-                <span>Visual</span>
+                <FileText size={13} />
+                <span>Continuous Text</span>
               </button>
               {docTables.length > 0 && (
                 <button

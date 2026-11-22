@@ -73,6 +73,22 @@ export default function PageVisualPreview({
     setZoomPercent(100)
   }
 
+  // Keyboard navigation for page flipping (Arrow keys / PageUp / PageDown)
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault()
+        setCurrentPage((p) => Math.max(1, p - 1))
+      } else if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+        e.preventDefault()
+        setCurrentPage((p) => Math.min(pages.length, p + 1))
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [pages.length])
+
   async function handleCopyCitation(chunk) {
     if (!chunk?.locator) return
     const ok = await copyToClipboard(chunk.locator)
@@ -104,21 +120,36 @@ export default function PageVisualPreview({
             className="secondary-button visual-tool-btn"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage <= 1}
-            aria-label="Previous Page"
-            title="Previous Page"
+            aria-label="Previous Page (Left Arrow)"
+            title="Previous Page (Left Arrow)"
           >
             <ChevronLeft size={14} />
           </button>
-          <span className="visual-page-badge">
-            Page {currentPage} of {pages.length}
-          </span>
+          <div className="visual-page-badge" title="Type a number or use arrows to jump to any page">
+            <span>Page</span>
+            <input
+              type="number"
+              min={1}
+              max={pages.length}
+              value={currentPage}
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10)
+                if (!isNaN(val) && val >= 1 && val <= pages.length) {
+                  setCurrentPage(val)
+                }
+              }}
+              className="visual-page-input"
+              aria-label="Jump to page number"
+            />
+            <span>of {pages.length}</span>
+          </div>
           <button
             type="button"
             className="secondary-button visual-tool-btn"
             onClick={() => setCurrentPage((p) => Math.min(pages.length, p + 1))}
             disabled={currentPage >= pages.length}
-            aria-label="Next Page"
-            title="Next Page"
+            aria-label="Next Page (Right Arrow)"
+            title="Next Page (Right Arrow)"
           >
             <ChevronRight size={14} />
           </button>

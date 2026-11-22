@@ -94,6 +94,7 @@ function App() {
   const [readerDoc, setReaderDoc] = useState(null)
   const [readerChunkIndex, setReaderChunkIndex] = useState(0)
   const [readerQuery, setReaderQuery] = useState('')
+  const [readerViewMode, setReaderViewMode] = useState('text')
 
   // Milestone 4: AI Assistant & Excerpt Consent state
   const [aiMessages, setAiMessages] = useState([])
@@ -347,13 +348,15 @@ function App() {
       setReaderDoc(doc)
       setReaderChunkIndex(chunkIndex || 0)
       setReaderQuery(query)
+      setReaderViewMode('visual')
     }
   }
 
-  function handleOpenReader(doc) {
+  function handleOpenReader(doc, mode = 'text') {
     setReaderDoc(doc)
     setReaderChunkIndex(0)
     setReaderQuery('')
+    setReaderViewMode(mode)
   }
 
   function handleOpenSummarizer(doc) {
@@ -1196,12 +1199,21 @@ function App() {
                         </button>
                         <button
                           className="doc-inspect-btn"
-                          onClick={() => handleOpenReader(doc)}
-                          title={`Read extracted text of ${doc.name}`}
-                          aria-label={`Read extracted text of ${doc.name}`}
+                          onClick={() => handleOpenReader(doc, 'text')}
+                          title={`Read continuous text of ${doc.name}`}
+                          aria-label={`Read continuous text of ${doc.name}`}
                         >
                           <BookOpen size={13} aria-hidden="true" />
                           <span>Read</span>
+                        </button>
+                        <button
+                          className="doc-inspect-btn doc-pages-btn"
+                          onClick={() => handleOpenReader(doc, 'visual')}
+                          title={`View ${doc.name} page by page with citations`}
+                          aria-label={`View ${doc.name} page by page with citations`}
+                        >
+                          <Eye size={13} aria-hidden="true" />
+                          <span>Pages</span>
                         </button>
                         <button
                           className="doc-inspect-btn"
@@ -1338,6 +1350,7 @@ function App() {
             doc={readerDoc}
             initialChunkIndex={readerChunkIndex}
             initialQuery={readerQuery}
+            initialViewMode={readerViewMode}
             onClose={() => setReaderDoc(null)}
             fromAssistant={searchMode === 'ai'}
           />
