@@ -55,6 +55,13 @@ class Settings(BaseSettings):
     QDRANT_API_KEY: str = ""
     QDRANT_COLLECTION: str = "documind_chunks"
 
+    @property
+    def effective_qdrant_url(self) -> str:
+        """Determines the active Qdrant URL, resolving Docker/container hosts."""
+        if self.QDRANT_HOST and self.QDRANT_HOST != "localhost" and self.QDRANT_URL == "http://localhost:6333":
+            return f"http://{self.QDRANT_HOST}:{self.QDRANT_PORT}"
+        return self.QDRANT_URL
+
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
 

@@ -143,14 +143,52 @@ class RetrievalService:
         # In-memory store for all indexed chunks
         self._chunks_store: Dict[uuid.UUID, IndexedChunk] = {}
         self._qdrant_client = None
+        self._last_qdrant_check: float = 0.0
         self._init_qdrant()
 
+    def _get_qdrant_client(self):
+        """Returns active Qdrant client, attempting reconnection if previously offline."""
+        import time
+        if self._qdrant_client is not None:
+            return self._qdrant_client
+        now = time.time()
+        # Retry connection every 10s if offline
+        if now - self._last_qdrant_check > 10.0:
+            self._last_qdrant_check = now
+            self._init_qdrant()
+        return self._qdrant_client
+
     def _init_qdrant(self):
+        import time
+        self._last_qdrant_check = time.time()
         try:
             from qdrant_client import QdrantClient
+            from qdrant_client.http import models as qmodels
 
-            self._qdrant_client = QdrantClient(url=settings.QDRANT_URL, timeout=2.0)
-            logger.info("retrieval_service.qdrant_initialized", url=settings.QDRANT_URL)
+            target_url = getattr(settings, "effective_qdrant_url", settings.QDRANT_URL)
+            client = QdrantClient(
+                url=target_url,
+                api_key=settings.QDRANT_API_KEY or None,
+                timeout=1.0,
+            )
+            # Active connectivity probe
+            collections_res = client.get_collections()
+            collection_names = [c.name for c in collections_res.collections]
+
+            if settings.QDRANT_COLLECTION not in collection_names:
+                client.create_collection(
+                    collection_name=settings.QDRANT_COLLECTION,
+                    vectors_config=qmodels.VectorParams(
+                        size=EmbeddingService.DIMENSIONS,
+                        distance=qmodels.Distance.COSINE,
+                    ),
+                )
+            self._qdrant_client = client
+            logger.info(
+                "retrieval_service.qdrant_initialized",
+                url=target_url,
+                collection=settings.QDRANT_COLLECTION,
+            )
         except Exception as e:
             logger.warning("retrieval_service.qdrant_offline_using_inmemory", error=str(e))
             self._qdrant_client = None
@@ -188,6 +226,36 @@ class RetrievalService:
         self._chunks_store[chunk_id] = indexed
         self.bm25_index.add_document(chunk_id, text)
 
+        # Upsert point to Qdrant when available
+        q_client = self._get_qdrant_client()
+        if q_client:
+            try:
+                from qdrant_client.http import models as qmodels
+                q_client.upsert(
+                    collection_name=settings.QDRANT_COLLECTION,
+                    points=[
+                        qmodels.PointStruct(
+                            id=str(chunk_id),
+                            vector=vector,
+                            payload={
+                                "chunk_id": str(chunk_id),
+                                "document_id": str(document_id),
+                                "owner_id": str(owner_id),
+                                "document_name": document_name,
+                                "chunk_index": chunk_index,
+                                "text": text,
+                                "page_start": page_start,
+                                "page_end": page_end,
+                                "section": section,
+                                "offsets": offsets,
+                                "bounding_box": bounding_box,
+                            },
+                        )
+                    ],
+                )
+            except Exception as exc:
+                logger.warning("retrieval_service.qdrant_upsert_failed", error=str(exc))
+
     def delete_document_index(self, document_id: uuid.UUID) -> None:
         """Purges document chunks from vector and BM25 indexes."""
         to_remove = [
@@ -196,6 +264,25 @@ class RetrievalService:
         for cid in to_remove:
             del self._chunks_store[cid]
             self.bm25_index.remove_document(cid)
+
+        # Delete points from Qdrant when available
+        q_client = self._get_qdrant_client()
+        if q_client:
+            try:
+                from qdrant_client.http import models as qmodels
+                q_client.delete(
+                    collection_name=settings.QDRANT_COLLECTION,
+                    points_selector=qmodels.Filter(
+                        must=[
+                            qmodels.FieldCondition(
+                                key="document_id",
+                                match=qmodels.MatchValue(value=str(document_id)),
+                            )
+                        ]
+                    ),
+                )
+            except Exception as exc:
+                logger.warning("retrieval_service.qdrant_delete_failed", error=str(exc))
 
     def hybrid_search(
         self,
@@ -211,36 +298,90 @@ class RetrievalService:
         if not query.strip():
             return []
 
-        # 1. Filter candidates strictly by tenant ownership
+        q_client = self._get_qdrant_client()
+        query_vec = self.embedding_service.embed_text(query)
+        dense_scores: Dict[uuid.UUID, float] = {}
+        # Working map of candidate chunks from in-memory and Qdrant points
+        chunk_map: Dict[uuid.UUID, IndexedChunk] = dict(self._chunks_store)
+
+        if q_client:
+            try:
+                from qdrant_client.http import models as qmodels
+                must_conditions = [
+                    qmodels.FieldCondition(
+                        key="owner_id",
+                        match=qmodels.MatchValue(value=str(owner_id)),
+                    )
+                ]
+                if document_ids:
+                    must_conditions.append(
+                        qmodels.Filter(
+                            should=[
+                                qmodels.FieldCondition(
+                                    key="document_id",
+                                    match=qmodels.MatchValue(value=str(did)),
+                                )
+                                for did in document_ids
+                            ]
+                        )
+                    )
+                search_results = q_client.search(
+                    collection_name=settings.QDRANT_COLLECTION,
+                    query_vector=query_vec,
+                    query_filter=qmodels.Filter(must=must_conditions),
+                    limit=top_k * 2,
+                )
+                for pt in search_results:
+                    try:
+                        cid = uuid.UUID(str(pt.id))
+                        dense_scores[cid] = float(pt.score)
+                        # Reconstitute chunk metadata from payload if missing from in-memory cache
+                        if cid not in chunk_map and pt.payload:
+                            p = pt.payload
+                            chunk_map[cid] = IndexedChunk(
+                                chunk_id=cid,
+                                document_id=uuid.UUID(str(p.get("document_id"))),
+                                owner_id=uuid.UUID(str(p.get("owner_id"))),
+                                document_name=str(p.get("document_name", "")),
+                                chunk_index=int(p.get("chunk_index", 0)),
+                                text=str(p.get("text", "")),
+                                page_start=p.get("page_start"),
+                                page_end=p.get("page_end"),
+                                section=p.get("section"),
+                                offsets=p.get("offsets"),
+                                vector=[],
+                                bounding_box=p.get("bounding_box"),
+                            )
+                    except (ValueError, TypeError) as parse_err:
+                        logger.debug("retrieval_service.point_parse_error", error=str(parse_err))
+            except Exception as q_err:
+                logger.warning("retrieval_service.qdrant_search_failed_fallback_inmemory", error=str(q_err))
+
+        # Filter in-memory candidates by tenant ownership and document ids
         candidate_chunks = [
-            c for c in self._chunks_store.values()
+            c for c in chunk_map.values()
             if c.owner_id == owner_id
         ]
         if document_ids:
             doc_set = set(document_ids)
             candidate_chunks = [c for c in candidate_chunks if c.document_id in doc_set]
 
-        if not candidate_chunks:
-            return []
-
-        candidate_ids = {c.chunk_id for c in candidate_chunks}
-
-        # 2. Dense Vector Search (Cosine Similarity)
-        query_vec = self.embedding_service.embed_text(query)
-        dense_scores: Dict[uuid.UUID, float] = {}
-
-        for c in candidate_chunks:
-            dot_product = sum(a * b for a, b in zip(query_vec, c.vector))
-            if dot_product > 0.05:
-                dense_scores[c.chunk_id] = dot_product
+        # In-memory cosine similarity fallback when Qdrant returned no results
+        if not dense_scores and candidate_chunks:
+            for c in candidate_chunks:
+                if c.vector:
+                    dot_product = sum(a * b for a, b in zip(query_vec, c.vector))
+                    if dot_product > 0.05:
+                        dense_scores[c.chunk_id] = dot_product
 
         dense_ranked = sorted(dense_scores.keys(), key=lambda cid: dense_scores[cid], reverse=True)
 
-        # 3. BM25 Search
-        bm25_scores = self.bm25_index.score(query, candidate_ids)
+        # BM25 Search
+        candidate_ids = {c.chunk_id for c in candidate_chunks}
+        bm25_scores = self.bm25_index.score(query, candidate_ids) if candidate_ids else {}
         bm25_ranked = sorted(bm25_scores.keys(), key=lambda cid: bm25_scores[cid], reverse=True)
 
-        # 4. Reciprocal Rank Fusion (RRF)
+        # Reciprocal Rank Fusion (RRF)
         rrf_k = 60
         fused_scores: Dict[uuid.UUID, float] = {}
 
@@ -250,6 +391,9 @@ class RetrievalService:
         for rank, cid in enumerate(bm25_ranked):
             fused_scores[cid] = fused_scores.get(cid, 0.0) + (1.0 / (rrf_k + rank + 1))
 
+        if not fused_scores:
+            return []
+
         # Sort top results by fused RRF score
         sorted_cids = sorted(fused_scores.keys(), key=lambda cid: fused_scores[cid], reverse=True)[
             :top_k
@@ -258,7 +402,9 @@ class RetrievalService:
         # Convert to EvidenceObject
         results: List[EvidenceObject] = []
         for cid in sorted_cids:
-            chunk = self._chunks_store[cid]
+            chunk = chunk_map.get(cid)
+            if not chunk:
+                continue
             is_dense = cid in dense_scores
             is_bm25 = cid in bm25_scores
             method = "hybrid" if (is_dense and is_bm25) else ("dense" if is_dense else "keyword")
