@@ -3,14 +3,19 @@
  */
 const STOP_WORDS = new Set([
   'a', 'an', 'the', 'and', 'or', 'but', 'if', 'then', 'so',
-  'what', 'which', 'who', 'whom', 'this', 'that', 'these', 'those',
+  'what', 'which', 'who', 'whom', 'whose', 'this', 'that', 'these', 'those',
   'is', 'are', 'was', 'were', 'be', 'been', 'being',
-  'have', 'has', 'had', 'do', 'does', 'did',
+  'have', 'has', 'had', 'do', 'does', 'did', 'doing',
   'to', 'from', 'in', 'out', 'on', 'off', 'over', 'under', 'again',
   'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how',
   'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such',
   'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very',
-  'can', 'will', 'just', 'should', 'now', 'about'
+  'can', 'will', 'just', 'should', 'would', 'could', 'now', 'about',
+  'of', 'with', 'by', 'for', 'at', 'across', 'between', 'into', 'through',
+  'during', 'before', 'after', 'above', 'below', 'within', 'without',
+  'describes', 'described', 'describe', 'defines', 'defined', 'define',
+  'mention', 'mentioned', 'mentions', 'used', 'uses', 'using', 'use',
+  'documind', 'ai'
 ])
 
 /**
@@ -31,11 +36,49 @@ export function tokenizeQuery(query, filterStopWords = false) {
     .filter((token) => token.length > 0)
 
   if (filterStopWords) {
-    const meaningful = tokens.filter((t) => !STOP_WORDS.has(t) && t.length > 1)
+    const meaningful = tokens.filter((t) => !STOP_WORDS.has(t) && (t.length > 1 || /\d/.test(t)))
     return meaningful.length > 0 ? meaningful : tokens
   }
 
   return tokens
+}
+
+/**
+ * Reduce a term to its approximate root stem.
+ *
+ * @param {string} term
+ * @returns {string}
+ */
+function stemRoot(term) {
+  if (!term || term.length < 4) return term
+  let r = term.replace(/(?:ing|ed|s|es|er|ers|ment|tion|able|ible|ic|ical|ist|ists|al|ance|ence|ity)$/, '')
+  if (r.endsWith('i') && term.includes('y')) {
+    r = r.slice(0, -1)
+  }
+  if (r.startsWith('biochem')) return 'biochem'
+  if (r.startsWith('verif')) return 'verif'
+  return r
+}
+
+/**
+ * Check if a term matches any token in the chunk, allowing for common inflectional suffixes.
+ *
+ * @param {Set<string>} chunkTokens
+ * @param {string} term
+ * @returns {boolean}
+ */
+function matchesToken(chunkTokens, term) {
+  if (chunkTokens.has(term)) return true
+  const root = stemRoot(term)
+  if (root && root.length >= 3) {
+    for (const ct of chunkTokens) {
+      const ctRoot = stemRoot(ct)
+      if (ct === root || ctRoot === root || (ct.length >= 4 && (ct.startsWith(root) || root.startsWith(ctRoot)))) {
+        return true
+      }
+    }
+  }
+  return false
 }
 
 /**
@@ -111,6 +154,7 @@ export function searchDocuments(documents, rawQuery) {
   for (const doc of documents) {
     if (!doc || doc.status !== 'ready') continue
 
+    const docNameTokens = new Set(tokenizeQuery(doc.name, true))
     const chunks = doc.chunks && doc.chunks.length > 0
       ? doc.chunks
       : doc.text
@@ -121,6 +165,7 @@ export function searchDocuments(documents, rawQuery) {
       if (!chunk.text) continue
 
       const chunkLower = chunk.text.toLowerCase()
+      const chunkTokens = new Set(tokenizeQuery(chunk.text))
       let chunkScore = 0
       let primaryMatchStart = -1
       let primaryMatchLen = 0
@@ -133,24 +178,36 @@ export function searchDocuments(documents, rawQuery) {
         primaryMatchLen = query.length
       }
 
-      // 2. Meaningful content term matches (weighted heavily)
+      // 2. Meaningful content term matches (weighted heavily, whole-word matching)
       let contentTermsMatched = 0
       for (const term of contentTerms) {
-        const termIndex = chunkLower.indexOf(term)
-        if (termIndex !== -1) {
+        if (matchesToken(chunkTokens, term)) {
           contentTermsMatched++
           chunkScore += 25
           if (primaryMatchStart === -1) {
-            primaryMatchStart = termIndex
-            primaryMatchLen = term.length
+            const regex = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
+            const match = regex.exec(chunk.text)
+            if (match) {
+              primaryMatchStart = match.index
+              primaryMatchLen = match[0].length
+            }
           }
         }
       }
 
-      // 3. Overall terms matched
+      // 3. Document name relevance boost when at least one chunk term matches
+      if (contentTermsMatched > 0) {
+        for (const term of contentTerms) {
+          if (docNameTokens.has(term)) {
+            chunkScore += 15
+          }
+        }
+      }
+
+      // 4. Overall terms matched (whole-word matching)
       let allTermsMatched = 0
       for (const term of allTerms) {
-        if (chunkLower.includes(term)) {
+        if (matchesToken(chunkTokens, term)) {
           allTermsMatched++
           chunkScore += 5
         }
@@ -158,15 +215,20 @@ export function searchDocuments(documents, rawQuery) {
 
       // Match criteria:
       // - Exact phrase matched, OR
-      // - At least half of meaningful content terms matched, OR
-      // - 70% of all tokens matched
+      // - Meaningful content terms matched (scaled for short vs multi-term questions), OR
+      // - 60% of all tokens matched
+      const minRequiredContentTerms =
+        contentTerms.length <= 2
+          ? 1
+          : contentTerms.length <= 5
+            ? 2
+            : 3
+
       const isContentMatch =
-        contentTerms.length > 0 &&
-        (contentTermsMatched === contentTerms.length ||
-         contentTermsMatched >= Math.max(1, Math.ceil(contentTerms.length * 0.5)))
+        contentTerms.length > 0 && contentTermsMatched >= minRequiredContentTerms
 
       const isAllTokenMatch =
-        allTerms.length > 1 && allTermsMatched >= Math.ceil(allTerms.length * 0.7)
+        allTerms.length > 1 && allTermsMatched >= Math.ceil(allTerms.length * 0.6)
 
       if (exactIndex !== -1 || isContentMatch || isAllTokenMatch) {
         const locator =

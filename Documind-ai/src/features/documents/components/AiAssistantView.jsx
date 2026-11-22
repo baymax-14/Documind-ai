@@ -5,12 +5,14 @@ import {
   ArrowUpRight,
   BookOpen,
   Check,
+  Clock,
   Copy,
   Cpu,
   FileSearch,
   FileText,
   Info,
   Loader,
+  PlusCircle,
   Search,
   Shield,
   Sparkles,
@@ -37,6 +39,9 @@ const SUGGESTED_PROMPTS = [
  * @param {() => void} props.onCancelGeneration
  * @param {() => void} props.onClearChat
  * @param {(docId: string, chunkIndex: number) => void} props.onInspectCitation
+ * @param {() => void} [props.onOpenHistory]
+ * @param {() => void} [props.onNewChat]
+ * @param {boolean} [props.isBackendConnected]
  * @param {'not_configured' | 'unsupported' | 'downloading' | 'ready' | 'error'} [props.modelStatus]
  * @param {{ progress: number, text: string }} [props.modelProgress]
  * @param {string} [props.modelError]
@@ -52,6 +57,9 @@ function AiAssistantView({
   onCancelGeneration,
   onClearChat,
   onInspectCitation,
+  onOpenHistory,
+  onNewChat,
+  isBackendConnected = false,
   modelStatus = 'not_configured',
   modelProgress = { progress: 0, text: '' },
   modelError = '',
@@ -110,11 +118,41 @@ function AiAssistantView({
         </div>
 
         <div className="ai-header-controls">
+          {onOpenHistory && (
+            <button
+              className="ai-clear-btn"
+              onClick={onOpenHistory}
+              title="Open saved conversation history"
+              aria-label="Open saved conversation history"
+            >
+              <Clock size={13} aria-hidden="true" />
+              <span>History</span>
+            </button>
+          )}
+          {messages.length > 0 && onNewChat && (
+            <button
+              className="ai-clear-btn"
+              onClick={onNewChat}
+              title="Start a new conversation"
+              aria-label="Start a new conversation"
+            >
+              <PlusCircle size={13} aria-hidden="true" />
+              <span>New</span>
+            </button>
+          )}
           <span
             className="ai-model-tag"
-            title="Runs purely in-browser. Zero file bytes, text excerpts, or questions leave your machine."
+            title={
+              isBackendConnected
+                ? 'Server connected: hybrid vector and BM25 retrieval active.'
+                : 'Runs purely in-browser. Zero file bytes, text excerpts, or questions leave your machine.'
+            }
           >
-            {modelStatus === 'ready' ? (
+            {isBackendConnected ? (
+              <>
+                <Sparkles size={12} aria-hidden="true" /> Backend Intelligence Connected
+              </>
+            ) : modelStatus === 'ready' ? (
               <>
                 <Cpu size={12} aria-hidden="true" /> On-Device WebGPU Model Active
               </>

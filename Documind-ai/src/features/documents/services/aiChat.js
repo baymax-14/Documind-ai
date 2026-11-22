@@ -22,7 +22,12 @@ export function retrieveEvidenceChunks(documents, question, maxChunks = 3) {
   const seen = new Set()
   const candidateChunks = []
 
-  for (const match of search.results) {
+  // Grounded relevance threshold: filter out incidental single-word hits for multi-term queries
+  const queryWords = question.trim().split(/\s+/)
+  const minScore = queryWords.length >= 4 ? 45 : 20
+  const qualifiedMatches = search.results.filter((m) => m.score >= minScore)
+
+  for (const match of qualifiedMatches) {
     const key = `${match.docId}-${match.chunkIndex}`
     if (seen.has(key)) continue
     seen.add(key)

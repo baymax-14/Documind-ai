@@ -50,6 +50,8 @@ export { default as AiAssistantView } from './components/AiAssistantView.jsx'
 export { default as StorageHardwareModal } from './components/StorageHardwareModal.jsx'
 export { default as ComparisonView } from './components/ComparisonView.jsx'
 export { default as DocumentWorkflowsModal } from './components/DocumentWorkflowsModal.jsx'
+export { default as ProcessingStatusBadge } from './components/ProcessingStatusBadge.jsx'
+export { default as ConversationHistoryModal } from './components/ConversationHistoryModal.jsx'
 export {
   compareDocuments,
   findTopChunkForDoc,
@@ -72,4 +74,23 @@ export {
   downloadMarkdownFile,
   copyToClipboard,
 } from './services/export.js'
+export {
+  sanitizeQueryText,
+  sanitizeDocumentText,
+  sanitizeFilename,
+  validateCitationIntegrity,
+} from './services/security.js'
+export { BENCHMARK_DATASET } from './data/benchmarkDataset.js'
+export { runBenchmarkEvaluation } from './services/benchmark.js'
 export { SEED_DOCS } from './data/seedDocs.js'
+export { createConnectionManager } from './services/connectionManager.js'
+export {
+  getConversationDB,
+  generateConversationTitle,
+  saveConversation,
+  loadConversation,
+  listConversations,
+  deleteConversation,
+  clearAllConversations,
+} from './services/conversationStore.js'
+export { createSyncManager } from './services/syncManager.js'
