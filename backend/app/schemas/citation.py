@@ -1,7 +1,7 @@
 """Citation and Evidence schemas."""
 
 import uuid
-from typing import Optional
+from typing import Optional, Dict
 from pydantic import BaseModel, ConfigDict
 from app.models.citation import CitationValidationStatus
 
@@ -18,6 +18,7 @@ class CitationDetail(BaseModel):
     validation_status: CitationValidationStatus
     excerpt: Optional[str] = None
     chunk_id: Optional[uuid.UUID] = None
+    bounding_box: Optional[Dict[str, float]] = None
 
 
 class EvidenceObject(BaseModel):
@@ -38,3 +39,4 @@ class EvidenceObject(BaseModel):
     retrieval_score: float
     relevance_score: float = 1.0
     parser_version: str = "v1.0"
+    bounding_box: Optional[Dict[str, float]] = None

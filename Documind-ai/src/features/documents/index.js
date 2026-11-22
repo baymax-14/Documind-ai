@@ -107,4 +107,12 @@ export {
   resolveCellCoordinate,
   detectTabularContradictions,
 } from './services/tableRetrieval.js'
+export { default as PageVisualPreview } from './components/PageVisualPreview.jsx'
+export {
+  normalizeBoundingBox,
+  estimateBoundingBox,
+  groupDocumentByPages,
+  calculateZoomMetrics,
+  bboxToStyle,
+} from './services/visualGrounding.js'
 export { createSyncManager } from './services/syncManager.js'

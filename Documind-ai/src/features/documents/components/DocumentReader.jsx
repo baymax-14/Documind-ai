@@ -7,6 +7,7 @@ import {
   BookOpen,
   Check,
   Copy,
+  Eye,
   FileText,
   Search,
   Table2,
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react'
 import { extractTablesFromText } from '../services/tableParser.js'
 import TableView from './TableView.jsx'
+import PageVisualPreview from './PageVisualPreview.jsx'
 
 function formatSize(bytes) {
   if (!bytes) return '0 KB'
@@ -200,17 +202,26 @@ function DocumentReader({ doc, initialChunkIndex = 0, initialQuery = '', onClose
               </button>
             )}
 
-            {docTables.length > 0 && (
-              <div className="reader-view-toggle-bar">
-                <button
-                  type="button"
-                  className={`reader-toggle-btn ${viewMode === 'text' ? 'active' : ''}`}
-                  onClick={() => setViewMode('text')}
-                  title="View text passages"
-                >
-                  <FileText size={13} />
-                  <span>Text</span>
-                </button>
+            <div className="reader-view-toggle-bar">
+              <button
+                type="button"
+                className={`reader-toggle-btn ${viewMode === 'text' ? 'active' : ''}`}
+                onClick={() => setViewMode('text')}
+                title="View text passages"
+              >
+                <FileText size={13} />
+                <span>Text</span>
+              </button>
+              <button
+                type="button"
+                className={`reader-toggle-btn ${viewMode === 'visual' ? 'active' : ''}`}
+                onClick={() => setViewMode('visual')}
+                title="View high-fidelity page preview with citation bounding boxes"
+              >
+                <Eye size={13} />
+                <span>Visual</span>
+              </button>
+              {docTables.length > 0 && (
                 <button
                   type="button"
                   className={`reader-toggle-btn ${viewMode === 'tables' ? 'active' : ''}`}
@@ -220,8 +231,8 @@ function DocumentReader({ doc, initialChunkIndex = 0, initialQuery = '', onClose
                   <Table2 size={13} />
                   <span>Tables ({docTables.length})</span>
                 </button>
-              </div>
-            )}
+              )}
+            </div>
 
             <div className="reader-search-input">
               <Search size={14} aria-hidden="true" />
@@ -263,10 +274,22 @@ function DocumentReader({ doc, initialChunkIndex = 0, initialQuery = '', onClose
           </div>
         </header>
 
-        {/* Reader Body: Section rail + Reading content OR Table View */}
+        {/* Reader Body: Section rail + Reading content OR Table View OR Visual Page Preview */}
         {viewMode === 'tables' ? (
           <div className="reader-tables-pane">
             <TableView document={doc} tables={docTables} />
+          </div>
+        ) : viewMode === 'visual' ? (
+          <div className="reader-visual-pane">
+            <PageVisualPreview
+              document={doc}
+              highlightChunkIndex={selectedChunk}
+              onInspectPassage={(locator) => {
+                navigator.clipboard.writeText(locator)
+                setCopied(true)
+                setTimeout(() => setCopied(false), 2000)
+              }}
+            />
           </div>
         ) : (
           <div className="reader-body">

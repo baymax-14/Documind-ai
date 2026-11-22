@@ -28,6 +28,7 @@
  *                                 "Page 3" for PDF, "Section 2" for DOCX/TXT.
  * @property {number}  [page]    - PDF page number (1-based), if applicable.
  * @property {number}  [offset]  - Character offset from document start.
+ * @property {import('../services/visualGrounding.js').BoundingBox} [bbox] - Visual coordinates within page.
  */
 
 /**
