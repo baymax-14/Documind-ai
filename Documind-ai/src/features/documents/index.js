@@ -27,9 +27,21 @@ export {
   EVALUATED_MODELS,
 } from './services/onDeviceModel.js'
 export { useDocumentImport } from './hooks/useDocumentImport.js'
+export {
+  checkBackendHealth,
+  uploadDocumentToBackend,
+  listBackendDocuments,
+  getBackendDocumentContent,
+  reprocessBackendDocument,
+  deleteBackendDocument,
+  askBackendQuestion,
+  resolveBackendCitation,
+  API_BASE_URL,
+} from './services/backendApi.js'
 export { default as PrivacyNotice } from './components/PrivacyNotice.jsx'
 export { default as DocumentReader } from './components/DocumentReader.jsx'
 export { default as SearchResultsView } from './components/SearchResultsView.jsx'
 export { default as ExcerptConsentModal } from './components/ExcerptConsentModal.jsx'
 export { default as AiAssistantView } from './components/AiAssistantView.jsx'
+export { default as StorageHardwareModal } from './components/StorageHardwareModal.jsx'
 export { SEED_DOCS } from './data/seedDocs.js'

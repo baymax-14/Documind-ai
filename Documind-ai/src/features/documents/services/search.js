@@ -39,13 +39,35 @@ export function tokenizeQuery(query, filterStopWords = false) {
 }
 
 /**
+ * @typedef {Object} SearchSnippet
+ * @property {string} prefix
+ * @property {string} match
+ * @property {string} suffix
+ * @property {string} full
+ */
+
+/**
+ * @typedef {Object} SearchResultItem
+ * @property {string} id
+ * @property {string} docId
+ * @property {string} docName
+ * @property {string} docType
+ * @property {boolean} sample
+ * @property {number} chunkIndex
+ * @property {string} locator
+ * @property {number} [page]
+ * @property {SearchSnippet} snippet
+ * @property {number} score
+ */
+
+/**
  * Extract a contextual snippet around a match position in text.
  *
  * @param {string} text       - Full chunk text.
  * @param {number} matchStart - Start index of the matched substring.
  * @param {number} matchLen   - Length of the matched substring.
  * @param {number} radius     - Number of characters of context on each side.
- * @returns {import('./search.js').SearchSnippet}
+ * @returns {SearchSnippet}
  */
 export function extractSnippet(text, matchStart, matchLen, radius = 60) {
   const start = Math.max(0, matchStart - radius)
@@ -69,7 +91,7 @@ export function extractSnippet(text, matchStart, matchLen, radius = 60) {
  *
  * @param {import('../types/document.js').DocRecord[]} documents - Documents to search.
  * @param {string} rawQuery - Search string.
- * @returns {{ query: string, totalMatches: number, results: import('./search.js').SearchResultItem[] }}
+ * @returns {{ query: string, totalMatches: number, results: SearchResultItem[] }}
  */
 export function searchDocuments(documents, rawQuery) {
   const query = (rawQuery || '').trim()

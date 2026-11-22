@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+// ESLint's base unused-vars rule does not count JSX member tags as variable references.
+// eslint-disable-next-line no-unused-vars
+import { motion, useReducedMotion } from 'motion/react'
 import {
   ArrowLeft,
   BookOpen,
@@ -67,6 +70,7 @@ function HighlightedText({ text, query }) {
  * @param {boolean} [props.fromAssistant] - Whether opened from assistant citation.
  */
 function DocumentReader({ doc, initialChunkIndex = 0, initialQuery = '', onClose, fromAssistant = false }) {
+  const reduceMotion = useReducedMotion()
   const [filterQuery, setFilterQuery] = useState(initialQuery)
   const [selectedChunk, setSelectedChunk] = useState(initialChunkIndex)
   const [copied, setCopied] = useState(false)
@@ -134,14 +138,22 @@ function DocumentReader({ doc, initialChunkIndex = 0, initialQuery = '', onClose
   if (!doc) return null
 
   return (
-    <div
+    <motion.div
       className="reader-overlay"
       role="dialog"
       aria-modal="true"
       aria-label={`Extracted text reader: ${doc.name}`}
       ref={readerRef}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
     >
-      <div className="reader-container">
+      <motion.div
+        className="reader-container"
+        initial={{ opacity: 0, y: reduceMotion ? 0 : 12, scale: reduceMotion ? 1 : 0.99 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.24, ease: [0.23, 1, 0.32, 1] }}
+      >
         {/* Top bar */}
         <header className="reader-topbar">
           <div className="reader-title-area">
@@ -279,8 +291,8 @@ function DocumentReader({ doc, initialChunkIndex = 0, initialQuery = '', onClose
             )}
           </main>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
 

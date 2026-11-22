@@ -33,7 +33,7 @@ npm run dev
   - **Strict Source Grounding**: Every generated statement or excerpt is anchored to passage-level citations linked directly into the Document Reader.
 - Search documents by filename, filter by file type, sort by recent or filename, and switch between list and grid views.
 - Switch between light and dark appearances.
-- Sample documents are clearly marked. Cloud sync, external backend servers, and multi-document comparison are planned capabilities and are not connected.
+- Sample documents are clearly marked. The workspace operates seamlessly in local-only mode (on-device WebGPU and IndexedDB) and can optionally connect to the PaperQA FastAPI + PostgreSQL + Qdrant backend service via `VITE_API_BASE_URL`. Multi-document comparison is planned for Phase 8.
 
 ## Stack
 

@@ -9,6 +9,7 @@ import {
   BookOpen,
   Check,
   CheckCircle2,
+  Cpu,
   Database,
   FilePlus2,
   FileSearch,
@@ -19,6 +20,7 @@ import {
   LayoutGrid,
   List,
   Loader,
+  Lock,
   Menu,
   MessageSquareText,
   Moon,
@@ -43,6 +45,7 @@ import {
   initializeOnDeviceEngine,
   generateAnswerWithFallback,
   SEED_DOCS,
+  StorageHardwareModal,
 } from './features/documents/index.js'
 
 const DocumentReader = lazy(() => import('./features/documents/components/DocumentReader.jsx'))
@@ -93,11 +96,14 @@ function App() {
   const [modelStatus, setModelStatus] = useState('not_configured')
   const [modelProgress, setModelProgress] = useState({ progress: 0, text: '' })
   const [modelError, setModelError] = useState('')
+  const [gpuInfo, setGpuInfo] = useState(null)
+  const [storageModalOpen, setStorageModalOpen] = useState(false)
   const engineRef = useRef(null)
   const modelAbortRef = useRef(null)
 
   useEffect(() => {
     checkWebGPUSupport().then((res) => {
+      setGpuInfo(res)
       if (!res.supported) {
         setModelStatus('unsupported')
       }
@@ -227,6 +233,10 @@ function App() {
           setPendingConsent(null)
           return
         }
+        if (storageModalOpen) {
+          setStorageModalOpen(false)
+          return
+        }
         if (confirmClearOpen) {
           setConfirmClearOpen(false)
           return
@@ -239,7 +249,7 @@ function App() {
     }
     window.addEventListener('keydown', closeOnEscape)
     return () => window.removeEventListener('keydown', closeOnEscape)
-  }, [mobileMenuOpen, confirmClearOpen, readerDoc, pendingConsent])
+  }, [mobileMenuOpen, confirmClearOpen, readerDoc, pendingConsent, storageModalOpen])
 
   useEffect(() => {
     if (mobileMenuOpen) mobileTopbarRef.current?.querySelector('.mobile-nav a')?.focus()
@@ -547,9 +557,14 @@ function App() {
 
         <div className="page-inner" inert={mobileMenuOpen}>
           <div className="top-actions">
-            <span className="environment-tag">
+            <button className="hardware-status-pill" onClick={() => setStorageModalOpen(true)} title="Inspect browser storage and WebGPU availability" aria-label="Inspect browser storage and WebGPU availability">
+              <Cpu size={14} aria-hidden="true" />
+              <span>{gpuInfo ? (gpuInfo.supported ? 'WebGPU available' : 'WebGPU unavailable') : 'Checking WebGPU'}</span>
+              <span className={`status-indicator ${gpuInfo?.supported ? 'indicator-green' : 'indicator-yellow'}`} />
+            </button>
+            <button className="environment-tag environment-tag-button" onClick={() => setStorageModalOpen(true)} title="View browser storage details" aria-label="View local browser storage details">
               <Database size={13} aria-hidden="true" style={{ marginRight: '5px' }} /> Local IndexedDB
-            </span>
+            </button>
             <button
               className="icon-button theme-button desktop-theme"
               aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -601,6 +616,15 @@ function App() {
                   Drop files here or choose from your computer. Files are read in this browser and staged for your review.
                 </p>
                 <span className="format-note">PDF, DOCX, or TXT. Maximum 25 MB per file.</span>
+                <div className="drop-formats-row">
+                  <span className="format-tag tag-pdf">PDF</span>
+                  <span className="format-tag tag-docx">DOCX</span>
+                  <span className="format-tag tag-txt">TXT</span>
+                  <span className="format-limit">Max 25 MB</span>
+                  <span className="format-privacy">
+                    <Lock size={11} aria-hidden="true" /> 100% on-device
+                  </span>
+                </div>
               </div>
               <button
                 className="secondary-button"
@@ -951,6 +975,10 @@ function App() {
                       </div>
 
                       <div className="doc-card-actions">
+                        <button className="doc-inspect-btn doc-ask-btn" onClick={() => { setSearchMode('ai'); handleInitiateAiQuestion(`What are the key takeaways and findings from ${doc.name}?`); }} title={`Ask AI Assistant about ${doc.name}`} aria-label={`Ask AI Assistant about ${doc.name}`}>
+                          <Sparkles size={13} aria-hidden="true" />
+                          <span>Ask</span>
+                        </button>
                         <button
                           className="doc-inspect-btn"
                           onClick={() => handleOpenReader(doc)}
@@ -1013,6 +1041,7 @@ function App() {
         {/* Excerpt Consent Modal (Appears before sending chunks to AI) */}
         {pendingConsent && (
           <ExcerptConsentModal
+            key="excerpt-consent"
             question={pendingConsent.question}
             chunks={pendingConsent.chunks}
             onApprove={handleApproveConsentAndGenerate}
@@ -1021,8 +1050,21 @@ function App() {
         )}
 
         {/* Document Reader Overlay View */}
+        {/* Storage & WebGPU Hardware Diagnostics Modal */}
+        <StorageHardwareModal
+          isOpen={storageModalOpen}
+          onClose={() => setStorageModalOpen(false)}
+          gpuInfo={gpuInfo}
+          storageEstimate={storageEstimate}
+          docCount={libraryDocs.length}
+          storedCount={storedCount}
+          modelStatus={modelStatus}
+          onClearLibrary={() => setConfirmClearOpen(true)}
+        />
+
         {readerDoc && (
           <DocumentReader
+            key={readerDoc.id}
             doc={readerDoc}
             initialChunkIndex={readerChunkIndex}
             initialQuery={readerQuery}

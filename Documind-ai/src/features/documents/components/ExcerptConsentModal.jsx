@@ -1,4 +1,7 @@
 import { useEffect } from 'react'
+// ESLint's base unused-vars rule does not count JSX member tags as variable references.
+// eslint-disable-next-line no-unused-vars
+import { motion, useReducedMotion } from 'motion/react'
 import {
   ArrowRight,
   FileText,
@@ -18,6 +21,7 @@ import {
  * @param {() => void} props.onCancel - Callback when cancelled.
  */
 function ExcerptConsentModal({ question, chunks, onApprove, onCancel }) {
+  const reduceMotion = useReducedMotion()
   // Close on Escape
   useEffect(() => {
     function handleKeyDown(event) {
@@ -28,13 +32,21 @@ function ExcerptConsentModal({ question, chunks, onApprove, onCancel }) {
   }, [onCancel])
 
   return (
-    <div
+    <motion.div
       className="consent-modal-backdrop"
       role="dialog"
       aria-modal="true"
       aria-labelledby="consent-title"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
     >
-      <div className="consent-modal">
+      <motion.div
+        className="consent-modal"
+        initial={{ opacity: 0, y: reduceMotion ? 0 : 12, scale: reduceMotion ? 1 : 0.99 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.24, ease: [0.23, 1, 0.32, 1] }}
+      >
         <header className="consent-modal-header">
           <div className="consent-title-area">
             <span className="consent-shield-icon">
@@ -97,8 +109,8 @@ function ExcerptConsentModal({ question, chunks, onApprove, onCancel }) {
             <ArrowRight size={15} aria-hidden="true" />
           </button>
         </footer>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
 
