@@ -185,11 +185,11 @@ export default function ConversationHistoryModal({
             <div
               style={{
                 padding: '12px 14px',
-                background: 'var(--color-bg, #FFFDF5)',
-                border: '2px solid #000',
+                background: 'var(--color-bg, var(--cream))',
+                border: '2px solid var(--ink)',
                 borderRadius: 4,
                 marginBottom: 12,
-                boxShadow: '3px 3px 0 #000',
+                boxShadow: '3px 3px 0 var(--ink)',
               }}
             >
               <p style={{ margin: '0 0 8px 0', fontSize: '0.875rem', fontWeight: 600 }}>
@@ -217,9 +217,9 @@ export default function ConversationHistoryModal({
           )}
 
           {loading ? (
-            <p style={{ textAlign: 'center', padding: '24px 0', color: '#666' }}>Loading history…</p>
+            <p style={{ textAlign: 'center', padding: '24px 0', color: 'var(--muted)' }}>Loading history…</p>
           ) : conversations.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '32px 16px', color: '#666' }}>
+            <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--muted)' }}>
               <Clock size={28} style={{ margin: '0 auto 8px', opacity: 0.5 }} />
               <p style={{ fontWeight: 600, margin: '0 0 4px' }}>No saved conversations yet</p>
               <p style={{ fontSize: '0.8125rem', margin: 0 }}>
@@ -236,9 +236,9 @@ export default function ConversationHistoryModal({
                     className={`staging-card ${isActive ? 'active-conv-card' : ''}`}
                     style={{
                       cursor: 'pointer',
-                      border: isActive ? '2px solid #000' : '1.5px solid #000',
-                      background: isActive ? '#EDF5FF' : '#FFFDF5',
-                      boxShadow: isActive ? '3px 3px 0 #000' : '2px 2px 0 #000',
+                      border: isActive ? '2px solid var(--ink)' : '1.5px solid var(--ink)',
+                      background: isActive ? 'var(--sky-tint)' : 'var(--cream)',
+                      boxShadow: isActive ? '3px 3px 0 var(--ink)' : '2px 2px 0 var(--ink)',
                     }}
                     onClick={() => {
                       onSelectConversation(conv)
@@ -259,7 +259,7 @@ export default function ConversationHistoryModal({
                       >
                         {conv.title}
                       </h4>
-                      <p style={{ margin: 0, fontSize: '0.75rem', color: '#555' }}>
+                      <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--muted)' }}>
                         {conv.messageCount || conv.messages?.length || 0} messages · {formatRelativeTime(conv.updatedAt)}
                         {isActive && ' · Current'}
                       </p>

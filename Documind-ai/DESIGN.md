@@ -39,9 +39,20 @@ typography:
     fontSize: "0.875rem"
     fontWeight: 600
     lineHeight: 1.4
+  caption:
+    fontFamily: "DM Sans, sans-serif"
+    fontSize: "0.75rem"
+    fontWeight: 500
+    lineHeight: 1.3
+  micro:
+    fontFamily: "DM Sans, sans-serif"
+    fontSize: "0.6875rem"
+    fontWeight: 700
+    lineHeight: 1.2
 rounded:
   none: "0px"
   tight: "2px"
+  subtle: "3px"
   standard: "4px"
 spacing:
   xs: "4px"
@@ -133,7 +144,9 @@ The palette uses black for legibility and structure, cream for the main light ca
 - **Headline** (700, 24px, 1.2): Main section headings.
 - **Title** (700, 20px, 1.25): Upload panel headings and compact component titles.
 - **Body** (400, 16px, 1.5): Explanatory text and reading content.
-- **Label** (600, 14px, 1.4): Buttons, navigation, and controls. Supporting metadata may use 12–13px at weight 400 or higher when contrast holds.
+- **Label** (600, 14px, 1.4): Buttons, navigation, and primary controls.
+- **Caption** (500, 12–13px, 1.3): Timestamps, relative time, and secondary metadata descriptions.
+- **Micro** (700, 10–11px, 1.2): Engine badges, source locators, table cell coordinates, and pill tags (uppercase with 0.03em tracking).
 
 Use tabular figures for changing counts. Keep body text left aligned and allow filenames to wrap or truncate only when the full filename remains available as a title.
 

@@ -5,7 +5,7 @@ Supports JWT verification or development mock subject extraction.
 
 from typing import Optional
 from uuid import UUID, uuid5, NAMESPACE_DNS
-from fastapi import Header, HTTPException, status
+from fastapi import Header, HTTPException, status, Depends
 from pydantic import BaseModel
 
 
@@ -36,3 +36,11 @@ async def get_current_user(
         email=f"{subject}@documind.local",
         is_active=True,
     )
+
+
+async def get_current_user_id(
+    current_user: AuthenticatedUser = Depends(get_current_user),
+) -> UUID:
+    """Extracts user UUID directly from the authenticated user context."""
+    return current_user.id
+

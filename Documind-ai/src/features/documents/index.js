@@ -43,6 +43,7 @@ export {
   analyzeBackendTables,
   listBackendConversations,
   getBackendConversation,
+  deleteBackendConversation,
   API_BASE_URL,
 } from './services/backendApi.js'
 export { default as PrivacyNotice } from './components/PrivacyNotice.jsx'

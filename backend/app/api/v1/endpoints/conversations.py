@@ -2,7 +2,7 @@
 
 import uuid
 from typing import List
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -59,3 +59,25 @@ async def get_conversation(
         raise AuthorizationError("Access denied.")
 
     return conv
+
+
+@router.delete("/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_conversation(
+    conversation_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: AuthenticatedUser = Depends(get_current_user),
+):
+    """Deletes a conversation and its messages belonging to the authenticated user."""
+    stmt = select(Conversation).where(Conversation.id == conversation_id)
+    result = await db.execute(stmt)
+    conv = result.scalar_one_or_none()
+
+    if not conv:
+        raise NotFoundError("Conversation", conversation_id)
+    if conv.owner_id != current_user.id:
+        raise AuthorizationError("Access denied.")
+
+    await db.delete(conv)
+    await db.commit()
+    return None
+

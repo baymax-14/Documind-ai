@@ -354,3 +354,21 @@ export async function getBackendConversation(conversationId) {
 
   return await res.json()
 }
+
+/**
+ * Deletes a conversation from the backend.
+ *
+ * @param {string} conversationId
+ * @returns {Promise<void>}
+ */
+export async function deleteBackendConversation(conversationId) {
+  const res = await fetch(`${API_BASE_URL}/conversations/${conversationId}`, {
+    method: 'DELETE',
+    headers: { Accept: 'application/json' },
+  })
+
+  if (!res.ok && res.status !== 404) {
+    throw new Error(`Failed to delete conversation: HTTP ${res.status}`)
+  }
+}
+

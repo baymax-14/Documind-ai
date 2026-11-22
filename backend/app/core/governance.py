@@ -97,8 +97,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     """FastAPI/Starlette middleware enforcing tenant rate limits and attaching telemetry headers."""
 
     async def dispatch(self, request: Request, call_next) -> Response:
-        # Bypass health check endpoints from rate limiting
-        if request.url.path.startswith("/health") or request.url.path.startswith("/docs"):
+        # Bypass health check, OpenAPI schema, and API documentation endpoints from rate limiting
+        path = request.url.path
+        if any(exempt in path for exempt in ("/health", "/docs", "/openapi.json", "/redoc")):
             return await call_next(request)
 
         # Extract client IP or tenant header

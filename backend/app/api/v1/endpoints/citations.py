@@ -37,7 +37,7 @@ async def resolve_citation(
         raise NotFoundError("Citation", citation_id)
 
     # Check ownership of source document
-    if citation.document.owner_id != current_user.id:
+    if citation.document and citation.document.owner_id != current_user.id:
         raise AuthorizationError("You do not have access to the source document for this citation.")
 
     chunk_id = None

@@ -43,6 +43,12 @@ class Document(Base, TimestampMixin):
     def name(self) -> str:
         return self.filename
 
+    @property
+    def file_type(self) -> str:
+        if "." in self.filename:
+            return self.filename.rsplit(".", 1)[-1].upper()
+        return self.mime_type
+
     # Relationships
     owner = relationship("User", back_populates="documents")
     processing_jobs = relationship("ProcessingJob", back_populates="document", cascade="all, delete-orphan")
