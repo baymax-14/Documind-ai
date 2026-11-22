@@ -21,7 +21,7 @@
   <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL" />
   <img src="https://img.shields.io/badge/Qdrant-v1.9-DC2626?style=flat-square&logo=qdrant&logoColor=white" alt="Qdrant" />
   <img src="https://img.shields.io/badge/WebGPU-Accelerated-0052FF?style=flat-square" alt="WebGPU" />
-  <img src="https://img.shields.io/badge/Tests-111%20Passing-059669?style=flat-square" alt="111 Passing Tests" />
+  <img src="https://img.shields.io/badge/Tests-122%20Passing-059669?style=flat-square" alt="122 Passing Tests" />
   <img src="https://img.shields.io/badge/License-MIT-black?style=flat-square" alt="License" />
 </p>
 
@@ -42,25 +42,35 @@ The platform can operate **100% locally on-device** (via WebGPU, WebLLM, and cli
 - **Deterministic Evidence Fallback**: When WebGPU is unavailable or deferred, DocuMind falls back to instant keyword excerpt retrieval and verified citation synthesis with zero model weight downloads.
 - **Hallucination Prevention**: Zero synthetic claims. Answers are drawn strictly from retrieved document chunks or explicitly report no matching evidence.
 
-### 2. High-Performance Hybrid Retrieval
+### 2. High-Performance Hybrid Retrieval & Neural Re-Ranking
 - **BM25 Okapi + Dense Vector Search**: Integrates Lexical BM25 ranking with Qdrant vector embeddings via **Reciprocal Rank Fusion (RRF)**.
+- **Cross-Encoder Neural Re-Ranking**: Second-stage cross-encoder re-ranking scores candidate chunks with deep semantic relevance and provides confidence percentiles.
 - **Multi-Tenant Isolation**: Rigorous tenant and document isolation (`owner_id` + `document_ids` filters) prevents cross-tenant citation forgery or IDOR leaks.
 - **Resilient Cold-Start Handling**: Built-in non-blocking reconnect backoffs absorb container lag and maintain high availability.
 
-### 3. Visual Document Grounding & Reader
-- **Interactive Bounding Box Overlays**: Citations link directly to exact visual coordinates on PDF, DOCX, and TXT page previews.
-- **Split-Pane Reader**: Built-in reader drawer with section jumper navigation, term filtering, and proportional locator anchors.
+### 3. Visual Document Grounding & Page-by-Page Inspection
+- **Interactive Page-by-Page Viewer**: Inspect PDF, DOCX, and TXT files with thumbnail sidebars, zoom controls (50% to 200%), and page navigation.
+- **Visual Bounding Box Citations**: Every cited passage is anchored to proportional visual bounding box coordinates on the preview canvas.
+- **Split-Pane Document Reader**: Full-featured drawer with section jumper navigation, text filtering, and one-click jump-to-source.
 
-### 4. Cross-Document Comparative Matrix
+### 4. Multimodal VLM Chart & Image Reasoning
+- **Visual Figure & Chart Detection**: Automatic detection of charts, plots, and architecture diagrams within document pages.
+- **VLM Reasoning Prompts**: Vision-Language prompt templates for automated metric extraction, trend summarization, and data verification from images.
+
+### 5. Automated Structured Schema Extraction
+- **Context-Aware Schema Inference**: Automatically selects optimal extraction schemas based on document type (Research Paper, Market Analysis, Legal Agreement, and Brand & Product Guidelines).
+- **Tabular Matrix & JSON Export**: View extracted fields in structured tables with cited evidence passages or export as validated JSON.
+
+### 6. Cross-Document Comparative Matrix
 - **Side-by-Side Analysis**: Compare multiple documents simultaneously across analytical dimensions (e.g., Governance, Performance, Security, Cost).
 - **Custom Topic Querying**: Enter targeted queries to extract comparative evidence across all staged files.
 
-### 5. Local-First Privacy & Token Governance
+### 7. Local-First Privacy & Persistent Chat History
 - **100% Client-Side Extraction**: Client-side parsing via `pdfjs-dist` (PDF), `mammoth` (DOCX), and native text decoders.
-- **IndexedDB Persistence**: Stored files and parsed chunks persist securely in your browser across sessions.
-- **Token Observability**: Real-time token tracking, budget warnings, and hardware storage diagnostics.
+- **IndexedDB Session Persistence**: AI chat conversations, parsed document chunks, and user preferences persist securely in IndexedDB across reloads with automatic session hydration.
+- **Token Observability & Governance**: Real-time token usage telemetry, operational budget limits, and hardware diagnostics.
 
-### 6. Tactile Neo-Brutalist Design System ("The Paper Workbench")
+### 8. Tactile Neo-Brutalist Design System ("The Paper Workbench")
 - **Distinctive Editorial Aesthetic**: Space Grotesk + DM Sans typography, tactile pastel palette (Mint, Sky, Butter), and solid black strokes.
 - **Ergonomic Precision**: Tabular numerals (`tabular-nums`) to eliminate update jitter, proportional mechanical button physics, and comprehensive high-contrast Light and Dark themes.
 
@@ -224,12 +234,12 @@ Interactive documentation is available at `/api/v1/docs` when the backend is run
 
 ## Verification & Testing
 
-DocuMind AI enforces a rigorous automated test suite covering security defenses, adversarial prompt injection neutralization, citation integrity, bounding box normalization, and cross-document comparison:
+DocuMind AI enforces a rigorous automated test suite covering security defenses, adversarial prompt injection neutralization, citation integrity, bounding box normalization, VLM chart reasoning, cross-encoder re-ranking, and cross-document comparison:
 
 ```bash
 cd Documind-ai
 
-# Run all unit and integration tests (111 tests across 19 suites)
+# Run all unit and integration tests (122 tests across 21 suites)
 npm test
 
 # Run ESLint check (0 errors, 0 warnings enforced)
@@ -259,12 +269,12 @@ Documind-ai/
 │   └── requirements.txt       # Python dependencies
 ├── Documind-ai/               # React 19 Frontend
 │   ├── src/
-│   │   ├── features/documents/# Core services (WebLLM, grounding, IndexedDB, etc.)
+│   │   ├── features/documents/# Core services (WebLLM, VLM reasoning, re-ranking, IndexedDB, etc.)
 │   │   ├── LandingPage.jsx    # Neobrutalist landing page
 │   │   ├── Workspace.jsx      # Research workspace & assistant interface
 │   │   ├── styles.css         # The Paper Workbench design system styles
 │   │   └── landing.css        # Landing page styling & animations
-│   ├── tests/                 # Frontend node:test suite (111 tests)
+│   ├── tests/                 # Frontend node:test suite (122 tests across 21 suites)
 │   └── package.json           # Frontend dependencies & scripts
 ├── docker-compose.yml         # Multi-container orchestration (PostgreSQL, Redis, Qdrant, Backend)
 └── README.md                  # Project documentation
