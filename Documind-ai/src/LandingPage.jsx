@@ -574,7 +574,6 @@ function LandingPage() {
         <div id="smooth-content">
           <main id="main-content">
             <div className="landing-split">
-              <WorkspacePreview />
               <section className="hero-copy" aria-labelledby="hero-heading">
                 <div className="hero-inner">
                   <h1 className="reveal-on-scroll" id="hero-heading" aria-label="Understand your documents faster.">
@@ -618,6 +617,7 @@ function LandingPage() {
                   </aside>
                 </div>
               </section>
+              <WorkspacePreview />
             </div>
 
             <CapabilitiesBento />
