@@ -1,7 +1,4 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
-import { useGSAP } from '@gsap/react'
-import { gsap } from 'gsap'
-import { Physics2DPlugin } from 'gsap/Physics2DPlugin'
 import {
   AlertCircle,
   ArrowDown,
@@ -14,7 +11,6 @@ import {
   FilePlus2,
   FileSearch,
   FolderOpen,
-  GitCompareArrows,
   HardDrive,
   Info,
   LayoutGrid,
@@ -27,7 +23,6 @@ import {
   PlusCircle,
   RefreshCw,
   Search,
-  Settings2,
   Sparkles,
   Sun,
   Trash2,
@@ -52,8 +47,6 @@ const DocumentReader = lazy(() => import('./features/documents/components/Docume
 const AiAssistantView = lazy(() => import('./features/documents/components/AiAssistantView.jsx'))
 const ExcerptConsentModal = lazy(() => import('./features/documents/components/ExcerptConsentModal.jsx'))
 
-gsap.registerPlugin(useGSAP, Physics2DPlugin)
-
 function formatSize(bytes) {
   if (!bytes) return '0 KB'
   return bytes < 1024 * 1024
@@ -76,7 +69,6 @@ function App() {
   const [filter, setFilter] = useState('All files')
   const [ascending, setAscending] = useState(false)
   const [notice, setNotice] = useState('')
-  const [fileBurst, setFileBurst] = useState(0)
   const [dragging, setDragging] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [confirmClearOpen, setConfirmClearOpen] = useState(false)
@@ -160,8 +152,6 @@ function App() {
   const searchRef = useRef(null)
   const mobileMenuButtonRef = useRef(null)
   const mobileTopbarRef = useRef(null)
-  const workspaceRef = useRef(null)
-  const uploadMarkRef = useRef(null)
 
   const {
     stagedDocs,
@@ -186,28 +176,6 @@ function App() {
   const demoCount = libraryDocs.filter((d) => d.sample).length
   const stagedReadyCount = stagedDocs.filter((d) => d.status === 'ready').length
   const stagedExtractingCount = stagedDocs.filter((d) => d.status === 'extracting').length
-
-  // GSAP Particle Burst on File Add
-  useGSAP(() => {
-    if (!fileBurst || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const particles = uploadMarkRef.current?.querySelectorAll('[data-file-particle]')
-    if (!particles?.length) return
-
-    const angles = [-155, -130, -105, -80, -55, -30, -5]
-    particles.forEach((particle, index) => {
-      gsap.fromTo(
-        particle,
-        { x: 0, y: 0, rotation: 0, opacity: 1 },
-        {
-          duration: 0.68,
-          rotation: index % 2 ? 38 : -38,
-          opacity: 0,
-          physics2D: { velocity: 72, angle: angles[index], gravity: 150 },
-          onComplete: () => gsap.set(particle, { clearProps: 'transform,opacity' }),
-        }
-      )
-    })
-  }, { scope: workspaceRef, dependencies: [fileBurst], revertOnUpdate: true })
 
   // Global Keyboard Shortcuts
   useEffect(() => {
@@ -293,7 +261,6 @@ function App() {
       return
     }
 
-    setFileBurst((current) => current + 1)
     importFiles(files)
   }
 
@@ -404,7 +371,7 @@ function App() {
   }
 
   return (
-    <div ref={workspaceRef} className={dark ? 'app dark' : 'app'}>
+    <div className={dark ? 'app dark' : 'app'}>
       <aside className="sidebar" aria-label="Workspace navigation">
         <a className="brand" href="#dashboard" aria-label="DocuMind AI workspace">
           <Brand className="brand-lockup" markClassName="brand-mark" wordmarkClassName="brand-name" />
@@ -445,15 +412,6 @@ function App() {
           <a className="nav-link" href="#documents" onClick={() => setSearchMode('files')}>
             <FolderOpen size={17} /> Documents <span className="nav-count">{libraryDocs.length}</span>
           </a>
-          <span className="nav-heading nav-heading-lower">Manage</span>
-          <button
-            className="nav-link nav-disabled"
-            type="button"
-            title="Document comparison is planned for a future milestone"
-            onClick={() => setNotice('Document comparison is planned, but not available yet.')}
-          >
-            <GitCompareArrows size={17} /> Compare <span className="planned">Planned</span>
-          </button>
         </nav>
         <div className="sidebar-bottom">
           {storageEstimate && storageEstimate.usage > 0 && (
@@ -465,18 +423,13 @@ function App() {
               <span>~{(storageEstimate.usage / (1024 * 1024)).toFixed(1)} MB used locally</span>
             </div>
           )}
-          <button
-            className="user-row"
-            type="button"
-            onClick={() => setNotice('Account settings are not available in this local-first release.')}
-          >
+          <div className="user-row">
             <span className="avatar">AM</span>
             <span>
               <strong>Anand</strong>
               <small>Workspace owner</small>
             </span>
-            <Settings2 size={16} />
-          </button>
+          </div>
         </div>
       </aside>
 
@@ -557,13 +510,15 @@ function App() {
 
         <div className="page-inner" inert={mobileMenuOpen}>
           <div className="top-actions">
-            <button className="hardware-status-pill" onClick={() => setStorageModalOpen(true)} title="Inspect browser storage and WebGPU availability" aria-label="Inspect browser storage and WebGPU availability">
+            <button
+              className="hardware-status-pill"
+              onClick={() => setStorageModalOpen(true)}
+              title="Inspect local storage and WebGPU hardware status"
+              aria-label="Inspect local storage and WebGPU hardware status"
+            >
               <Cpu size={14} aria-hidden="true" />
-              <span>{gpuInfo ? (gpuInfo.supported ? 'WebGPU available' : 'WebGPU unavailable') : 'Checking WebGPU'}</span>
+              <span>{gpuInfo ? (gpuInfo.supported ? 'WebGPU Ready' : 'WebGPU Unavailable') : 'WebGPU Checking'} · IndexedDB</span>
               <span className={`status-indicator ${gpuInfo?.supported ? 'indicator-green' : 'indicator-yellow'}`} />
-            </button>
-            <button className="environment-tag environment-tag-button" onClick={() => setStorageModalOpen(true)} title="View browser storage details" aria-label="View local browser storage details">
-              <Database size={13} aria-hidden="true" style={{ marginRight: '5px' }} /> Local IndexedDB
             </button>
             <button
               className="icon-button theme-button desktop-theme"
@@ -604,18 +559,14 @@ function App() {
             }}
           >
             <div className={`drop-zone ${dragging ? 'is-dragging' : ''}`}>
-              <div className="upload-mark" ref={uploadMarkRef}>
+              <div className="upload-mark">
                 <FilePlus2 size={24} aria-hidden="true" />
-                {Array.from({ length: 7 }, (_, index) => (
-                  <span key={index} className="upload-particle" data-file-particle aria-hidden="true" />
-                ))}
               </div>
               <div className="drop-copy">
                 <h2>Select documents to extract</h2>
                 <p>
                   Drop files here or choose from your computer. Files are read in this browser and staged for your review.
                 </p>
-                <span className="format-note">PDF, DOCX, or TXT. Maximum 25 MB per file.</span>
                 <div className="drop-formats-row">
                   <span className="format-tag tag-pdf">PDF</span>
                   <span className="format-tag tag-docx">DOCX</span>

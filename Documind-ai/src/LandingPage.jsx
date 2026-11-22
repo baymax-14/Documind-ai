@@ -4,7 +4,6 @@ import { gsap } from 'gsap'
 import { ScrollSmoother } from 'gsap/ScrollSmoother'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin'
-import { MotionPathPlugin } from 'gsap/MotionPathPlugin'
 import { Link } from 'react-router-dom'
 import {
   ArrowRight,
@@ -28,7 +27,7 @@ import {
 import Brand from './Brand.jsx'
 import './landing.css'
 
-gsap.registerPlugin(useGSAP, ScrollTrigger, ScrollSmoother, ScrambleTextPlugin, MotionPathPlugin)
+gsap.registerPlugin(useGSAP, ScrollTrigger, ScrollSmoother, ScrambleTextPlugin)
 
 const demoFiles = [
   { type: 'PDF', name: 'Q3 Market Research.pdf', tone: 'butter', pages: '14 pages', words: '4,280 words' },
@@ -245,9 +244,6 @@ function CapabilitiesBento() {
   return (
     <section className="capabilities-bar" id="features" aria-labelledby="features-heading">
       <div className="bento-header reveal-on-scroll">
-        <span className="section-eyebrow">
-          <Zap size={14} aria-hidden="true" /> Engineered for Zero Cloud Leakage
-        </span>
         <h2 id="features-heading">Architecture designed for absolute trust</h2>
         <p>
           Traditional AI document tools send your confidential files to remote servers. DocuMind runs the entire pipeline—from PDF parsing to neural LLM inference—purely in your local browser.
@@ -267,9 +263,9 @@ function CapabilitiesBento() {
             </p>
           </div>
           <div className="card-spec-row">
-            <span>⚡ Zero Cloud Uploads</span>
-            <span>💾 Cache API Offline Persistence</span>
-            <span>🔒 Apache 2.0 Open Weights</span>
+            <span><Zap size={13} aria-hidden="true" /> Zero Cloud Uploads</span>
+            <span><Database size={13} aria-hidden="true" /> Cache API Persistence</span>
+            <span><Lock size={13} aria-hidden="true" /> Apache 2.0 Open Weights</span>
           </div>
         </article>
 
@@ -319,9 +315,9 @@ function CapabilitiesBento() {
             </p>
           </div>
           <div className="card-spec-row">
-            <span>🛡️ IndexedDB Persistence</span>
-            <span>⚡ Web Worker Parsers</span>
-            <span>🚫 Zero Third-Party Telemetry</span>
+            <span><Database size={13} aria-hidden="true" /> IndexedDB Storage</span>
+            <span><Cpu size={13} aria-hidden="true" /> Web Worker Parsers</span>
+            <span><Shield size={13} aria-hidden="true" /> Zero Telemetry</span>
           </div>
         </article>
       </div>
@@ -335,9 +331,6 @@ function GroundingPlayground() {
   return (
     <section className="playground-section" id="interactive-demo" aria-labelledby="playground-heading">
       <div className="playground-intro reveal-on-scroll">
-        <span className="section-eyebrow">
-          <Sparkles size={14} aria-hidden="true" /> Live Grounding Demo
-        </span>
         <h2 id="playground-heading">Inspect how verifiable grounding works</h2>
         <p>
           Select a sample research query to see how DocuMind isolates matching source passages and links answers directly to original page citations without hallucinations.
@@ -414,23 +407,12 @@ function HowItWorks() {
     <section className="how-section" id="how-it-works" aria-labelledby="how-heading">
       <div className="how-intro reveal-on-scroll">
         <div>
-          <span className="section-eyebrow">
-            <BookOpen size={14} aria-hidden="true" /> The Local Journey
-          </span>
           <h2 id="how-heading">A clear, verifiable path through your research</h2>
         </div>
         <p>
           Start with local file selection, search evidence passages, and ask questions with verifiable citations. No remote AI model connected without your explicit permission.
         </p>
       </div>
-
-      <svg className="workflow-route" viewBox="0 0 1000 56" role="presentation" aria-hidden="true">
-        <path id="workflow-motion-path" d="M165 33 C300 33 350 17 500 17 C650 17 700 33 835 33" />
-        <g id="workflow-marker" transform="translate(165 33)">
-          <rect x="-8" y="-11" width="16" height="21" rx="1" />
-          <path d="M2 -11v6h6M-4 -1h8M-4 3h8" />
-        </g>
-      </svg>
 
       <ol className="steps-list">
         <li className="step-item step-available reveal-on-scroll" style={{ '--reveal-delay': '0ms' }}>
@@ -491,9 +473,6 @@ function PrivacyFAQ() {
   return (
     <section className="faq-section" id="faq" aria-labelledby="faq-heading">
       <div className="faq-intro reveal-on-scroll">
-        <span className="section-eyebrow">
-          <HelpCircle size={14} aria-hidden="true" /> Trust & Architecture
-        </span>
         <h2 id="faq-heading">Frequently asked questions</h2>
         <p>Everything you need to know about DocuMind's privacy guarantees and local technology stack.</p>
       </div>
@@ -541,26 +520,7 @@ function LandingPage() {
       if (previewRows?.length) intro.fromTo(previewRows, { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.32, stagger: 0.055 }, '-=0.22')
     }
 
-    const workflowMarker = pageRef.current?.querySelector('#workflow-marker')
-    const workflowPath = pageRef.current?.querySelector('#workflow-motion-path')
-    const workflowSection = pageRef.current?.querySelector('#how-it-works')
-    let workflowObserver
-    if (workflowMarker && workflowPath && window.matchMedia('(min-width: 901px)').matches) {
-      const followWorkflow = () => gsap.to(workflowMarker, {
-        duration: 1.4,
-        ease: 'power2.inOut',
-        motionPath: { path: workflowPath, align: workflowPath, alignOrigin: [0.5, 0.5] },
-      })
-      workflowObserver = new IntersectionObserver(([entry]) => {
-        if (!entry.isIntersecting) return
-        followWorkflow()
-        workflowObserver.disconnect()
-      }, { threshold: 0.12 })
-      workflowObserver.observe(workflowSection)
-    }
-
     return () => {
-      workflowObserver?.disconnect()
       smoother?.kill()
     }
   }, { scope: pageRef })
@@ -617,11 +577,6 @@ function LandingPage() {
               <WorkspacePreview />
               <section className="hero-copy" aria-labelledby="hero-heading">
                 <div className="hero-inner">
-                  <div className="hero-kicker-pill reveal-on-scroll">
-                    <Zap size={14} aria-hidden="true" />
-                    <span>100% On-Device AI · Local WebGPU Engine · Zero Cloud Uploads</span>
-                  </div>
-
                   <h1 className="reveal-on-scroll" id="hero-heading" aria-label="Understand your documents faster.">
                     <span className="hero-heading-line" data-scramble-text="Understand your" aria-hidden="true">Understand your</span>
                     <span className="hero-heading-line" data-scramble-text="documents faster." aria-hidden="true">documents faster.</span>

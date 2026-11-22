@@ -67,15 +67,12 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .workspace-switcher small, .user-row small { color: var(--muted); font-size: 12px; line-height: 1.35; }
 .nav-links { display: flex; flex-direction: column; gap: 4px; margin-top: 32px; }
 .nav-heading { margin: 0 8px 4px; color: var(--muted); font-size: 12px; line-height: 1.4; }
-.nav-heading-lower { margin-top: 28px; }
 .nav-link { display: flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 8px; border: 2px solid transparent; border-radius: var(--radius); background: transparent; color: var(--ink); text-decoration: none; text-align: left; font-size: 14px; font-weight: 600; cursor: pointer; transition: background-color 160ms ease; }
 .nav-link > svg { flex: none; }
 .nav-link.active { border-color: var(--ink); background: var(--mint); box-shadow: 2px 2px 0 var(--ink); }
 .nav-count { margin-left: auto; padding: 0 8px; border: 1px solid var(--ink); background: var(--paper); font: 600 12px/1.5 var(--body); font-variant-numeric: tabular-nums; }
-.planned { margin-left: auto; color: var(--muted); font-size: 12px; font-weight: 500; }
-.nav-disabled { color: var(--muted); }
 .sidebar-bottom { margin-top: auto; display: grid; gap: 16px; }
-.user-row { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 4px; border: 0; border-top: 2px solid var(--ink); background: transparent; text-align: left; cursor: pointer; }
+.user-row { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 4px; border: 0; border-top: 2px solid var(--ink); background: transparent; text-align: left; }
 .avatar { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border: 2px solid var(--ink); background: var(--sky); font: 700 12px var(--heading); }
 .mobile-topbar { display: none; }
 .mobile-header-actions { display: flex; align-items: center; gap: 8px; }
@@ -84,7 +81,6 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .page-inner { max-width: 1250px; margin: 0 auto; padding: 24px clamp(24px, 4vw, 64px) 28px; }
 .top-actions { display: flex; justify-content: flex-end; align-items: center; min-height: 36px; gap: 12px; }
 .environment-tag { display: inline-flex; align-items: center; padding: 4px 8px; border: 1.5px solid var(--ink); background: var(--butter); font-size: 13px; font-weight: 600; }
-.environment-tag-button { cursor: pointer; }
 .icon-button { display: grid; place-items: center; width: 42px; height: 42px; border: 2px solid var(--ink); background: var(--surface); cursor: pointer; transition: background-color 160ms ease; }
 .welcome-row { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin: 24px 0 24px; }
 h1, h2, h3, p { margin: 0; }
@@ -101,14 +97,9 @@ h1 { max-width: 22ch; font-size: clamp(1.75rem, 2.6vw, 2.25rem); font-weight: 70
 .drop-zone.is-dragging { background: var(--sky); border-style: solid; animation: drag-pulse 0.8s ease-in-out infinite alternate; }
 @keyframes drag-pulse { from { border-color: var(--ink); } to { border-color: var(--sky); } }
 .upload-mark { position: relative; width: 35px; height: 35px; flex: none; display: grid; place-items: center; }
-.upload-particle { position: absolute; top: calc(50% - 3px); left: calc(50% - 3px); width: 6px; height: 6px; border: 1px solid var(--ink); opacity: 0; pointer-events: none; }
-.upload-particle:nth-of-type(2n) { background: var(--butter); }
-.upload-particle:nth-of-type(2n + 1) { background: var(--sky); }
-.upload-particle:nth-of-type(3n) { background: var(--mint); }
 .drop-copy { flex: 1; min-width: 0; }
 .drop-copy h2 { max-width: 25ch; font-size: 21px; font-weight: 700; letter-spacing: -.02em; line-height: 1.25; }
 .drop-copy p { max-width: 52ch; margin-top: 8px; font-size: 15px; line-height: 1.5; }
-.format-note { display: block; margin-top: 12px; font-size: 13px; font-weight: 600; }
 .prototype-strip { display: flex; align-items: flex-start; gap: 12px; align-self: stretch; padding: 16px; border: 2px solid var(--ink); background: var(--butter); }
 .prototype-icon { display: grid; place-items: center; width: 24px; height: 24px; flex: none; }
 .prototype-strip p { font-size: 14px; line-height: 1.55; }
