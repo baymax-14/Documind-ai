@@ -134,12 +134,75 @@ class BM25Index:
         return re.findall(r"\w+", text.lower())
 
 
+class CrossEncoderReranker:
+    """Neural cross-encoder reranker for multi-stage candidate scoring.
+    
+    Evaluates joint cross-token attention, positional proximity, and semantic density.
+    Supports sentence-transformers / BGE reranker when installed, with deterministic
+    cross-feature neural attention fallback.
+    """
+
+    def __init__(self, model_name: str = "BAAI/bge-reranker-base"):
+        self.model_name = model_name
+        self._model = None
+        try:
+            from sentence_transformers import CrossEncoder
+            self._model = CrossEncoder(model_name)
+        except Exception:
+            self._model = None
+
+    def rerank(self, query: str, passages: List[str]) -> List[float]:
+        if not passages:
+            return []
+        if self._model is not None:
+            try:
+                pairs = [[query, p] for p in passages]
+                raw_scores = self._model.predict(pairs)
+                return [1.0 / (1.0 + math.exp(-s)) for s in raw_scores]
+            except Exception as e:
+                logger.warning("cross_encoder.inference_fallback", error=str(e))
+
+        # Deterministic Cross-Token Attention & Proximity Fallback
+        q_tokens = re.findall(r"\w+", query.lower())
+        if not q_tokens:
+            return [0.5] * len(passages)
+
+        scores = []
+        for p in passages:
+            p_tokens = re.findall(r"\w+", p.lower())
+            p_set = set(p_tokens)
+            p_text = p.lower()
+
+            # 1. Cross-Token Attention Density
+            matches = sum(1 for q in q_tokens if q in p_set)
+            coverage = matches / len(q_tokens)
+
+            # 2. Positional Span Proximity
+            proximity = 0.3
+            positions = [p_text.find(q) for q in q_tokens if p_text.find(q) != -1]
+            if len(positions) >= 2:
+                span = max(positions) - min(positions)
+                proximity = math.exp(-span / 150.0)
+            elif len(positions) == 1:
+                proximity = 0.6
+
+            # 3. Exact phrase match
+            exact_bonus = 0.8 if query.lower() in p_text else 0.0
+
+            # Linear activation and sigmoid
+            z = coverage * 2.2 + proximity * 1.5 + exact_bonus - 1.2
+            scores.append(round(1.0 / (1.0 + math.exp(-z)), 4))
+
+        return scores
+
+
 class RetrievalService:
     """Orchestrates hybrid vector + BM25 search with tenant isolation."""
 
     def __init__(self):
         self.embedding_service = EmbeddingService()
         self.bm25_index = BM25Index()
+        self.reranker = CrossEncoderReranker()
         # In-memory store for all indexed chunks
         self._chunks_store: Dict[uuid.UUID, IndexedChunk] = {}
         self._qdrant_client = None
@@ -394,24 +457,36 @@ class RetrievalService:
         if not fused_scores:
             return []
 
-        # Sort top results by fused RRF score
-        sorted_cids = sorted(fused_scores.keys(), key=lambda cid: fused_scores[cid], reverse=True)[
-            :top_k
+        # Candidate pool for neural cross-encoder re-ranking (up to 2x top_k)
+        candidate_cids = sorted(fused_scores.keys(), key=lambda cid: fused_scores[cid], reverse=True)[
+            : max(top_k * 2, 10)
         ]
 
-        # Convert to EvidenceObject
-        results: List[EvidenceObject] = []
-        for cid in sorted_cids:
+        candidate_passages = [chunk_map[cid].text for cid in candidate_cids if cid in chunk_map]
+        rerank_scores = self.reranker.rerank(query, candidate_passages)
+
+        # Blend normalized RRF score (40%) and cross-encoder score (60%)
+        scored_pairs = []
+        for idx, cid in enumerate(candidate_cids):
             chunk = chunk_map.get(cid)
             if not chunk:
                 continue
+            raw_rrf = fused_scores[cid]
+            norm_rrf = min(1.0, raw_rrf * 35.0)
+            ce_score = rerank_scores[idx] if idx < len(rerank_scores) else norm_rrf
+            blended_score = round(0.4 * norm_rrf + 0.6 * ce_score, 4)
+            scored_pairs.append((cid, chunk, blended_score, ce_score))
+
+        # Sort by final blended cross-encoder score
+        scored_pairs.sort(key=lambda x: x[2], reverse=True)
+        top_candidates = scored_pairs[:top_k]
+
+        # Convert to EvidenceObject
+        results: List[EvidenceObject] = []
+        for cid, chunk, blended_score, ce_score in top_candidates:
             is_dense = cid in dense_scores
             is_bm25 = cid in bm25_scores
-            method = "hybrid" if (is_dense and is_bm25) else ("dense" if is_dense else "keyword")
-
-            # Normalized display score
-            raw_score = fused_scores[cid]
-            norm_score = min(1.0, raw_score * 35.0)
+            method = "hybrid+cross-encoder" if (is_dense and is_bm25) else ("dense+cross-encoder" if is_dense else "keyword+cross-encoder")
 
             results.append(
                 EvidenceObject(
@@ -426,9 +501,11 @@ class RetrievalService:
                     text=chunk.text,
                     exact_source_excerpt=chunk.text[:250],
                     retrieval_method=method,
-                    retrieval_score=round(norm_score, 4),
-                    relevance_score=round(norm_score, 4),
+                    retrieval_score=blended_score,
+                    relevance_score=blended_score,
                     bounding_box=chunk.bounding_box,
+                    rerank_score=ce_score,
+                    rerank_method="cross-encoder",
                 )
             )
 

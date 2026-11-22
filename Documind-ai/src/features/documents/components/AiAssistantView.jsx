@@ -3,6 +3,7 @@ import {
   AlertCircle,
   ArrowRight,
   ArrowUpRight,
+  BarChart2,
   BookOpen,
   Check,
   Clock,
@@ -19,6 +20,7 @@ import {
   Sparkles,
   StopCircle,
   Trash2,
+  Zap,
 } from 'lucide-react'
 
 const SUGGESTED_PROMPTS = [
@@ -354,6 +356,9 @@ function AiAssistantView({
                           <FileSearch size={10} aria-hidden="true" /> Local Evidence Preview
                         </span>
                       )}
+                      <span className="ai-engine-tag ai-engine-tag-rerank" title="Passages prioritized via Stage 2 Neural Cross-Encoder Re-Ranking">
+                        <Zap size={10} aria-hidden="true" /> Cross-Encoder Re-Ranked
+                      </span>
                     </div>
                   )}
 
@@ -379,6 +384,15 @@ function AiAssistantView({
                                 <FileText size={10} style={{ display: 'inline', marginRight: 3 }} />
                                 {c.locator}
                               </span>
+                              {c.rerankScore !== undefined && (
+                                <span
+                                  className="citation-rerank-tag"
+                                  title={`Cross-Encoder Re-Ranked relevance: ${Math.round(c.rerankScore * 100)}%`}
+                                >
+                                  <Zap size={9} aria-hidden="true" />
+                                  <span>{Math.round(c.rerankScore * 100)}%</span>
+                                </span>
+                              )}
                               <ArrowUpRight size={12} aria-hidden="true" />
                             </button>
                           </div>

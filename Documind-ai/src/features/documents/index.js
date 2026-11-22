@@ -125,3 +125,15 @@ export {
   DEFAULT_SESSION_TOKEN_BUDGET,
 } from './services/tokenGovernance.js'
 export { createSyncManager } from './services/syncManager.js'
+export {
+  crossEncodeRerank,
+  computeCrossAttention,
+  calculatePositionalProximity,
+  calculateQueryCoverage,
+} from './services/reranker.js'
+export {
+  detectPageVisualElements,
+  reasonOverChartWithVLM,
+  isChartOrVisualQuery,
+  VLM_PROMPT_TEMPLATES,
+} from './services/chartReasoning.js'

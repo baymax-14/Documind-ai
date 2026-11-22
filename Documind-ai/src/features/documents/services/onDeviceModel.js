@@ -25,6 +25,7 @@ export const EVALUATED_MODELS = [
     sizeDisplay: '~350 MB',
     vramRequirement: '~800 MB VRAM',
     license: 'Apache 2.0',
+    type: 'text',
     strengths: 'Accurate instruction following and excerpt extraction. Permissive Apache 2.0 license.',
   },
   {
@@ -34,7 +35,28 @@ export const EVALUATED_MODELS = [
     sizeDisplay: '~230 MB',
     vramRequirement: '~600 MB VRAM',
     license: 'Apache 2.0',
+    type: 'text',
     strengths: 'Lightest download footprint, low memory overhead for mobile or low-end devices.',
+  },
+  {
+    id: 'Qwen2-VL-2B-Instruct-q4f32_1-MLC',
+    name: 'Qwen 2-VL 2B (Multimodal VLM)',
+    sizeBytes: 1200 * 1024 * 1024,
+    sizeDisplay: '~1.2 GB',
+    vramRequirement: '~2.2 GB VRAM',
+    license: 'Apache 2.0',
+    type: 'multimodal',
+    strengths: 'Multimodal Vision-Language Model. Reads document charts, plots, diagrams, and visual tables directly.',
+  },
+  {
+    id: 'SmolVLM-500M-Instruct-q4f32_1-MLC',
+    name: 'SmolVLM 500M (Lightweight VLM)',
+    sizeBytes: 550 * 1024 * 1024,
+    sizeDisplay: '~550 MB',
+    vramRequirement: '~1.2 GB VRAM',
+    license: 'Apache 2.0',
+    type: 'multimodal',
+    strengths: 'Compact multimodal model for fast on-device figure parsing and chart QA with low VRAM footprint.',
   },
 ]
 

@@ -427,6 +427,8 @@ function App() {
                 chunkIndex: 0,
                 chunkId: c.chunk_id,
                 boundingBox: c.bounding_box || null,
+                rerankScore: c.rerank_score,
+                rerankMethod: c.rerank_method || 'cross-encoder',
               })),
               hasEvidence: Boolean(backendRes.evidence_count > 0),
               isRealModel: true,

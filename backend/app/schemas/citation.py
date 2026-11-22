@@ -19,6 +19,8 @@ class CitationDetail(BaseModel):
     excerpt: Optional[str] = None
     chunk_id: Optional[uuid.UUID] = None
     bounding_box: Optional[Dict[str, float]] = None
+    rerank_score: Optional[float] = None
+    rerank_method: Optional[str] = None
 
 
 class EvidenceObject(BaseModel):
@@ -40,3 +42,5 @@ class EvidenceObject(BaseModel):
     relevance_score: float = 1.0
     parser_version: str = "v1.0"
     bounding_box: Optional[Dict[str, float]] = None
+    rerank_score: Optional[float] = None
+    rerank_method: Optional[str] = None

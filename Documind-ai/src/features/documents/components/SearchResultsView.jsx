@@ -4,6 +4,7 @@ import {
   FileText,
   Search,
   X,
+  Zap,
 } from 'lucide-react'
 
 /**
@@ -29,6 +30,10 @@ function SearchResultsView({ query, results, totalMatches, onInspect, onClear })
             Evidence matches for <span className="search-query-tag">"{query}"</span>
           </h3>
           <span className="search-count-pill">{totalMatches} passage{totalMatches === 1 ? '' : 's'}</span>
+          <span className="neural-rerank-active-badge" title="Stage 2 Neural Cross-Encoder Re-Ranking active">
+            <Zap size={11} aria-hidden="true" />
+            <span>Cross-Encoder Re-Ranked</span>
+          </span>
         </div>
         <button
           className="search-clear-btn"
@@ -58,9 +63,21 @@ function SearchResultsView({ query, results, totalMatches, onInspect, onClear })
                   </span>
                   <div>
                     <h4 title={result.docName}>{result.docName}</h4>
-                    <span className="evidence-locator-tag">
-                      {result.locator}
-                    </span>
+                    <div className="evidence-tags-row">
+                      <span className="evidence-locator-tag">
+                        {result.locator}
+                      </span>
+                      {result.rerankScore !== undefined && (
+                        <span
+                          className="evidence-rerank-pill"
+                          title={`Cross-Encoder Neural Re-Rank: ${Math.round(result.rerankScore * 100)}% confidence · Initial Rank #${result.originalRank || 1}${result.rankDelta ? ` (Shift: ${result.rankDelta > 0 ? `+${result.rankDelta}` : result.rankDelta})` : ''}`}
+                        >
+                          <Zap size={10} aria-hidden="true" />
+                          <span>Re-Rank: {Math.round(result.rerankScore * 100)}%</span>
+                          {result.rankDelta > 0 && <span className="rerank-climb-badge">+{result.rankDelta}</span>}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 

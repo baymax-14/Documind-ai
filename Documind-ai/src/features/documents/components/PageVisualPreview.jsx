@@ -1,12 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
+  BarChart2,
   Check,
   ChevronLeft,
   ChevronRight,
   Copy,
   ExternalLink,
   Eye,
+  Loader,
   Maximize2,
+  Send,
+  Sparkles,
+  TrendingUp,
+  X,
   ZoomIn,
   ZoomOut,
 } from 'lucide-react'
@@ -16,6 +22,11 @@ import {
   calculateZoomMetrics,
   bboxToStyle,
 } from '../services/visualGrounding.js'
+import {
+  detectPageVisualElements,
+  reasonOverChartWithVLM,
+  VLM_PROMPT_TEMPLATES,
+} from '../services/chartReasoning.js'
 import { copyToClipboard } from '../services/export.js'
 
 /**
@@ -39,6 +50,12 @@ export default function PageVisualPreview({
   const [currentPage, setCurrentPage] = useState(initialPage)
   const [zoomPercent, setZoomPercent] = useState(100)
   const [copiedLocator, setCopiedLocator] = useState(null)
+  const [selectedChartForVLM, setSelectedChartForVLM] = useState(null)
+  const [isVlmAnalyzing, setIsVlmAnalyzing] = useState(false)
+  const [vlmResult, setVlmResult] = useState(null)
+  const [customVlmQuestion, setCustomVlmQuestion] = useState('')
+  const [activePromptType, setActivePromptType] = useState('summarize')
+  const [copiedVlm, setCopiedVlm] = useState(false)
   const pageContainerRef = useRef(null)
 
   // Group document into pages
@@ -59,6 +76,46 @@ export default function PageVisualPreview({
   const activePage = useMemo(() => {
     return pages.find((p) => p.pageNumber === currentPage) || pages[0] || null
   }, [pages, currentPage])
+
+  // Detect visual charts, plots, and figures on active page
+  const visualFigures = useMemo(() => {
+    return detectPageVisualElements(activePage)
+  }, [activePage])
+
+  // Clear chart inspector when navigating pages unless current chart is on new page
+  useEffect(() => {
+    setSelectedChartForVLM(null)
+    setVlmResult(null)
+    setCustomVlmQuestion('')
+  }, [currentPage])
+
+  async function handleTriggerVLM(chart, promptType = 'summarize', question = '') {
+    if (!chart) return
+    setIsVlmAnalyzing(true)
+    setActivePromptType(promptType)
+    try {
+      const res = await reasonOverChartWithVLM({
+        chart,
+        question,
+        promptType,
+      })
+      setVlmResult(res)
+    } catch (err) {
+      console.error('[DocuMind AI] VLM Reasoning error:', err)
+    } finally {
+      setIsVlmAnalyzing(false)
+    }
+  }
+
+  async function handleCopyVlmResult() {
+    if (!vlmResult) return
+    const textToCopy = `**${vlmResult.chartTitle}** (${vlmResult.visualLocator})\n${vlmResult.groundedAnswer}\n\nTrend: ${vlmResult.trendAnalysis}`
+    const ok = await copyToClipboard(textToCopy)
+    if (ok) {
+      setCopiedVlm(true)
+      setTimeout(() => setCopiedVlm(false), 2000)
+    }
+  }
 
   // Handle zoom
   function handleZoomIn() {
@@ -186,6 +243,31 @@ export default function PageVisualPreview({
             <Maximize2 size={13} />
           </button>
         </div>
+
+        {/* Visual Charts & VLM Figures Pill */}
+        {visualFigures.length > 0 && (
+          <div className="visual-figures-indicator-group">
+            <button
+              type="button"
+              className={`secondary-button visual-tool-btn visual-figures-pill-btn ${
+                selectedChartForVLM ? 'active' : ''
+              }`}
+              onClick={() => {
+                if (selectedChartForVLM) {
+                  setSelectedChartForVLM(null)
+                } else {
+                  setSelectedChartForVLM(visualFigures[0])
+                  handleTriggerVLM(visualFigures[0], 'summarize')
+                }
+              }}
+              title="Inspect detected figures and run Multimodal VLM reasoning"
+            >
+              <BarChart2 size={13} aria-hidden="true" />
+              <span>Figures & Charts ({visualFigures.length})</span>
+              <span className="vlm-active-dot" />
+            </button>
+          </div>
+        )}
       </header>
 
       {copiedLocator && (
@@ -272,7 +354,7 @@ export default function PageVisualPreview({
                       </div>
                       <p className="chunk-body-text">{chunk.text}</p>
 
-                      {/* Visual Bounding Box Region */}
+                      {/* Visual Bounding Box Region for Chunks */}
                       <div
                         className={`visual-bbox-overlay ${isCited ? 'bbox-highlighted' : ''}`}
                         style={bboxToStyle(bbox)}
@@ -283,6 +365,27 @@ export default function PageVisualPreview({
                     </div>
                   )
                 })}
+
+                {/* Visual Chart & Figure Overlays with Multimodal VLM anchors */}
+                {visualFigures.map((fig) => (
+                  <div
+                    key={fig.id}
+                    className={`visual-chart-overlay ${selectedChartForVLM?.id === fig.id ? 'active' : ''}`}
+                    style={bboxToStyle(fig.bbox)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedChartForVLM(fig)
+                      handleTriggerVLM(fig, 'summarize')
+                    }}
+                    title={`Click to open Multimodal VLM Reasoning for ${fig.title}`}
+                  >
+                    <div className="visual-chart-tag">
+                      <BarChart2 size={12} aria-hidden="true" />
+                      <span>{fig.title}</span>
+                      <span className="vlm-chip">VLM Ready</span>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Page Footer */}
@@ -293,6 +396,131 @@ export default function PageVisualPreview({
             </div>
           )}
         </main>
+
+        {/* Multimodal VLM Chart Inspector Drawer */}
+        {selectedChartForVLM && (
+          <aside className="vlm-inspector-drawer" aria-label="Multimodal VLM Chart Inspector">
+            <div className="vlm-inspector-header">
+              <div className="vlm-title-group">
+                <div className="vlm-badge">
+                  <Sparkles size={12} aria-hidden="true" />
+                  <span>Multimodal VLM Reasoning</span>
+                </div>
+                <h4>{selectedChartForVLM.title}</h4>
+                <span className="vlm-source-locator">
+                  {selectedChartForVLM.sourceLocator} · BBox: [{selectedChartForVLM.bbox.top}%, {selectedChartForVLM.bbox.left}%]
+                </span>
+              </div>
+              <button
+                type="button"
+                className="vlm-close-btn"
+                onClick={() => setSelectedChartForVLM(null)}
+                aria-label="Close VLM Inspector"
+                title="Close VLM Inspector"
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            {/* Quick Action Prompt Chips */}
+            <div className="vlm-prompt-chips">
+              {VLM_PROMPT_TEMPLATES.map((tpl) => (
+                <button
+                  key={tpl.id}
+                  type="button"
+                  className={`vlm-chip-btn ${activePromptType === tpl.id ? 'active' : ''}`}
+                  onClick={() => handleTriggerVLM(selectedChartForVLM, tpl.id)}
+                  disabled={isVlmAnalyzing}
+                >
+                  {tpl.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Custom Question Input */}
+            <form
+              className="vlm-question-form"
+              onSubmit={(e) => {
+                e.preventDefault()
+                if (!customVlmQuestion.trim() || isVlmAnalyzing) return
+                handleTriggerVLM(selectedChartForVLM, 'custom', customVlmQuestion.trim())
+              }}
+            >
+              <input
+                type="text"
+                placeholder="Ask VLM about this figure..."
+                value={customVlmQuestion}
+                onChange={(e) => setCustomVlmQuestion(e.target.value)}
+                className="vlm-input"
+              />
+              <button
+                type="submit"
+                className="primary-button vlm-submit-btn"
+                disabled={isVlmAnalyzing || !customVlmQuestion.trim()}
+                title="Run VLM inference"
+              >
+                {isVlmAnalyzing ? <Loader size={13} className="spin" /> : <Send size={13} />}
+              </button>
+            </form>
+
+            {/* Reasoning Output */}
+            <div className="vlm-reasoning-body">
+              {isVlmAnalyzing ? (
+                <div className="vlm-loading-state">
+                  <Loader size={20} className="spin" />
+                  <p>Multimodal VLM analyzing visual coordinates and data points...</p>
+                  <span>Model: Qwen2-VL-2B-Instruct</span>
+                </div>
+              ) : vlmResult ? (
+                <div className="vlm-result-card">
+                  <div className="vlm-meta-bar">
+                    <span className="vlm-model-tag">
+                      <Sparkles size={11} /> {vlmResult.vlmModel}
+                    </span>
+                    <span className="vlm-confidence-badge">
+                      {Math.round(vlmResult.confidenceScore * 100)}% Grounded
+                    </span>
+                    <button
+                      type="button"
+                      className="vlm-copy-btn"
+                      onClick={handleCopyVlmResult}
+                      title="Copy VLM interpretation"
+                    >
+                      {copiedVlm ? <Check size={12} /> : <Copy size={12} />}
+                      <span>{copiedVlm ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
+
+                  <div className="vlm-answer-text">
+                    <p>{vlmResult.groundedAnswer}</p>
+                  </div>
+
+                  {vlmResult.trendAnalysis && (
+                    <div className="vlm-trend-box">
+                      <TrendingUp size={13} />
+                      <span>{vlmResult.trendAnalysis}</span>
+                    </div>
+                  )}
+
+                  {vlmResult.extractedMetrics && vlmResult.extractedMetrics.length > 0 && (
+                    <div className="vlm-metrics-table-wrapper">
+                      <h5>Extracted Quantitative Series ({vlmResult.extractedMetrics.length})</h5>
+                      <div className="vlm-metrics-table">
+                        {vlmResult.extractedMetrics.map((m, idx) => (
+                          <div key={idx} className="vlm-metric-row">
+                            <span className="vlm-m-label">{m.label}</span>
+                            <span className="vlm-m-val">{m.value}</span>
+                            {m.trend && <span className="vlm-m-trend">{m.trend}</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </div>
+          </aside>
+        )}
       </div>
     </div>
   )

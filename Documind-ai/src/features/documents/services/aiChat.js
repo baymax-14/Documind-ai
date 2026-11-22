@@ -45,6 +45,10 @@ export function retrieveEvidenceChunks(documents, question, maxChunks = 3) {
       page: match.page,
       text: chunkText,
       score: match.score,
+      rerankScore: match.rerankScore,
+      rerankRank: match.rerankRank,
+      rankDelta: match.rankDelta,
+      rerankMethod: match.rerankMethod || 'cross-encoder',
     })
 
     if (candidateChunks.length >= maxChunks) break
@@ -105,6 +109,8 @@ export async function generateGroundedAnswer(question, retrievedChunks, signal) 
     locator: chunk.locator,
     page: chunk.page,
     text: chunk.text,
+    rerankScore: chunk.rerankScore,
+    rerankMethod: chunk.rerankMethod || 'cross-encoder',
   }))
 
   const count = citations.length

@@ -1,3 +1,5 @@
+import { crossEncodeRerank } from './reranker.js'
+
 /**
  * Common English stop words to avoid diluting natural language question retrieval.
  */
@@ -134,9 +136,11 @@ export function extractSnippet(text, matchStart, matchLen, radius = 60) {
  *
  * @param {import('../types/document.js').DocRecord[]} documents - Documents to search.
  * @param {string} rawQuery - Search string.
+ * @param {Object} [options]
+ * @param {boolean} [options.enableReranker=true] - Whether to apply Stage 2 neural re-ranking.
  * @returns {{ query: string, totalMatches: number, results: SearchResultItem[] }}
  */
-export function searchDocuments(documents, rawQuery) {
+export function searchDocuments(documents, rawQuery, options = {}) {
   const query = (rawQuery || '').trim()
   if (query.length < 2) {
     return { query, totalMatches: 0, results: [] }
@@ -256,12 +260,19 @@ export function searchDocuments(documents, rawQuery) {
     }
   }
 
-  // Sort by highest score first
+  // Sort by initial retrieval score first
   results.sort((a, b) => b.score - a.score)
+
+  // Stage 2: Cross-Encoder Neural Re-Ranking
+  // Evaluates query-passage cross-token attention and term proximity clustering
+  const finalResults =
+    options?.enableReranker !== false && results.length > 0
+      ? crossEncodeRerank(query, results)
+      : results
 
   return {
     query,
-    totalMatches: results.length,
-    results,
+    totalMatches: finalResults.length,
+    results: finalResults,
   }
 }
