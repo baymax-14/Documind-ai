@@ -111,12 +111,16 @@ export default function ConversationHistoryModal({
     e.stopPropagation()
     await deleteConversation(id)
     setConversations((prev) => prev.filter((c) => c.id !== id))
+    if (id === activeConversationId) {
+      onNewConversation()
+    }
   }
 
   async function handleClearAll() {
     await clearAllConversations()
     setConversations([])
     setConfirmClearOpen(false)
+    onNewConversation()
   }
 
   if (!isOpen) return null
@@ -131,10 +135,9 @@ export default function ConversationHistoryModal({
     >
       <div
         ref={modalRef}
-        className="hardware-modal conversation-history-modal"
+        className="conversation-history-modal"
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: 640 }}
       >
         <div className="hardware-modal-header">
           <div className="hardware-modal-title-wrap">
@@ -143,7 +146,7 @@ export default function ConversationHistoryModal({
             </span>
             <div>
               <h3 id="history-modal-title">Conversation History</h3>
-              <p>IndexedDB-persisted chat sessions across sessions.</p>
+              <p>Persisted on-device in this browser's IndexedDB</p>
             </div>
           </div>
           <button
@@ -157,7 +160,7 @@ export default function ConversationHistoryModal({
           </button>
         </div>
 
-        <div className="hardware-modal-body" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+        <div className="hardware-modal-body">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <button
               type="button"
@@ -182,16 +185,7 @@ export default function ConversationHistoryModal({
           </div>
 
           {confirmClearOpen && (
-            <div
-              style={{
-                padding: '12px 14px',
-                background: 'var(--color-bg, var(--cream))',
-                border: '2px solid var(--ink)',
-                borderRadius: 4,
-                marginBottom: 12,
-                boxShadow: '3px 3px 0 var(--ink)',
-              }}
-            >
+            <div className="conv-confirm-box">
               <p style={{ margin: '0 0 8px 0', fontSize: '0.875rem', fontWeight: 600 }}>
                 Delete all saved conversations?
               </p>
@@ -219,12 +213,23 @@ export default function ConversationHistoryModal({
           {loading ? (
             <p style={{ textAlign: 'center', padding: '24px 0', color: 'var(--muted)' }}>Loading history…</p>
           ) : conversations.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--muted)' }}>
-              <Clock size={28} style={{ margin: '0 auto 8px', opacity: 0.5 }} />
-              <p style={{ fontWeight: 600, margin: '0 0 4px' }}>No saved conversations yet</p>
-              <p style={{ fontSize: '0.8125rem', margin: 0 }}>
-                Ask questions in the Evidence Assistant to automatically save your sessions.
-              </p>
+            <div className="conv-empty-state">
+              <Clock size={32} />
+              <p>No saved conversations yet</p>
+              <span>Ask questions in Evidence Assistant to automatically persist sessions.</span>
+              <div style={{ marginTop: 14, display: 'flex', gap: 8, justifyContent: 'center' }}>
+                <button
+                  type="button"
+                  className="primary-button"
+                  style={{ fontSize: 13, padding: '6px 14px' }}
+                  onClick={() => {
+                    onNewConversation()
+                    onClose()
+                  }}
+                >
+                  <PlusCircle size={14} aria-hidden="true" /> Start New Chat
+                </button>
+              </div>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -233,35 +238,19 @@ export default function ConversationHistoryModal({
                 return (
                   <div
                     key={conv.id}
-                    className={`staging-card ${isActive ? 'active-conv-card' : ''}`}
-                    style={{
-                      cursor: 'pointer',
-                      border: isActive ? '2px solid var(--ink)' : '1.5px solid var(--ink)',
-                      background: isActive ? 'var(--sky-tint)' : 'var(--cream)',
-                      boxShadow: isActive ? '3px 3px 0 var(--ink)' : '2px 2px 0 var(--ink)',
-                    }}
+                    className={`conv-history-item ${isActive ? 'active' : ''}`}
                     onClick={() => {
                       onSelectConversation(conv)
                       onClose()
                     }}
                   >
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <h4
-                        style={{
-                          margin: '0 0 4px',
-                          fontSize: '0.875rem',
-                          fontWeight: 700,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                        title={conv.title}
-                      >
+                    <div className="conv-history-item-info">
+                      <h4 title={conv.title}>
                         {conv.title}
                       </h4>
-                      <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--muted)' }}>
+                      <p>
                         {conv.messageCount || conv.messages?.length || 0} messages · {formatRelativeTime(conv.updatedAt)}
-                        {isActive && ' · Current'}
+                        {isActive && <span className="conv-active-badge">Current</span>}
                       </p>
                     </div>
 

@@ -6342,3 +6342,199 @@ button:disabled {
   border-radius: 2px;
   border: 1px solid var(--ink);
 }
+
+/* ============================================================
+   Conversation History Modal
+   ============================================================ */
+.conversation-history-modal {
+  width: min(100%, 640px);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  border: 3px solid var(--ink);
+  background: var(--paper);
+  box-shadow: 8px 8px 0 var(--ink);
+  color: var(--ink);
+  font-family: var(--body);
+  overflow: hidden;
+}
+
+.conversation-history-modal .hardware-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 2px solid var(--ink);
+  background: var(--surface);
+}
+
+.conversation-history-modal .hardware-modal-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.conversation-history-modal .hardware-modal-title-wrap h3 {
+  margin: 0;
+  font: 700 18px/1.2 var(--heading);
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.conversation-history-modal .hardware-modal-title-wrap p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.conversation-history-modal .hardware-modal-body {
+  padding: 16px 20px;
+  flex: 1;
+  overflow-y: auto;
+  background: var(--paper);
+}
+
+.conversation-history-modal .hardware-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 14px 20px;
+  border-top: 2px solid var(--ink);
+  background: var(--surface);
+}
+
+.conv-confirm-box {
+  padding: 12px 14px;
+  background: var(--butter-tint);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  box-shadow: 3px 3px 0 var(--ink);
+  color: var(--ink);
+}
+
+.conv-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 2px 2px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+.conv-history-item:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--ink);
+  background: var(--butter-tint);
+}
+
+.conv-history-item.active {
+  background: var(--sky-tint);
+  border: 2.5px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.conv-history-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.conv-history-item-info h4 {
+  margin: 0 0 4px;
+  font: 700 14px/1.3 var(--heading);
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.conv-history-item-info p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.conv-active-badge {
+  font-family: var(--heading);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  background: var(--mint);
+  color: var(--ink-on-pastel);
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+}
+
+.conv-empty-state {
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--muted);
+}
+
+.conv-empty-state svg {
+  margin: 0 auto 10px;
+  opacity: 0.6;
+}
+
+.conv-empty-state p {
+  margin: 0 0 6px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.conv-empty-state span {
+  font-size: 13px;
+  display: block;
+}
+
+/* Dark mode for conversation history */
+.dark .conversation-history-modal {
+  background: var(--night-paper);
+  border-color: var(--ink);
+  color: var(--ink);
+  box-shadow: 8px 8px 0 #000;
+}
+
+.dark .conversation-history-modal .hardware-modal-header,
+.dark .conversation-history-modal .hardware-modal-footer {
+  background: var(--night-surface);
+  border-color: var(--ink);
+}
+
+.dark .conversation-history-modal .hardware-modal-body {
+  background: var(--night-paper);
+}
+
+.dark .conv-confirm-box {
+  background: #382c16;
+  border-color: var(--butter);
+  color: var(--ink);
+}
+
+.dark .conv-history-item {
+  background: var(--night-surface);
+  border-color: var(--ink);
+  color: var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.dark .conv-history-item:hover {
+  background: #33332a;
+}
+
+.dark .conv-history-item.active {
+  background: #172a3a;
+  border-color: var(--sky);
+}
+
+.dark .conv-empty-state p {
+  color: var(--ink);
+}

@@ -50,6 +50,7 @@ import {
   createConnectionManager,
   createSyncManager,
   saveConversation,
+  listConversations,
   askBackendQuestion,
   uploadDocumentToBackend,
   ProcessingStatusBadge,
@@ -77,6 +78,13 @@ function getGreeting() {
   if (hour < 12) return 'Good morning'
   if (hour < 17) return 'Good afternoon'
   return 'Good evening'
+}
+
+function safeId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9)
 }
 
 function App() {
@@ -148,8 +156,25 @@ function App() {
   const connManagerRef = useRef(null)
   const syncManagerRef = useRef(null)
   const [syncStatuses, setSyncStatuses] = useState(new Map())
-  const [activeConversationId, setActiveConversationId] = useState(() => crypto.randomUUID())
+  const [activeConversationId, setActiveConversationId] = useState(() => safeId())
   const [historyModalOpen, setHistoryModalOpen] = useState(false)
+  const [convCount, setConvCount] = useState(0)
+
+  // Restore latest conversation on mount and count saved conversations
+  useEffect(() => {
+    listConversations()
+      .then((records) => {
+        if (records && records.length > 0) {
+          setConvCount(records.length)
+          const latest = records[0]
+          if (latest && Array.isArray(latest.messages) && latest.messages.length > 0) {
+            setActiveConversationId(latest.id)
+            setAiMessages(latest.messages)
+          }
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   // Phase 13: Token Governance & Operational Budgeting
   const tokenTrackerRef = useRef(null)
@@ -409,12 +434,12 @@ function App() {
     const { question, chunks } = pendingConsent
     setPendingConsent(null)
 
-    const convId = activeConversationId || crypto.randomUUID()
+    const convId = activeConversationId || safeId()
     if (!activeConversationId) setActiveConversationId(convId)
 
     // Append user message
     const userMsg = {
-      id: crypto.randomUUID(),
+      id: safeId(),
       sender: 'user',
       text: question,
       timestamp: Date.now(),
@@ -437,7 +462,7 @@ function App() {
           })
           if (backendRes && backendRes.answer) {
             assistantMsg = {
-              id: backendRes.message_id || crypto.randomUUID(),
+              id: backendRes.message_id || safeId(),
               sender: 'assistant',
               text: backendRes.answer,
               citations: (backendRes.citations || []).map((c, i) => ({
@@ -477,7 +502,7 @@ function App() {
         })
 
         assistantMsg = {
-          id: crypto.randomUUID(),
+          id: safeId(),
           sender: 'assistant',
           text: response.answer,
           citations: response.citations,
@@ -502,18 +527,22 @@ function App() {
       setAiMessages(finalMessages)
 
       // Persist conversation across browser reloads
-      saveConversation(convId, finalMessages).catch(() => {})
+      saveConversation(convId, finalMessages)
+        .then(() => listConversations().then((r) => setConvCount(r.length)).catch(() => {}))
+        .catch(() => {})
     } catch (err) {
       if (err.name !== 'AbortError') {
         const errorMsg = {
-          id: crypto.randomUUID(),
+          id: safeId(),
           sender: 'assistant',
           text: 'Generation failed or encountered an error. You may retry or ask a different question.',
           timestamp: Date.now(),
         }
         const errorMessages = [...updatedWithUser, errorMsg]
         setAiMessages(errorMessages)
-        saveConversation(convId, errorMessages).catch(() => {})
+        saveConversation(convId, errorMessages)
+          .then(() => listConversations().then((r) => setConvCount(r.length)).catch(() => {}))
+          .catch(() => {})
       }
     } finally {
       setIsAiGenerating(false)
@@ -531,7 +560,7 @@ function App() {
   }
 
   function handleNewConversation() {
-    setActiveConversationId(crypto.randomUUID())
+    setActiveConversationId(safeId())
     setAiMessages([])
     setSearchMode('ai')
     setNotice('Started a new conversation.')
@@ -616,7 +645,7 @@ function App() {
             type="button"
             onClick={() => setHistoryModalOpen(true)}
           >
-            <Clock size={17} /> Chat History
+            <Clock size={17} /> Chat History {convCount > 0 && <span className="nav-count">{convCount}</span>}
           </button>
           <a className="nav-link" href="#documents" onClick={() => setSearchMode('files')}>
             <FolderOpen size={17} /> Documents <span className="nav-count">{libraryDocs.length}</span>
@@ -717,7 +746,7 @@ function App() {
                   closeMobileMenu()
                 }}
               >
-                <Clock size={17} /> Chat History
+                <Clock size={17} /> Chat History {convCount > 0 && <span className="nav-count">{convCount}</span>}
               </button>
               <a
                 className="nav-link"
@@ -1085,7 +1114,7 @@ function App() {
                   onCancelGeneration={handleCancelAiGeneration}
                   onClearChat={() => {
                     setAiMessages([])
-                    setActiveConversationId(crypto.randomUUID())
+                    setActiveConversationId(safeId())
                   }}
                   onInspectCitation={handleInspectPassage}
                   onOpenHistory={() => setHistoryModalOpen(true)}
@@ -1339,7 +1368,10 @@ function App() {
         <Suspense fallback={null}>
           <ConversationHistoryModal
             isOpen={historyModalOpen}
-            onClose={() => setHistoryModalOpen(false)}
+            onClose={() => {
+              setHistoryModalOpen(false)
+              listConversations().then((r) => setConvCount(r.length)).catch(() => {})
+            }}
             activeConversationId={activeConversationId}
             onSelectConversation={handleSelectConversation}
             onNewConversation={handleNewConversation}
