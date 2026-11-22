@@ -40,6 +40,8 @@ export {
   exportBackendReport,
   summarizeBackendDocument,
   extractBackendStructuredData,
+  listBackendConversations,
+  getBackendConversation,
   API_BASE_URL,
 } from './services/backendApi.js'
 export { default as PrivacyNotice } from './components/PrivacyNotice.jsx'

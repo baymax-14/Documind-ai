@@ -291,3 +291,38 @@ export async function extractBackendStructuredData({ documentId, schemaId = 'RES
 
   return await res.json()
 }
+
+/**
+ * Lists user conversations saved on the backend.
+ *
+ * @returns {Promise<any[]>}
+ */
+export async function listBackendConversations() {
+  const res = await fetch(`${API_BASE_URL}/conversations`, {
+    headers: { Accept: 'application/json' },
+  })
+
+  if (!res.ok) {
+    throw new Error(`Failed to list conversations: HTTP ${res.status}`)
+  }
+
+  return await res.json()
+}
+
+/**
+ * Retrieves full conversation details from the backend.
+ *
+ * @param {string} conversationId
+ * @returns {Promise<any>}
+ */
+export async function getBackendConversation(conversationId) {
+  const res = await fetch(`${API_BASE_URL}/conversations/${conversationId}`, {
+    headers: { Accept: 'application/json' },
+  })
+
+  if (!res.ok) {
+    throw new Error(`Failed to get conversation: HTTP ${res.status}`)
+  }
+
+  return await res.json()
+}

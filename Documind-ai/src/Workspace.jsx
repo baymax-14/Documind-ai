@@ -6,6 +6,8 @@ import {
   BookOpen,
   Check,
   CheckCircle2,
+  Clock,
+  Cloud,
   Cpu,
   Database,
   FilePlus2,
@@ -39,11 +41,17 @@ import {
   SearchResultsView,
   searchDocuments,
   retrieveEvidenceChunks,
-    checkWebGPUSupport,
+  checkWebGPUSupport,
   initializeOnDeviceEngine,
   generateAnswerWithFallback,
   SEED_DOCS,
   StorageHardwareModal,
+  createConnectionManager,
+  createSyncManager,
+  saveConversation,
+  askBackendQuestion,
+  uploadDocumentToBackend,
+  ProcessingStatusBadge,
 } from './features/documents/index.js'
 
 const DocumentReader = lazy(() => import('./features/documents/components/DocumentReader.jsx'))
@@ -51,6 +59,7 @@ const AiAssistantView = lazy(() => import('./features/documents/components/AiAss
 const ExcerptConsentModal = lazy(() => import('./features/documents/components/ExcerptConsentModal.jsx'))
 const ComparisonView = lazy(() => import('./features/documents/components/ComparisonView.jsx'))
 const DocumentWorkflowsModal = lazy(() => import('./features/documents/components/DocumentWorkflowsModal.jsx'))
+const ConversationHistoryModal = lazy(() => import('./features/documents/components/ConversationHistoryModal.jsx'))
 
 function formatSize(bytes) {
   if (!bytes) return '0 KB'
@@ -98,6 +107,49 @@ function App() {
   const [workflowModal, setWorkflowModal] = useState(null) // { doc, tab: 'summary' | 'extract' } | null
   const engineRef = useRef(null)
   const modelAbortRef = useRef(null)
+
+  // Phase 10: Backend Connection, Sync & Conversation Persistence State
+  const [connectionInfo, setConnectionInfo] = useState({
+    state: 'disconnected',
+    backendInfo: null,
+    error: null,
+    lastCheckedAt: 0,
+    consecutiveFailures: 0,
+  })
+  const connManagerRef = useRef(null)
+  const syncManagerRef = useRef(null)
+  const [syncStatuses, setSyncStatuses] = useState(new Map())
+  const [activeConversationId, setActiveConversationId] = useState(() => crypto.randomUUID())
+  const [historyModalOpen, setHistoryModalOpen] = useState(false)
+
+  // Initialize Connection Manager
+  useEffect(() => {
+    const manager = createConnectionManager({
+      onChange: (info) => setConnectionInfo(info),
+      autoStart: true,
+    })
+    connManagerRef.current = manager
+    return () => manager.destroy()
+  }, [])
+
+  // Initialize Sync Manager
+  useEffect(() => {
+    const syncMgr = createSyncManager({
+      uploadFn: async (_docId, file) => {
+        return await uploadDocumentToBackend(file)
+      },
+      onChange: (statuses) => setSyncStatuses(statuses),
+    })
+    syncManagerRef.current = syncMgr
+    return () => syncMgr.reset()
+  }, [])
+
+  // Process sync queue when backend connects
+  useEffect(() => {
+    if (connectionInfo.state === 'connected' && syncManagerRef.current) {
+      syncManagerRef.current.processQueue(true)
+    }
+  }, [connectionInfo.state])
 
   useEffect(() => {
     checkWebGPUSupport().then((res) => {
@@ -219,6 +271,10 @@ function App() {
           setConfirmClearOpen(false)
           return
         }
+        if (historyModalOpen) {
+          setHistoryModalOpen(false)
+          return
+        }
         if (mobileMenuOpen) {
           setMobileMenuOpen(false)
           mobileMenuButtonRef.current?.focus()
@@ -227,7 +283,7 @@ function App() {
     }
     window.addEventListener('keydown', closeOnEscape)
     return () => window.removeEventListener('keydown', closeOnEscape)
-  }, [mobileMenuOpen, confirmClearOpen, readerDoc, workflowModal, pendingConsent, storageModalOpen])
+  }, [mobileMenuOpen, confirmClearOpen, readerDoc, workflowModal, pendingConsent, storageModalOpen, historyModalOpen])
 
   useEffect(() => {
     if (mobileMenuOpen) mobileTopbarRef.current?.querySelector('.mobile-nav a')?.focus()
@@ -314,6 +370,9 @@ function App() {
     const { question, chunks } = pendingConsent
     setPendingConsent(null)
 
+    const convId = activeConversationId || crypto.randomUUID()
+    if (!activeConversationId) setActiveConversationId(convId)
+
     // Append user message
     const userMsg = {
       id: crypto.randomUUID(),
@@ -321,29 +380,73 @@ function App() {
       text: question,
       timestamp: Date.now(),
     }
-    setAiMessages((prev) => [...prev, userMsg])
+    const updatedWithUser = [...aiMessages, userMsg]
+    setAiMessages(updatedWithUser)
     setIsAiGenerating(true)
 
     abortControllerRef.current = new AbortController()
 
     try {
-      const response = await generateAnswerWithFallback({
-        question,
-        retrievedChunks: chunks,
-        engine: engineRef.current,
-        signal: abortControllerRef.current.signal,
-      })
+      let assistantMsg = null
 
-      const assistantMsg = {
-        id: crypto.randomUUID(),
-        sender: 'assistant',
-        text: response.answer,
-        citations: response.citations,
-        hasEvidence: response.hasEvidence,
-        isRealModel: response.isRealModel,
-        timestamp: Date.now(),
+      // Hybrid Backend Intelligence: attempt server-grounded QA when connected
+      if (connectionInfo.state === 'connected') {
+        try {
+          const backendRes = await askBackendQuestion({
+            question,
+            conversationId: convId,
+          })
+          if (backendRes && backendRes.answer) {
+            assistantMsg = {
+              id: backendRes.message_id || crypto.randomUUID(),
+              sender: 'assistant',
+              text: backendRes.answer,
+              citations: (backendRes.citations || []).map((c, i) => ({
+                id: i + 1,
+                docId: c.document_id,
+                docName: c.document_name || 'Document',
+                page: c.page,
+                locator: c.source_locator || (c.page ? `Page ${c.page}` : 'Section'),
+                excerpt: c.excerpt || '',
+                validationStatus: c.validation_status,
+              })),
+              hasEvidence: Boolean(backendRes.evidence_count > 0),
+              isRealModel: true,
+              isBackendGrounded: true,
+              timestamp: Date.now(),
+            }
+          }
+        } catch (backendErr) {
+          // Graceful fallback to local evidence preview
+          console.warn('[DocuMind AI] Backend QA failed, falling back to local:', backendErr.message)
+        }
       }
-      setAiMessages((prev) => [...prev, assistantMsg])
+
+      // Local Fallback (on-device model or deterministic evidence preview)
+      if (!assistantMsg) {
+        const response = await generateAnswerWithFallback({
+          question,
+          retrievedChunks: chunks,
+          engine: engineRef.current,
+          signal: abortControllerRef.current.signal,
+        })
+
+        assistantMsg = {
+          id: crypto.randomUUID(),
+          sender: 'assistant',
+          text: response.answer,
+          citations: response.citations,
+          hasEvidence: response.hasEvidence,
+          isRealModel: response.isRealModel,
+          timestamp: Date.now(),
+        }
+      }
+
+      const finalMessages = [...updatedWithUser, assistantMsg]
+      setAiMessages(finalMessages)
+
+      // Persist conversation across browser reloads
+      saveConversation(convId, finalMessages).catch(() => {})
     } catch (err) {
       if (err.name !== 'AbortError') {
         const errorMsg = {
@@ -352,12 +455,30 @@ function App() {
           text: 'Generation failed or encountered an error. You may retry or ask a different question.',
           timestamp: Date.now(),
         }
-        setAiMessages((prev) => [...prev, errorMsg])
+        const errorMessages = [...updatedWithUser, errorMsg]
+        setAiMessages(errorMessages)
+        saveConversation(convId, errorMessages).catch(() => {})
       }
     } finally {
       setIsAiGenerating(false)
       abortControllerRef.current = null
     }
+  }
+
+  function handleSelectConversation(conv) {
+    if (conv && Array.isArray(conv.messages)) {
+      setActiveConversationId(conv.id)
+      setAiMessages(conv.messages)
+      setSearchMode('ai')
+      setNotice(`Loaded conversation "${conv.title}".`)
+    }
+  }
+
+  function handleNewConversation() {
+    setActiveConversationId(crypto.randomUUID())
+    setAiMessages([])
+    setSearchMode('ai')
+    setNotice('Started a new conversation.')
   }
 
   function handleCancelAiGeneration() {
@@ -433,6 +554,13 @@ function App() {
             onClick={() => setSearchMode('compare')}
           >
             <GitCompareArrows size={17} /> Compare Documents
+          </button>
+          <button
+            className="nav-link"
+            type="button"
+            onClick={() => setHistoryModalOpen(true)}
+          >
+            <Clock size={17} /> Chat History
           </button>
           <a className="nav-link" href="#documents" onClick={() => setSearchMode('files')}>
             <FolderOpen size={17} /> Documents <span className="nav-count">{libraryDocs.length}</span>
@@ -525,6 +653,16 @@ function App() {
               >
                 <GitCompareArrows size={17} /> Compare Documents
               </button>
+              <button
+                className="nav-link"
+                type="button"
+                onClick={() => {
+                  setHistoryModalOpen(true)
+                  closeMobileMenu()
+                }}
+              >
+                <Clock size={17} /> Chat History
+              </button>
               <a
                 className="nav-link"
                 href="#documents"
@@ -545,6 +683,36 @@ function App() {
 
         <div className="page-inner" inert={mobileMenuOpen}>
           <div className="top-actions">
+            <button
+              className="hardware-status-pill"
+              onClick={() => connManagerRef.current?.checkNow()}
+              title={
+                connectionInfo.state === 'connected'
+                  ? `Backend connected: ${connectionInfo.backendInfo?.environment || 'online'}. Click to re-check.`
+                  : connectionInfo.state === 'checking'
+                  ? 'Checking backend connection...'
+                  : `Backend offline (${connectionInfo.error || 'local mode'}). Click to retry.`
+              }
+              aria-label="Backend connection status"
+            >
+              <Cloud size={14} aria-hidden="true" />
+              <span>
+                {connectionInfo.state === 'connected'
+                  ? 'Backend Connected'
+                  : connectionInfo.state === 'checking'
+                  ? 'Checking Backend…'
+                  : 'Local Only'}
+              </span>
+              <span
+                className={`status-indicator ${
+                  connectionInfo.state === 'connected'
+                    ? 'indicator-green'
+                    : connectionInfo.state === 'checking'
+                    ? 'indicator-yellow'
+                    : 'indicator-gray'
+                }`}
+              />
+            </button>
             <button
               className="hardware-status-pill"
               onClick={() => setStorageModalOpen(true)}
@@ -855,8 +1023,14 @@ function App() {
                   isGenerating={isAiGenerating}
                   onAskQuestion={handleInitiateAiQuestion}
                   onCancelGeneration={handleCancelAiGeneration}
-                  onClearChat={() => setAiMessages([])}
+                  onClearChat={() => {
+                    setAiMessages([])
+                    setActiveConversationId(crypto.randomUUID())
+                  }}
                   onInspectCitation={handleInspectPassage}
+                  onOpenHistory={() => setHistoryModalOpen(true)}
+                  onNewChat={handleNewConversation}
+                  isBackendConnected={connectionInfo.state === 'connected'}
                   modelStatus={modelStatus}
                   modelProgress={modelProgress}
                   modelError={modelError}
@@ -1021,9 +1195,11 @@ function App() {
                         {doc.sample ? (
                           <span className="doc-status sample-status">Sample</span>
                         ) : (
-                          <span className="doc-status status-stored" title="Persisted in browser IndexedDB">
-                            <CheckCircle2 size={12} aria-hidden="true" /> Stored in browser
-                          </span>
+                          <ProcessingStatusBadge
+                            status={syncStatuses.get(doc.id)?.status || 'local_only'}
+                            error={syncStatuses.get(doc.id)?.error}
+                            onRetry={() => syncManagerRef.current?.retry(doc.id)}
+                          />
                         )}
 
                         <button
@@ -1078,7 +1254,6 @@ function App() {
           />
         )}
 
-        {/* Document Reader Overlay View */}
         {/* Storage & WebGPU Hardware Diagnostics Modal */}
         <StorageHardwareModal
           isOpen={storageModalOpen}
@@ -1090,6 +1265,17 @@ function App() {
           modelStatus={modelStatus}
           onClearLibrary={() => setConfirmClearOpen(true)}
         />
+
+        {/* Persistent Conversation History Modal */}
+        <Suspense fallback={null}>
+          <ConversationHistoryModal
+            isOpen={historyModalOpen}
+            onClose={() => setHistoryModalOpen(false)}
+            activeConversationId={activeConversationId}
+            onSelectConversation={handleSelectConversation}
+            onNewConversation={handleNewConversation}
+          />
+        </Suspense>
 
         {/* Document Section Summary & Structured Extraction Modal */}
         {workflowModal && (

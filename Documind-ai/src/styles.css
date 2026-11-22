@@ -610,6 +610,57 @@ button:disabled { color: var(--muted); opacity: .55; cursor: not-allowed; }
 }
 .indicator-green { background: #00b894; }
 .indicator-yellow { background: var(--butter); }
+.indicator-gray { background: #b2bec3; }
+
+.processing-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 3px;
+  border: 1px solid var(--ink);
+}
+.badge-local {
+  background: var(--surface);
+  color: var(--ink);
+}
+.badge-pending {
+  background: var(--butter);
+  color: var(--ink);
+}
+.badge-uploading {
+  background: var(--sky);
+  color: var(--ink);
+}
+.badge-processing {
+  background: #a29bfe;
+  color: var(--ink);
+}
+.badge-synced {
+  background: var(--mint);
+  color: var(--ink);
+}
+.badge-failed {
+  background: #ff7675;
+  color: var(--ink);
+}
+.badge-retry-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 2px;
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+}
+.badge-retry-btn:hover {
+  transform: rotate(45deg);
+}
 
 .doc-ask-btn {
   background: var(--mint);

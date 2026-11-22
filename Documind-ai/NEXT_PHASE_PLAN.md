@@ -43,10 +43,11 @@ DocuMind AI combines a local-first browser workbench (WebGPU on-device inference
 - **Phase 7 — Grounded Retrieval & PaperQA Agent (C3–C5)**: ✅ Hybrid vector + BM25 fusion engine, tenant isolation, claim-level page citations, and frontend API client (`backendApi.js`).
 - **Phase 8 — Advanced Evidence-Grounded Workflows (Checkpoint C6)**: ✅ Complete cross-document comparison matrix, section-aware grounded summarization, structured schema-based extraction (Research, Legal, Market), citation-preserving Markdown/JSON exporter, and enterprise backend `/api/v1/workflows` endpoints.
 - **Phase 9 — Evaluation Benchmark, Security Hardening & Deployment (Checkpoint C7)**: ✅ Automated 50-item benchmark evaluation suite (`benchmarkDataset.js`), prompt injection delimiter sanitization (`security.js`), path-traversal & IDOR citation forgery prevention, async PostgreSQL Alembic migrations (`backend/migrations/`), and comprehensive production deployment runbooks (`DEPLOYMENT_RUNBOOK.md`). 64/64 tests passing across 12 suites with 0 ESLint warnings and clean Vite build.
+- **Phase 10 — End-to-End Integration, Conversation Persistence & Backend Connection**: ✅ Real-time backend connection manager with auto-backoff (`connectionManager.js`), dual-track document sync manager (`syncManager.js`), persistent IndexedDB conversation history (`conversationStore.js`), backend-grounded QA integration with local fallback, visual processing status badges (`ProcessingStatusBadge.jsx`), and conversation history modal (`ConversationHistoryModal.jsx`). 88/88 tests passing across 15 suites with 0 ESLint warnings and clean Vite build.
 
 ---
 
-## Evaluation Benchmark & Security Verification Results (Phase 9 / C7)
+## Evaluation Benchmark & Security Verification Results (Phase 9 / C7 & Phase 10)
 
 | Metric / SLA Category | Target SLA | Measured Performance | Verification Status |
 | :--- | :--- | :--- | :--- |
@@ -55,8 +56,8 @@ DocuMind AI combines a local-first browser workbench (WebGPU on-device inference
 | **Adversarial / Injection Defense** | $100.0\%$ | **$100.0\%$** (8/8 injection attempts blocked) | ✅ Neutralized |
 | **Citation Precision & IDOR Detection** | $100.0\%$ | **$100.0\%$** (All citations strictly verified) | ✅ Zero Cross-Tenant Leakage |
 | **Overall Benchmark Pass Rate** | $\ge 90.0\%$ | **$90.0\%$** (45/50 items fully passing) | ✅ Exceeds Threshold |
-| **Regression Test Coverage** | $100\%$ Pass | **$64 / 64$ tests passed across 12 suites** | ✅ 0 Test Failures |
-| **Code Hygiene & Bundle Build** | Clean | **0 ESLint errors/warnings; clean Vite production build** | ✅ Production Ready |
+| **Regression Test Coverage** | $100\%$ Pass | **$88 / 88$ tests passed across 15 suites** | ✅ 0 Test Failures |
+| **Code Hygiene & Bundle Build** | Clean | **0 ESLint errors/warnings; clean Vite production build (5.40s)** | ✅ Production Ready |
 
 ---
 
@@ -70,3 +71,44 @@ DocuMind AI combines a local-first browser workbench (WebGPU on-device inference
    - `Documind-ai/src/features/documents/services/benchmark.js`: Automated metric evaluation runner reporting Recall@k, Abstention Accuracy, and Safety Defense.
 3. **Deployment Runbook**:
    - `DEPLOYMENT_RUNBOOK.md`: Docker Compose deployment, liveness/readiness health probes (`/health/live`, `/health/ready`), automated benchmark evaluation commands, disaster recovery, and rollback procedures.
+
+---
+
+## Checkpoint Traceability Matrix (DocuMind AI Implementation Plan)
+
+| Checkpoint | Scope | Key Deliverables & Evidence | Status |
+| :--- | :--- | :--- | :--- |
+| **C0 — Clean Baseline** | Repository cleanup, Git hygiene, lint/build verification | Clean `.gitignore`, lockfile pinned, GSAP licensing verified, 0 lint warnings | ✅ Verified |
+| **C1 — Secure Skeleton** | FastAPI, PostgreSQL, auth, metadata, migrations | Async SQLAlchemy 2.0, multi-tenant isolation, Alembic migrations, `/api/v1/health` | ✅ Verified |
+| **C2 — Ingestion MVP** | PDF/DOCX/TXT parsers, OCR fallback, chunk provenance | `pdfjs-dist`, `mammoth`, semantic chunker preserving character offsets & page locators | ✅ Verified |
+| **C3 — Retrieval MVP** | Embeddings, Qdrant, keyword/hybrid retrieval | 384-d dense embeddings + BM25 okapi search combined with Reciprocal Rank Fusion ($k=60$) | ✅ Verified |
+| **C4 — Grounded Chat MVP** | Evidence workflow, generation, citation validation | PaperQA agent, claim-level page citations, strict zero-hallucination abstention | ✅ Verified |
+| **C5 — Workspace Integration** | Real upload, processing UI, chat, clickable citations | Dual-track upload, IndexedDB persistence, on-device WebGPU (`Qwen2.5-0.5B`), Document Reader | ✅ Verified |
+| **C6 — Quality & Launch** | Evaluation benchmark, security hardening, runbooks | 50-item benchmark (Recall $\ge 85\%$, Abstention $100\%$, Defense $100\%$), `DEPLOYMENT_RUNBOOK.md` | ✅ Verified |
+
+---
+
+## Upcoming Strategic Phases Roadmap
+
+### Phase 11 — Table & Structural Matrix Intelligence
+Expand parsing and retrieval to support structured tabular data:
+1. **Header-Aware Table Extraction**:
+   - Enhance PDF and DOCX parsers to detect table borders and preserve header-to-cell associations.
+2. **Cell-Level Grounding & Provenance**:
+   - Assign fine-grained coordinate locators to tabular citations (`Page X, Table Y [Row: A, Col: B]`).
+3. **Tabular Contradiction Detection**:
+   - Enable side-by-side numerical comparison across reports with automatic divergence highlighting.
+
+### Phase 12 — Visual Document Grounding & Page Preview
+Enhance Document Reader with high-fidelity visual representations:
+1. **Canvas-Based Page Rendering**:
+   - Interactive SVG/Canvas layer over PDF pages highlighting exact citation bounding boxes.
+2. **Visual Thumbnail Strip**:
+   - Page thumbnail navigation rail allowing immediate jumping to visual sections.
+
+### Phase 13 — Production Observability, Rate Limiting & Token Governance
+Operational governance for enterprise deployments:
+1. **Token & Cost Budgeting**:
+   - Enforce bounded agent retrieval iterations ($k \le 3$) and configurable token budgets per tenant.
+2. **Privacy-Preserving Audit Logging**:
+   - Structured JSON logs tracking latency, citation validation rate, and redaction events without logging raw document text.
