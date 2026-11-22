@@ -5,6 +5,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
+import re
 from app.models.document import Document, Chunk
 from app.schemas.workflow import (
     CompareResponse,
@@ -14,6 +15,13 @@ from app.schemas.workflow import (
     SectionSummary,
     ExtractResponse,
     ExtractField,
+)
+from app.schemas.table import (
+    TableCellSchema,
+    DocTableSchema,
+    TableCellMatch,
+    TabularContradiction,
+    TableAnalysisResponse,
 )
 from app.core.logging import logger
 
@@ -272,4 +280,157 @@ class CrossDocumentComparisonService:
             document_name=doc.name,
             schema_name=active_schema["name"],
             fields=extracted_fields,
+        )
+
+    @staticmethod
+    async def analyze_document_tables(
+        db: AsyncSession,
+        owner_id: UUID,
+        document_ids: List[UUID],
+        query: Optional[str] = None,
+    ) -> TableAnalysisResponse:
+        doc_stmt = select(Document).where(
+            Document.id.in_(document_ids),
+            Document.owner_id == owner_id,
+        )
+        doc_res = await db.execute(doc_stmt)
+        docs = {d.id: d for d in doc_res.scalars().all()}
+        if not docs:
+            raise ValueError("No matching documents found or unauthorized.")
+
+        chunk_stmt = select(Chunk).where(
+            Chunk.document_id.in_(list(docs.keys()))
+        ).order_by(Chunk.document_id, Chunk.chunk_index)
+        chunk_res = await db.execute(chunk_stmt)
+        all_chunks = chunk_res.scalars().all()
+
+        chunks_by_doc = {}
+        for c in all_chunks:
+            chunks_by_doc.setdefault(c.document_id, []).append(c)
+
+        all_tables: List[DocTableSchema] = []
+        matches: List[TableCellMatch] = []
+        metric_cells: dict = {}
+
+        q_lower = (query or "").strip().lower()
+
+        for doc_id, doc in docs.items():
+            doc_chunks = chunks_by_doc.get(doc_id, [])
+            table_idx = 0
+
+            for c in doc_chunks:
+                text = c.text or ""
+                lines = [ln.strip() for ln in text.split("\n")]
+                i = 0
+                while i < len(lines):
+                    line = lines[i]
+                    if "|" in line and i + 1 < len(lines) and re.match(r"^\|?(\s*:?-+:?\s*\|)+\s*:?-+:?\s*\|?$", lines[i + 1]):
+                        # Header line
+                        headers = [h.strip() for h in line.strip("|").split("|")]
+                        rows = []
+                        title = f"Table {table_idx + 1}"
+                        if i > 0 and len(lines[i - 1]) > 2:
+                            title = lines[i - 1].lstrip("#").strip("*").strip() or title
+
+                        i += 2
+                        while i < len(lines) and "|" in lines[i] and len(lines[i]) > 0:
+                            row_cells = [cell.strip() for cell in lines[i].strip("|").split("|")]
+                            while len(row_cells) < len(headers):
+                                row_cells.append("")
+                            rows.append(row_cells[:len(headers)])
+                            i += 1
+
+                        if rows:
+                            table_idx += 1
+                            page_prefix = f"Page {c.page_number}" if c.page_number else f"Chunk {c.chunk_index + 1}"
+                            table_locator = f"{page_prefix}, Table {table_idx}"
+
+                            cells: List[TableCellSchema] = []
+                            for row_idx, row in enumerate(rows):
+                                row_hdr = row[0] if len(row) > 0 and row[0] else f"Row {row_idx + 1}"
+                                for col_idx, val in enumerate(row):
+                                    col_hdr = headers[col_idx] if col_idx < len(headers) else f"Col {col_idx + 1}"
+                                    cell_locator = f'{table_locator} [Row: "{row_hdr}", Col: "{col_hdr}"]'
+                                    cell_schema = TableCellSchema(
+                                        row_index=row_idx,
+                                        col_index=col_idx,
+                                        value=val,
+                                        header=col_hdr,
+                                        row_header=row_hdr,
+                                        locator=cell_locator,
+                                    )
+                                    cells.append(cell_schema)
+
+                                    # Check query match
+                                    if q_lower:
+                                        score = 0.0
+                                        if q_lower in val.lower():
+                                            score += 50.0
+                                        if q_lower in col_hdr.lower() or q_lower in row_hdr.lower():
+                                            score += 25.0
+                                        if score > 0:
+                                            matches.append(TableCellMatch(
+                                                document_id=doc.id,
+                                                document_name=doc.name,
+                                                table_id=f"table-{doc.id}-{table_idx}",
+                                                table_title=title,
+                                                matched_cell=cell_schema,
+                                                score=score,
+                                            ))
+
+                                    # Collect cross-doc metric comparison (skip col 0)
+                                    if col_idx > 0 and val:
+                                        metric_key = (row_hdr.lower(), col_hdr.lower())
+                                        metric_cells.setdefault(metric_key, []).append({
+                                            "document_id": str(doc.id),
+                                            "document_name": doc.name,
+                                            "row_header": row_hdr,
+                                            "column_header": col_hdr,
+                                            "value": val,
+                                            "locator": cell_locator,
+                                        })
+
+                            doc_table = DocTableSchema(
+                                id=f"table-{doc.id}-{table_idx}",
+                                title=title,
+                                headers=headers,
+                                rows=rows,
+                                cells=cells,
+                                page=c.page_number,
+                                locator=table_locator,
+                                row_count=len(rows),
+                                col_count=len(headers),
+                            )
+                            all_tables.append(doc_table)
+                    else:
+                        i += 1
+
+        matches.sort(key=lambda m: m.score, reverse=True)
+
+        # Detect contradictions and consensus across documents
+        contradictions: List[TabularContradiction] = []
+        for (r_hdr, c_hdr), entries in metric_cells.items():
+            if len(entries) > 1:
+                unique_values = set(e["value"].strip() for e in entries)
+                metric_name = f"{entries[0]['row_header']} — {entries[0]['column_header']}"
+                if len(unique_values) == 1:
+                    contradictions.append(TabularContradiction(
+                        metric=metric_name,
+                        status="consensus",
+                        description=f"Consensus across {len(entries)} sources reporting identical value '{entries[0]['value']}'.",
+                        sources=entries,
+                    ))
+                else:
+                    contradictions.append(TabularContradiction(
+                        metric=metric_name,
+                        status="contradiction",
+                        description=f"Divergence detected: sources report conflicting values ({', '.join(unique_values)}). Both sides cited.",
+                        sources=entries,
+                    ))
+
+        return TableAnalysisResponse(
+            total_tables=len(all_tables),
+            tables=all_tables,
+            matches=matches,
+            contradictions=contradictions,
         )

@@ -40,6 +40,7 @@ export {
   exportBackendReport,
   summarizeBackendDocument,
   extractBackendStructuredData,
+  analyzeBackendTables,
   listBackendConversations,
   getBackendConversation,
   API_BASE_URL,
@@ -95,4 +96,15 @@ export {
   deleteConversation,
   clearAllConversations,
 } from './services/conversationStore.js'
+export { default as TableView } from './components/TableView.jsx'
+export {
+  extractTablesFromText,
+  formatTableToMarkdown,
+  formatTableToCSV,
+} from './services/tableParser.js'
+export {
+  searchTables,
+  resolveCellCoordinate,
+  detectTabularContradictions,
+} from './services/tableRetrieval.js'
 export { createSyncManager } from './services/syncManager.js'

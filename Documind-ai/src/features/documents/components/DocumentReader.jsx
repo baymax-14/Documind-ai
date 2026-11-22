@@ -9,8 +9,11 @@ import {
   Copy,
   FileText,
   Search,
+  Table2,
   X,
 } from 'lucide-react'
+import { extractTablesFromText } from '../services/tableParser.js'
+import TableView from './TableView.jsx'
 
 function formatSize(bytes) {
   if (!bytes) return '0 KB'
@@ -74,9 +77,24 @@ function DocumentReader({ doc, initialChunkIndex = 0, initialQuery = '', onClose
   const [filterQuery, setFilterQuery] = useState(initialQuery)
   const [selectedChunk, setSelectedChunk] = useState(initialChunkIndex)
   const [copied, setCopied] = useState(false)
+  const [viewMode, setViewMode] = useState('text')
 
   const readerRef = useRef(null)
   const chunkRefs = useRef(new Map())
+
+  // Extract tables from document if any exist
+  const docTables = useMemo(() => {
+    if (!doc) return []
+    const extracted = []
+    if (doc.chunks && doc.chunks.length > 0) {
+      doc.chunks.forEach((chunk) => {
+        extracted.push(...extractTablesFromText(chunk.text, { page: chunk.page, parentLocator: chunk.locator }))
+      })
+    } else if (doc.text) {
+      extracted.push(...extractTablesFromText(doc.text))
+    }
+    return extracted
+  }, [doc])
 
   const chunks = useMemo(() => {
     if (doc?.chunks && doc.chunks.length > 0) return doc.chunks
@@ -182,6 +200,29 @@ function DocumentReader({ doc, initialChunkIndex = 0, initialQuery = '', onClose
               </button>
             )}
 
+            {docTables.length > 0 && (
+              <div className="reader-view-toggle-bar">
+                <button
+                  type="button"
+                  className={`reader-toggle-btn ${viewMode === 'text' ? 'active' : ''}`}
+                  onClick={() => setViewMode('text')}
+                  title="View text passages"
+                >
+                  <FileText size={13} />
+                  <span>Text</span>
+                </button>
+                <button
+                  type="button"
+                  className={`reader-toggle-btn ${viewMode === 'tables' ? 'active' : ''}`}
+                  onClick={() => setViewMode('tables')}
+                  title="View extracted tables"
+                >
+                  <Table2 size={13} />
+                  <span>Tables ({docTables.length})</span>
+                </button>
+              </div>
+            )}
+
             <div className="reader-search-input">
               <Search size={14} aria-hidden="true" />
               <input
@@ -222,75 +263,81 @@ function DocumentReader({ doc, initialChunkIndex = 0, initialQuery = '', onClose
           </div>
         </header>
 
-        {/* Reader Body: Section rail + Reading content */}
-        <div className="reader-body">
-          {/* Section jumper rail */}
-          <aside className="reader-rail" aria-label="Section locator jumper">
-            <div className="reader-rail-header">
-              <BookOpen size={14} aria-hidden="true" />
-              <span>Locators ({chunks.length})</span>
-            </div>
-            <nav className="reader-nav-list">
-              {chunks.map((c) => (
-                <button
-                  key={c.index}
-                  className={`reader-nav-item ${selectedChunk === c.index ? 'active' : ''}`}
-                  onClick={() => scrollToChunk(c.index)}
-                >
-                  <span className="reader-nav-locator">{c.locator}</span>
-                  <span className="reader-nav-snippet">
-                    {c.text.slice(0, 40)}…
-                  </span>
-                </button>
-              ))}
-            </nav>
-          </aside>
-
-          {/* Main Reading Surface */}
-          <main className="reader-content" tabIndex={0}>
-            {displayedChunks.length > 0 ? (
-              displayedChunks.map((chunk) => (
-                <article
-                  key={chunk.index}
-                  ref={(el) => {
-                    if (el) chunkRefs.current.set(chunk.index, el)
-                    else chunkRefs.current.delete(chunk.index)
-                  }}
-                  className={`reader-chunk ${selectedChunk === chunk.index ? 'reader-chunk-highlight' : ''}`}
-                  id={`chunk-${chunk.index}`}
-                >
-                  <div className="reader-chunk-header">
-                    <span className="reader-locator-badge">
-                      <FileText size={12} aria-hidden="true" /> {chunk.locator}
-                    </span>
-                    <button
-                      className="reader-copy-passage"
-                      onClick={() => {
-                        navigator.clipboard.writeText(chunk.text)
-                        setCopied(true)
-                        setTimeout(() => setCopied(false), 1500)
-                      }}
-                      title="Copy this section text"
-                    >
-                      <Copy size={12} />
-                    </button>
-                  </div>
-                  <div className="reader-chunk-text">
-                    <HighlightedText text={chunk.text} query={filterQuery} />
-                  </div>
-                </article>
-              ))
-            ) : (
-              <div className="reader-empty">
-                <Search size={24} aria-hidden="true" />
-                <p>No passages in this document matched "{filterQuery}".</p>
-                <button className="secondary-button" onClick={() => setFilterQuery('')}>
-                  Clear filter
-                </button>
+        {/* Reader Body: Section rail + Reading content OR Table View */}
+        {viewMode === 'tables' ? (
+          <div className="reader-tables-pane">
+            <TableView document={doc} tables={docTables} />
+          </div>
+        ) : (
+          <div className="reader-body">
+            {/* Section jumper rail */}
+            <aside className="reader-rail" aria-label="Section locator jumper">
+              <div className="reader-rail-header">
+                <BookOpen size={14} aria-hidden="true" />
+                <span>Locators ({chunks.length})</span>
               </div>
-            )}
-          </main>
-        </div>
+              <nav className="reader-nav-list">
+                {chunks.map((c) => (
+                  <button
+                    key={c.index}
+                    className={`reader-nav-item ${selectedChunk === c.index ? 'active' : ''}`}
+                    onClick={() => scrollToChunk(c.index)}
+                  >
+                    <span className="reader-nav-locator">{c.locator}</span>
+                    <span className="reader-nav-snippet">
+                      {c.text.slice(0, 40)}…
+                    </span>
+                  </button>
+                ))}
+              </nav>
+            </aside>
+
+            {/* Main Reading Surface */}
+            <main className="reader-content" tabIndex={0}>
+              {displayedChunks.length > 0 ? (
+                displayedChunks.map((chunk) => (
+                  <article
+                    key={chunk.index}
+                    ref={(el) => {
+                      if (el) chunkRefs.current.set(chunk.index, el)
+                      else chunkRefs.current.delete(chunk.index)
+                    }}
+                    className={`reader-chunk ${selectedChunk === chunk.index ? 'reader-chunk-highlight' : ''}`}
+                    id={`chunk-${chunk.index}`}
+                  >
+                    <div className="reader-chunk-header">
+                      <span className="reader-locator-badge">
+                        <FileText size={12} aria-hidden="true" /> {chunk.locator}
+                      </span>
+                      <button
+                        className="reader-copy-passage"
+                        onClick={() => {
+                          navigator.clipboard.writeText(chunk.text)
+                          setCopied(true)
+                          setTimeout(() => setCopied(false), 1500)
+                        }}
+                        title="Copy this section text"
+                      >
+                        <Copy size={12} />
+                      </button>
+                    </div>
+                    <div className="reader-chunk-text">
+                      <HighlightedText text={chunk.text} query={filterQuery} />
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <div className="reader-empty">
+                  <Search size={24} aria-hidden="true" />
+                  <p>No passages in this document matched "{filterQuery}".</p>
+                  <button className="secondary-button" onClick={() => setFilterQuery('')}>
+                    Clear filter
+                  </button>
+                </div>
+              )}
+            </main>
+          </div>
+        )}
       </motion.div>
     </motion.div>
   )

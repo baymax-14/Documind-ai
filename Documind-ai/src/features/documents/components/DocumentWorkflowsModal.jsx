@@ -8,8 +8,10 @@ import {
   FileText,
   Layers,
   Sparkles,
+  Table2,
   X,
 } from 'lucide-react'
+import TableView from './TableView.jsx'
 import {
   generateSectionSummary,
   exportSummaryToMarkdown,
@@ -127,7 +129,9 @@ export default function DocumentWorkflowsModal({
               <p className="workflow-modal-subtitle">
                 {activeTab === 'summary'
                   ? 'Hierarchical section summary anchored to verifiable source passages.'
-                  : 'Structured entity extraction with supporting excerpt citations.'}
+                  : activeTab === 'extract'
+                  ? 'Structured entity extraction with supporting excerpt citations.'
+                  : 'Cell-level coordinate matrix, locator extraction, and CSV/Markdown export.'}
               </p>
             </div>
           </div>
@@ -163,6 +167,16 @@ export default function DocumentWorkflowsModal({
           >
             <Layers size={15} />
             <span>Structured Extraction</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'tables'}
+            className={`workflow-tab ${activeTab === 'tables' ? 'active' : ''}`}
+            onClick={() => setActiveTab('tables')}
+          >
+            <Table2 size={15} />
+            <span>Table Matrix</span>
           </button>
 
           {/* Action Export Buttons */}
@@ -337,6 +351,18 @@ export default function DocumentWorkflowsModal({
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Tab 3: Table Matrix & Coordinates */}
+          {activeTab === 'tables' && (
+            <div className="workflow-tab-content">
+              <TableView
+                document={document}
+                onInspectCell={(locator) => {
+                  onInspectPassage?.(document.id, 0, locator)
+                }}
+              />
             </div>
           )}
         </div>

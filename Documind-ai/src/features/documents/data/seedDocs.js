@@ -24,6 +24,14 @@ Competitors in the document analysis space have shifted aggressively toward clou
 Key Customer Segments
 Academic researchers, legal compliance officers, and biotechnology teams represent the highest-intent segments. These users prioritize verifiable citation paths, source locators, and zero data leakage over conversational creative generation.
 
+### Segment Performance & Customer Retention
+| Customer Segment | Q3 Revenue | YoY Growth | Retention Rate |
+| :--- | :--- | :--- | :--- |
+| Enterprise Research | $12.4M | +28% | 98.2% |
+| Legal & Compliance | $4.8M | +19% | 96.5% |
+| Academic Institutions | $3.2M | +14% | 94.1% |
+| Biotechnology Labs | $5.6M | +34% | 97.8% |
+
 Recommendations for Q4
 1. Maintain strict on-device data boundaries to differentiate from cloud RAG providers.
 2. Deliver high-speed full-text indexing with paragraph and page-level citation anchors.
@@ -54,8 +62,21 @@ Recommendations for Q4
         index: 3,
         page: 4,
         locator: 'Page 4',
+        text: `### Segment Performance & Customer Retention
+| Customer Segment | Q3 Revenue | YoY Growth | Retention Rate |
+| :--- | :--- | :--- | :--- |
+| Enterprise Research | $12.4M | +28% | 98.2% |
+| Legal & Compliance | $4.8M | +19% | 96.5% |
+| Academic Institutions | $3.2M | +14% | 94.1% |
+| Biotechnology Labs | $5.6M | +34% | 97.8% |`,
+        offset: 840,
+      },
+      {
+        index: 4,
+        page: 5,
+        locator: 'Page 5',
         text: 'Recommendations for Q4. 1. Maintain strict on-device data boundaries to differentiate from cloud RAG providers. 2. Deliver high-speed full-text indexing with paragraph and page-level citation anchors. 3. Optimize in-browser memory consumption for large multi-page reports.',
-        offset: 844,
+        offset: 1200,
       },
     ],
   },
@@ -73,6 +94,14 @@ DocuMind AI is the local-first workbench for researchers and students. Our core 
 
 Architecture Milestones
 Milestone 1 delivered client-side extraction for PDF, DOCX, and TXT files using Web Workers and WebAssembly. Milestone 2 introduced persistent local IndexedDB storage with zero telemetry. Milestone 3 implements deterministic full-text search with instant citation retrieval.
+
+### Architecture Milestones & Resource Budget
+| Milestone Target | Status | Target Delivery | Peak Memory |
+| :--- | :--- | :--- | :--- |
+| M1: In-Browser Parsing | Completed | Q1 2025 | 45 MB |
+| M2: Local IndexedDB | Completed | Q2 2025 | 60 MB |
+| M3: Deterministic Search | In Progress | Q3 2025 | 85 MB |
+| M4: WebGPU Embeddings | In Progress | Q4 2025 | 220 MB |
 
 Interface and Usability
 The interface follows the Neo-Brutalist Pastel Harmony aesthetic: high-contrast black strokes, warm cream canvas, and tactile status pills. Navigation between search results and source text must take less than two clicks.`,
@@ -92,8 +121,20 @@ The interface follows the Neo-Brutalist Pastel Harmony aesthetic: high-contrast 
       {
         index: 2,
         locator: 'Paragraph 3',
+        text: `### Architecture Milestones & Resource Budget
+| Milestone Target | Status | Target Delivery | Peak Memory |
+| :--- | :--- | :--- | :--- |
+| M1: In-Browser Parsing | Completed | Q1 2025 | 45 MB |
+| M2: Local IndexedDB | Completed | Q2 2025 | 60 MB |
+| M3: Deterministic Search | In Progress | Q3 2025 | 85 MB |
+| M4: WebGPU Embeddings | In Progress | Q4 2025 | 220 MB |`,
+        offset: 540,
+      },
+      {
+        index: 3,
+        locator: 'Paragraph 4',
         text: 'Interface and Usability: The interface follows the Neo-Brutalist Pastel Harmony aesthetic: high-contrast black strokes, warm cream canvas, and tactile status pills. Navigation between search results and source text must take less than two clicks.',
-        offset: 541,
+        offset: 890,
       },
     ],
   },

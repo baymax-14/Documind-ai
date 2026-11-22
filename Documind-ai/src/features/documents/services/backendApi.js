@@ -293,6 +293,34 @@ export async function extractBackendStructuredData({ documentId, schemaId = 'RES
 }
 
 /**
+ * Request table matrix analysis and cross-document contradiction checks from backend.
+ *
+ * @param {Object} params
+ * @param {string[]} params.documentIds
+ * @param {string} [params.query]
+ * @param {AbortSignal} [params.signal]
+ * @returns {Promise<any>}
+ */
+export async function analyzeBackendTables({ documentIds, query, signal }) {
+  const res = await fetch(`${API_BASE_URL}/workflows/table-analysis`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({ document_ids: documentIds, query }),
+    signal,
+  })
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}))
+    throw new Error(errData.detail || `Table analysis failed: HTTP ${res.status}`)
+  }
+
+  return await res.json()
+}
+
+/**
  * Lists user conversations saved on the backend.
  *
  * @returns {Promise<any[]>}

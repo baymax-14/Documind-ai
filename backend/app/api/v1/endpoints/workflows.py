@@ -17,6 +17,10 @@ from app.schemas.workflow import (
     ExtractRequest,
     ExtractResponse,
 )
+from app.schemas.table import (
+    TableAnalysisRequest,
+    TableAnalysisResponse,
+)
 from app.services.comparison import CrossDocumentComparisonService
 
 router = APIRouter(prefix="/workflows", tags=["Workflows"])
@@ -120,6 +124,24 @@ async def extract_structured_data(
             owner_id=user_id,
             document_id=payload.document_id,
             schema_id=payload.schema_id or "RESEARCH_PAPER",
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@router.post("/table-analysis", response_model=TableAnalysisResponse)
+async def analyze_tables(
+    payload: TableAnalysisRequest,
+    db: AsyncSession = Depends(get_db),
+    user_id: UUID = Depends(get_current_user_id),
+):
+    """Analyze structured tables, coordinate cell index, search metrics, and detect cross-document contradictions."""
+    try:
+        return await CrossDocumentComparisonService.analyze_document_tables(
+            db=db,
+            owner_id=user_id,
+            document_ids=payload.document_ids,
+            query=payload.query,
         )
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
