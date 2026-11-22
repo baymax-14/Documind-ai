@@ -17,10 +17,15 @@
 <p align="center">
   <img src="https://img.shields.io/badge/React-19.0-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 19" />
   <img src="https://img.shields.io/badge/Vite-6.0-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-v4.0-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white" alt="Tailwind CSS v4" />
+  <img src="https://img.shields.io/badge/GSAP-3.15-0AE448?style=flat-square&logo=greensock&logoColor=black" alt="GSAP 3" />
+  <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.11" />
   <img src="https://img.shields.io/badge/FastAPI-0.111-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" />
   <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL" />
   <img src="https://img.shields.io/badge/Qdrant-v1.9-DC2626?style=flat-square&logo=qdrant&logoColor=white" alt="Qdrant" />
-  <img src="https://img.shields.io/badge/WebGPU-Accelerated-0052FF?style=flat-square" alt="WebGPU" />
+  <img src="https://img.shields.io/badge/Redis-7.0-DC382D?style=flat-square&logo=redis&logoColor=white" alt="Redis 7" />
+  <img src="https://img.shields.io/badge/WebGPU-Qwen_2.5-0052FF?style=flat-square" alt="WebGPU" />
+  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker" />
   <img src="https://img.shields.io/badge/Tests-122%20Passing-059669?style=flat-square" alt="122 Passing Tests" />
   <img src="https://img.shields.io/badge/License-MIT-black?style=flat-square" alt="License" />
 </p>
@@ -126,15 +131,59 @@ flowchart TD
 
 ## Tech Stack
 
-| Layer | Technologies |
-| :--- | :--- |
-| **Frontend Framework** | [React 19](https://react.dev/), [Vite 6](https://vitejs.dev/), [React Router 7](https://reactrouter.com/) |
-| **Styling & Motion** | [Tailwind CSS v4](https://tailwindcss.com/), [GSAP 3](https://gsap.com/) (ScrollSmoother, ScrollTrigger), Lucide Icons |
-| **On-Device AI & Parsers** | [WebLLM](https://webllm.mlc.ai/) (WebGPU), [pdfjs-dist](https://github.com/mozilla/pdf.js), [mammoth.js](https://github.com/mwilliamson/mammoth.js) |
-| **Backend Framework** | [FastAPI](https://fastapi.tiangolo.com/) (Python 3.11+), [Uvicorn](https://www.uvicorn.org/), Pydantic v2 |
-| **Databases & Vector Store** | [PostgreSQL 16](https://www.postgresql.org/) (Async SQLAlchemy), [Qdrant](https://qdrant.tech/) Vector DB, [Redis 7](https://redis.io/) |
-| **Database Migrations** | [Alembic](https://alembic.sqlalchemy.org/) |
-| **Containerization** | Docker, Docker Compose |
+DocuMind AI combines a local-first browser runtime with an enterprise hybrid retrieval architecture:
+
+### 1. Frontend & Client-Side Core
+- **Framework & Tooling**: [React 19](https://react.dev/), [Vite 6](https://vitejs.dev/) with native ES modules and fast HMR, [React Router 7](https://reactrouter.com/) for single-page routing.
+- **State & Data Management**: [Zustand 5](https://github.com/pmndrs/zustand) for reactive lightweight UI state, [TanStack React Query 5](https://tanstack.com/query) for asynchronous lifecycle caching.
+- **File Ingestion**: [React Dropzone](https://react-dropzone.js.org/) for drag-and-drop validation, size partitioning, and multi-file staging.
+
+### 2. Styling, Motion & Design System
+- **Design Language**: Custom **"The Paper Workbench"** neobrutalist design system with high-contrast pastel palettes (Mint `#88d498`, Butter `#ffd23f`, Sky `#74b9ff`), solid pitch-black structural borders (`2px/3px solid var(--ink)`), and hard box shadows (`4px 4px 0 var(--ink)`).
+- **CSS Architecture**: [Tailwind CSS v4](https://tailwindcss.com/) with native modern CSS variables, `tabular-nums` alignment, and full Dark Mode (`.dark` / `color-scheme: dark`) synchronization across the entire viewport.
+- **Animation & Motion**: [GSAP 3](https://gsap.com/) (`@gsap/react`, `ScrollSmoother`, `ScrollTrigger`, `ScrambleTextPlugin`) for fluid hero typography reveals, section transitions, and responsive spring physics.
+- **Iconography**: [Lucide React](https://lucide.dev/) stroke-based accessible iconography.
+
+### 3. On-Device AI & Hardware Acceleration
+- **In-Browser LLM Runtime**: [WebLLM](https://webllm.mlc.ai/) powered by **Apache TVM** and **WebGPU**, compiling optimized WGSL shaders directly onto client graphics hardware.
+- **Quantized Neural Weights**: `Qwen2.5-0.5B-Instruct-q4f16_1-MLC` (~350 MB shards) downloaded once into the browser's persistent `Cache API` for zero-token, zero-upload local generation.
+- **Multimodal VLM Reasoning**: Vision-Language Model prompting patterns for detecting charts/figures, isolating bounding box regions, and summarizing visual trends.
+- **Hardware Telemetry**: Navigator WebGPU adapter probing, VRAM limit checks, and live Token Governance budget tracking (`createTokenBudgetTracker`).
+
+### 4. Client-Side Document Parsing & Local Storage
+- **PDF Extraction**: [pdfjs-dist](https://github.com/mozilla/pdf.js) (Mozilla PDF.js) executing inside background Web Workers for high-speed page-by-page text stream decoding and visual bounding box calculation.
+- **DOCX Extraction**: [Mammoth.js](https://github.com/mwilliamson/mammoth.js) converting Word XML structures to sanitized semantic HTML chunks and paragraphs.
+- **Local Persistence**: Browser [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) via [idb 8](https://github.com/jakearchibald/idb) across two isolated databases:
+  - `documind_db`: Persists staged files, text chunks, and document metadata across reloads.
+  - `documind_conversations`: Persists timestamped chat sessions with auto-generated titles, message logs, and citation records.
+
+### 5. Algorithmic Intelligence & Grounding
+- **Lexical Retrieval**: In-memory BM25 Okapi with custom tokenization, lowercasing, punctuation stripping, and stop-word filtering (`k1=1.2`, `b=0.75`).
+- **Dense Vector Search**: Qdrant HNSW vector indexing with cosine distance metric.
+- **Reciprocal Rank Fusion (RRF)**: Merges sparse lexical rankings with dense vector embeddings using constant reciprocal scoring ($k=60$).
+- **Cross-Encoder Neural Re-Ranking**: Second-stage semantic re-ranking model scoring candidate chunks for deep query-passage alignment and confidence percentile estimation.
+- **Visual Grounding Engine**: Proportional coordinate normalization algorithms mapping text chunk offsets to visual bounding boxes across page thumbnails and split-pane reader views.
+- **Schema Extraction Engine**: Automated schema inference matching document titles and passages against structured schemas (Research Paper, Market Analysis, Legal Agreement, Product/Brand Guidelines).
+
+### 6. Backend Server & API Layer
+- **API Framework**: [FastAPI 0.111+](https://fastapi.tiangolo.com/) with asynchronous ASGI event loop powered by [Uvicorn](https://www.uvicorn.org/).
+- **Data Validation & Settings**: [Pydantic v2](https://docs.pydantic.dev/) and `pydantic-settings` for type validation and environment loading.
+- **Server-Side Document Parsers**: [PyMuPDF](https://pymupdf.readthedocs.io/) (`fitz`) for server PDF extraction and [python-docx](https://python-docx.readthedocs.io/) for Word files.
+- **HTTP Client**: [HTTPX](https://www.python-httpx.org/) for async non-blocking external requests and health probing.
+- **Security & Tokens**: [python-jose](https://github.com/mpdavis/python-jose) (JWT cryptographic verification) and [passlib](https://passlib.readthedocs.io/) (bcrypt password hashing).
+
+### 7. Databases, ORM & Caching
+- **Relational Database**: [PostgreSQL 16](https://www.postgresql.org/) for relational tenant storage, document records, and conversation history.
+- **Asynchronous ORM**: [SQLAlchemy 2.0](https://www.sqlalchemy.org/) with async engine via [asyncpg](https://github.com/MagicStack/asyncpg).
+- **Schema Migrations**: [Alembic](https://alembic.sqlalchemy.org/) for version-controlled, reproducible database schema migrations.
+- **Vector Database**: [Qdrant v1.9](https://qdrant.tech/) for scalable vector embeddings, payload filtering, and tenant isolation.
+- **In-Memory Cache & Broker**: [Redis 7](https://redis.io/) for session caching, rate limiting, and background task queues.
+
+### 8. DevOps, Testing & Quality Assurance
+- **Containerization**: [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) defining multi-container orchestration across services.
+- **Frontend Test Suite**: Native Node.js Test Runner (`node:test`, `node:assert/strict`) executing **122 automated unit and integration tests across 21 test suites** with zero third-party testing dependencies.
+- **Backend Test Suite**: [pytest 8](https://docs.pytest.org/), `pytest-asyncio`, and `pytest-cov` for backend API and retrieval tests.
+- **Code Quality**: [ESLint 9](https://eslint.org/) flat configuration enforcing clean code (0 errors, 0 warnings enforced).
 
 ---
 
