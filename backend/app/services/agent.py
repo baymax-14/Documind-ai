@@ -5,6 +5,7 @@ grounded response generation, and strict citation verification.
 """
 
 import uuid
+from datetime import datetime, timezone
 from typing import List, Optional, Tuple
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -46,6 +47,8 @@ class GroundedChatAgent:
             if not conversation:
                 conversation = Conversation(id=conversation_id, owner_id=owner_id, title=question[:80])
                 db.add(conversation)
+            else:
+                conversation.updated_at = datetime.now(timezone.utc)
         else:
             conversation = Conversation(id=uuid.uuid4(), owner_id=owner_id, title=question[:80])
             db.add(conversation)
@@ -76,6 +79,51 @@ class GroundedChatAgent:
         sufficient_evidence = [
             e for e in evidence_list if e.relevance_score >= self.min_relevance_threshold
         ]
+
+        # Resilient fallback: search database chunks directly if in-memory index was empty
+        if not sufficient_evidence:
+            import re
+            chunk_query = (
+                select(DocumentChunk, Document.filename)
+                .join(Document, DocumentChunk.document_id == Document.id)
+                .where(
+                    Document.owner_id == owner_id,
+                    Document.status != "deleted",
+                )
+            )
+            if document_ids:
+                chunk_query = chunk_query.where(DocumentChunk.document_id.in_(document_ids))
+
+            db_res = await db.execute(chunk_query)
+            rows = db_res.all()
+            keywords = [w.lower() for w in re.findall(r"\w+", question) if len(w) > 2]
+            scored = []
+            for chunk_obj, doc_name in rows:
+                text_lower = (chunk_obj.text or "").lower()
+                hits = sum(1 for kw in keywords if kw in text_lower)
+                if hits > 0:
+                    score = min(1.0, hits * 0.25)
+                    scored.append((score, chunk_obj, doc_name))
+            scored.sort(key=lambda s: s[0], reverse=True)
+            for score, chunk_obj, doc_name in scored[:5]:
+                sufficient_evidence.append(
+                    EvidenceObject(
+                        evidence_id=uuid.uuid4(),
+                        document_id=chunk_obj.document_id,
+                        document_name=doc_name,
+                        display_name=doc_name,
+                        chunk_id=chunk_obj.id,
+                        page_start=chunk_obj.page_start,
+                        page_end=chunk_obj.page_end,
+                        section=chunk_obj.section,
+                        text=chunk_obj.text,
+                        exact_source_excerpt=chunk_obj.text[:250],
+                        retrieval_method="keyword",
+                        retrieval_score=round(score, 4),
+                        relevance_score=round(score, 4),
+                        bounding_box=chunk_obj.extra_metadata.get("bounding_box") if chunk_obj.extra_metadata else None,
+                    )
+                )
 
         # 5. Synthesize grounded answer
         if not sufficient_evidence:
@@ -209,6 +257,7 @@ class GroundedChatAgent:
                     validation_status=validation,
                     excerpt=snippet,
                     chunk_id=ev.chunk_id,
+                    bounding_box=ev.bounding_box,
                 )
             )
 

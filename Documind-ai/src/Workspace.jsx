@@ -342,10 +342,10 @@ function App() {
   }
 
   function handleInspectPassage(docId, chunkIndex) {
-    const doc = libraryDocs.find((d) => d.id === docId)
+    const doc = libraryDocs.find((d) => d.id === docId || d.backendId === docId || d.name === docId)
     if (doc) {
       setReaderDoc(doc)
-      setReaderChunkIndex(chunkIndex)
+      setReaderChunkIndex(chunkIndex || 0)
       setReaderQuery(query)
     }
   }
@@ -418,8 +418,12 @@ function App() {
                 docName: c.document_name || 'Document',
                 page: c.page,
                 locator: c.source_locator || (c.page ? `Page ${c.page}` : 'Section'),
+                text: c.excerpt || '',
                 excerpt: c.excerpt || '',
                 validationStatus: c.validation_status,
+                chunkIndex: 0,
+                chunkId: c.chunk_id,
+                boundingBox: c.bounding_box || null,
               })),
               hasEvidence: Boolean(backendRes.evidence_count > 0),
               isRealModel: true,
@@ -457,7 +461,7 @@ function App() {
       if (tokenTrackerRef.current && assistantMsg?.text) {
         tokenTrackerRef.current.recordUsage({
           promptText: question,
-          evidenceText: chunks.map((c) => c.text).join('\n'),
+          evidenceText: (chunks || []).map((c) => c?.text || '').join('\n'),
           completionText: assistantMsg.text,
           iterations: 1,
         })

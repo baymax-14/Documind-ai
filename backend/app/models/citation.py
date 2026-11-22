@@ -71,6 +71,18 @@ class Citation(Base, TimestampMixin):
             return self.evidence_reference.claim_reference
         return None
 
+    @property
+    def document_name(self) -> Optional[str]:
+        if self.document:
+            return self.document.filename
+        return None
+
+    @property
+    def chunk_id(self) -> Optional[uuid.UUID]:
+        if self.evidence_reference:
+            return self.evidence_reference.chunk_id
+        return None
+
     # Relationships
     message = relationship("Message", back_populates="citations")
     evidence_reference = relationship("EvidenceReference", back_populates="citations")

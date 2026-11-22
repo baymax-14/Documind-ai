@@ -370,11 +370,11 @@ function AiAssistantView({
                           <div className="ai-excerpt-header">
                             <button
                               className="ai-citation-chip"
-                              onClick={() => onInspectCitation(c.docId, c.chunkIndex)}
-                              title={`Open ${c.docName} at ${c.locator} in reader`}
+                              onClick={() => onInspectCitation(c.docId || c.document_id, c.chunkIndex ?? 0)}
+                              title={`Open ${c.docName || c.document_name || 'document'} at ${c.locator || 'source'} in reader`}
                             >
                               <span className="citation-num">[{c.id}]</span>
-                              <span className="citation-doc">{c.docName}</span>
+                              <span className="citation-doc">{c.docName || c.document_name || 'Document'}</span>
                               <span className="citation-loc">
                                 <FileText size={10} style={{ display: 'inline', marginRight: 3 }} />
                                 {c.locator}
@@ -383,7 +383,7 @@ function AiAssistantView({
                             </button>
                           </div>
                           <blockquote className="ai-excerpt-quote">
-                            "{c.text.trim()}"
+                            "{(c.text || c.excerpt || '').trim()}"
                           </blockquote>
                         </article>
                       ))}

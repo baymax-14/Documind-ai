@@ -47,7 +47,14 @@ async def get_conversation(
     """
     stmt = (
         select(Conversation)
-        .options(selectinload(Conversation.messages).selectinload(Message.citations))
+        .options(
+            selectinload(Conversation.messages)
+            .selectinload(Message.citations)
+            .selectinload(Citation.document),
+            selectinload(Conversation.messages)
+            .selectinload(Message.citations)
+            .selectinload(Citation.evidence_reference),
+        )
         .where(Conversation.id == conversation_id)
     )
     result = await db.execute(stmt)

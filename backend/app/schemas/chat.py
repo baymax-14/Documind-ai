@@ -19,6 +19,7 @@ class CitationSummary(BaseModel):
     validation_status: CitationValidationStatus
     excerpt: Optional[str] = None
     chunk_id: Optional[uuid.UUID] = None
+    bounding_box: Optional[Dict[str, float]] = None
 
 
 class ChatRequest(BaseModel):

@@ -23,7 +23,9 @@ class DocumentChunk(Base, TimestampMixin):
     page_end: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     section: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     offsets: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    extra_metadata: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict, nullable=False)
+    extra_metadata: Mapped[Dict[str, Any]] = mapped_column(
+        JSON().with_variant(JSONB, "postgresql"), default=dict, nullable=False
+    )
     embedding_version: Mapped[str] = mapped_column(String(50), default="v1.0", nullable=False)
 
     @property

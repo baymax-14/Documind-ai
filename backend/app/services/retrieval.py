@@ -29,6 +29,7 @@ class IndexedChunk:
     section: Optional[str]
     offsets: Optional[str]
     vector: List[float]
+    bounding_box: Optional[Dict[str, float]] = None
 
 
 class EmbeddingService:
@@ -166,6 +167,7 @@ class RetrievalService:
         page_end: Optional[int] = None,
         section: Optional[str] = None,
         offsets: Optional[str] = None,
+        bounding_box: Optional[Dict[str, float]] = None,
     ) -> None:
         """Indexes a chunk into dense vector space and BM25 index."""
         vector = self.embedding_service.embed_text(text)
@@ -181,6 +183,7 @@ class RetrievalService:
             section=section,
             offsets=offsets,
             vector=vector,
+            bounding_box=bounding_box,
         )
         self._chunks_store[chunk_id] = indexed
         self.bm25_index.add_document(chunk_id, text)
@@ -279,6 +282,7 @@ class RetrievalService:
                     retrieval_method=method,
                     retrieval_score=round(norm_score, 4),
                     relevance_score=round(norm_score, 4),
+                    bounding_box=chunk.bounding_box,
                 )
             )
 

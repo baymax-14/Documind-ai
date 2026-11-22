@@ -108,6 +108,7 @@ class IngestionService:
                     page_end=chunk_data.page_end,
                     section=chunk_data.section,
                     offsets=chunk_data.offsets,
+                    bounding_box=chunk_data.extra_metadata.get("bounding_box") if chunk_data.extra_metadata else None,
                 )
 
             # 7. Update status to READY & job to COMPLETED
