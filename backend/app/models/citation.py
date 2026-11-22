@@ -56,11 +56,20 @@ class Citation(Base, TimestampMixin):
     )
     page: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     source_locator: Mapped[str] = mapped_column(String(255), nullable=False)
+    claim_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     validation_status: Mapped[CitationValidationStatus] = mapped_column(
         SQLEnum(CitationValidationStatus, name="citation_validation_status"),
         default=CitationValidationStatus.VERIFIED,
         nullable=False,
     )
+
+    @property
+    def excerpt(self) -> Optional[str]:
+        if self.claim_text:
+            return self.claim_text
+        if self.evidence_reference and self.evidence_reference.claim_reference:
+            return self.evidence_reference.claim_reference
+        return None
 
     # Relationships
     message = relationship("Message", back_populates="citations")

@@ -403,6 +403,7 @@ button:disabled { color: var(--muted); opacity: .55; cursor: not-allowed; }
 
 .ai-engine-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border: 1px solid var(--ink); font: 700 10px/1.2 var(--heading); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 8px; }
 .ai-engine-tag-model { background: var(--mint); color: var(--ink); }
+.ai-engine-tag-backend { background: var(--sky); color: var(--ink); }
 .ai-engine-tag-preview { background: var(--butter); color: var(--ink); }
 
 /* Feed Container */

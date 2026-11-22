@@ -132,7 +132,7 @@ class GroundedChatAgent:
                 page=cit.page,
                 source_locator=cit.source_locator,
                 validation_status=cit.validation_status,
-                excerpt=cit.excerpt,
+                claim_text=cit.excerpt,
             )
             db.add(cit_record)
 

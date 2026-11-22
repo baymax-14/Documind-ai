@@ -26,6 +26,10 @@ class DocumentChunk(Base, TimestampMixin):
     extra_metadata: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict, nullable=False)
     embedding_version: Mapped[str] = mapped_column(String(50), default="v1.0", nullable=False)
 
+    @property
+    def page_number(self) -> Optional[int]:
+        return self.page_start
+
     # Relationships
     document = relationship("Document", back_populates="chunks")
     evidence_references = relationship("EvidenceReference", back_populates="chunk", cascade="all, delete-orphan")

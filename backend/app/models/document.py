@@ -39,6 +39,10 @@ class Document(Base, TimestampMixin):
     )
     parser_version: Mapped[str] = mapped_column(String(50), default="v1.0", nullable=False)
 
+    @property
+    def name(self) -> str:
+        return self.filename
+
     # Relationships
     owner = relationship("User", back_populates="documents")
     processing_jobs = relationship("ProcessingJob", back_populates="document", cascade="all, delete-orphan")

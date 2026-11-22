@@ -6,7 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 import re
-from app.models.document import Document, Chunk
+from app.models.document import Document
+from app.models.chunk import DocumentChunk as Chunk
 from app.schemas.workflow import (
     CompareResponse,
     CompareDimensionResult,
