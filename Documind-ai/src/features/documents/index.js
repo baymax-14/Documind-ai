@@ -36,6 +36,10 @@ export {
   deleteBackendDocument,
   askBackendQuestion,
   resolveBackendCitation,
+  compareBackendDocuments,
+  exportBackendReport,
+  summarizeBackendDocument,
+  extractBackendStructuredData,
   API_BASE_URL,
 } from './services/backendApi.js'
 export { default as PrivacyNotice } from './components/PrivacyNotice.jsx'
@@ -44,4 +48,28 @@ export { default as SearchResultsView } from './components/SearchResultsView.jsx
 export { default as ExcerptConsentModal } from './components/ExcerptConsentModal.jsx'
 export { default as AiAssistantView } from './components/AiAssistantView.jsx'
 export { default as StorageHardwareModal } from './components/StorageHardwareModal.jsx'
+export { default as ComparisonView } from './components/ComparisonView.jsx'
+export { default as DocumentWorkflowsModal } from './components/DocumentWorkflowsModal.jsx'
+export {
+  compareDocuments,
+  findTopChunkForDoc,
+  DEFAULT_COMPARISON_DIMENSIONS,
+} from './services/comparison.js'
+export {
+  generateSectionSummary,
+  exportSummaryToMarkdown,
+  inferSectionTitle,
+  extractTakeawaysFromText,
+} from './services/summarize.js'
+export {
+  EXTRACTION_SCHEMAS,
+  extractStructuredData,
+  exportStructuredDataToJson,
+} from './services/schemaExtract.js'
+export {
+  exportComparisonToMarkdown,
+  exportAiChatToMarkdown,
+  downloadMarkdownFile,
+  copyToClipboard,
+} from './services/export.js'
 export { SEED_DOCS } from './data/seedDocs.js'

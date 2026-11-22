@@ -41,30 +41,11 @@ DocuMind AI combines a local-first browser workbench (WebGPU on-device inference
 - **Phase 5 — On-Device Model Integration**: ✅ Integrated `Qwen2.5-0.5B-Instruct` WebGPU runtime with 5 distinct UI states and hardware detection.
 - **Phase 6 — Server-Side Foundation & Ingestion (C1–C2)**: ✅ FastAPI application, async database models, storage engine, format-aware parsers, and semantic chunker.
 - **Phase 7 — Grounded Retrieval & PaperQA Agent (C3–C5)**: ✅ Hybrid vector + BM25 fusion engine, tenant isolation, claim-level page citations, and frontend API client (`backendApi.js`).
+- **Phase 8 — Advanced Evidence-Grounded Workflows (Checkpoint C6)**: ✅ Complete cross-document comparison matrix, section-aware grounded summarization, structured schema-based extraction (Research, Legal, Market), citation-preserving Markdown/JSON exporter, and enterprise backend `/api/v1/workflows` endpoints. 59/59 regression tests passing across 11 suites.
 
 ---
 
 ## Upcoming Phases
-
-### Phase 8 — Advanced Evidence-Grounded Workflows (Checkpoint C6)
-
-Expand trusted retrieval into higher-value analytical workflows across both frontend and backend:
-
-1. **Section-Aware Document Summaries**:
-   - Generate hierarchical summaries anchored to specific sections (e.g. Methodology, Findings, Financials) with direct source links.
-2. **Cross-Document Comparison**:
-   - Compare multiple selected documents side-by-side with matrix generation, highlighting agreements, contradictions, and distinct contributions with multi-source citations.
-3. **Structured Schema-Based Extraction**:
-   - Extract structured JSON data (e.g., contract parties, dates, financial metrics, research metrics) where each field includes its supporting excerpt and page locator.
-4. **Citation-Preserving Export**:
-   - Export synthesized answers, summaries, and comparison matrices to Markdown and PDF while preserving full citation footnotes and verifiable locators.
-
-**Acceptance Criteria**:
-- Summaries cite specific document sections; ungrounded statements are rejected.
-- Comparison matrix flags conflicting statements between sources.
-- Extracted JSON fields missing supporting evidence are marked `null` with explicit `missing_evidence` notice rather than guessed.
-
----
 
 ### Phase 9 — Evaluation Benchmark, Security Hardening & Deployment (Checkpoint C7)
 

@@ -2,7 +2,8 @@
  * DocuMind AI — Backend API Client
  *
  * Connects the React workspace to the FastAPI + PostgreSQL + Qdrant server.
- * Handles document upload, status polling, content extraction, and PaperQA grounded QA.
+ * Handles document upload, status polling, content extraction, PaperQA grounded QA,
+ * and cross-document comparison workflows.
  */
 
 const DEFAULT_API_BASE = 'http://localhost:8000/api/v1'
@@ -70,7 +71,7 @@ export async function listBackendDocuments() {
 }
 
 /**
- * Retrieves extracted document chunks and locators.
+ * Retrieves full document details including its indexed text and chunks.
  *
  * @param {string} documentId
  * @returns {Promise<any>}
@@ -81,14 +82,14 @@ export async function getBackendDocumentContent(documentId) {
   })
 
   if (!res.ok) {
-    throw new Error(`Failed to retrieve document content: HTTP ${res.status}`)
+    throw new Error(`Failed to get document content: HTTP ${res.status}`)
   }
 
   return await res.json()
 }
 
 /**
- * Requests backend to re-run ingestion and hybrid indexing for a document.
+ * Retries ingestion/parsing for a failed document.
  *
  * @param {string} documentId
  * @returns {Promise<any>}
@@ -107,7 +108,7 @@ export async function reprocessBackendDocument(documentId) {
 }
 
 /**
- * Soft-deletes a document and purges its stored bytes and vector index.
+ * Deletes a document from the backend.
  *
  * @param {string} documentId
  * @returns {Promise<boolean>}
@@ -168,6 +169,124 @@ export async function resolveBackendCitation(citationId) {
 
   if (!res.ok) {
     throw new Error(`Failed to resolve citation: HTTP ${res.status}`)
+  }
+
+  return await res.json()
+}
+
+/**
+ * Runs multi-document comparison via the backend hybrid retrieval engine.
+ *
+ * @param {Object} params
+ * @param {string[]} params.documentIds
+ * @param {string[]} [params.dimensions]
+ * @param {string} [params.customTopic]
+ * @param {AbortSignal} [params.signal]
+ * @returns {Promise<any>}
+ */
+export async function compareBackendDocuments({ documentIds, dimensions, customTopic, signal }) {
+  const res = await fetch(`${API_BASE_URL}/workflows/compare`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({
+      document_ids: documentIds,
+      dimensions: dimensions || null,
+      custom_topic: customTopic || null,
+    }),
+    signal,
+  })
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}))
+    throw new Error(errData.detail || errData.error || `Comparison failed: HTTP ${res.status}`)
+  }
+
+  return await res.json()
+}
+
+/**
+ * Generates an enterprise-formatted Markdown report with footnotes via the backend.
+ *
+ * @param {Object} params
+ * @param {string} params.reportType - 'comparison' | 'chat'
+ * @param {Object} params.data
+ * @param {AbortSignal} [params.signal]
+ * @returns {Promise<{ markdown_content: string, filename: string }>}
+ */
+export async function exportBackendReport({ reportType, data, signal }) {
+  const res = await fetch(`${API_BASE_URL}/workflows/export`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({
+      report_type: reportType,
+      data,
+    }),
+    signal,
+  })
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}))
+    throw new Error(errData.detail || errData.error || `Export failed: HTTP ${res.status}`)
+  }
+
+  return await res.json()
+}
+
+/**
+ * Request section-aware document summary from backend.
+ *
+ * @param {string} documentId
+ * @param {AbortSignal} [signal]
+ * @returns {Promise<any>}
+ */
+export async function summarizeBackendDocument(documentId, signal) {
+  const res = await fetch(`${API_BASE_URL}/workflows/summarize`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({ document_id: documentId }),
+    signal,
+  })
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}))
+    throw new Error(errData.detail || `Summarization failed: HTTP ${res.status}`)
+  }
+
+  return await res.json()
+}
+
+/**
+ * Request structured schema extraction from backend.
+ *
+ * @param {Object} params
+ * @param {string} params.documentId
+ * @param {string} [params.schemaId='RESEARCH_PAPER']
+ * @param {AbortSignal} [params.signal]
+ * @returns {Promise<any>}
+ */
+export async function extractBackendStructuredData({ documentId, schemaId = 'RESEARCH_PAPER', signal }) {
+  const res = await fetch(`${API_BASE_URL}/workflows/extract`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({ document_id: documentId, schema_id: schemaId }),
+    signal,
+  })
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}))
+    throw new Error(errData.detail || `Extraction failed: HTTP ${res.status}`)
   }
 
   return await res.json()

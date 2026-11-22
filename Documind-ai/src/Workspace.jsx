@@ -10,10 +10,13 @@ import {
   Database,
   FilePlus2,
   FileSearch,
+  FileText,
   FolderOpen,
+  GitCompareArrows,
   HardDrive,
   Info,
   LayoutGrid,
+  Layers,
   List,
   Loader,
   Lock,
@@ -46,6 +49,8 @@ import {
 const DocumentReader = lazy(() => import('./features/documents/components/DocumentReader.jsx'))
 const AiAssistantView = lazy(() => import('./features/documents/components/AiAssistantView.jsx'))
 const ExcerptConsentModal = lazy(() => import('./features/documents/components/ExcerptConsentModal.jsx'))
+const ComparisonView = lazy(() => import('./features/documents/components/ComparisonView.jsx'))
+const DocumentWorkflowsModal = lazy(() => import('./features/documents/components/DocumentWorkflowsModal.jsx'))
 
 function formatSize(bytes) {
   if (!bytes) return '0 KB'
@@ -64,7 +69,7 @@ function getGreeting() {
 function App() {
   const [dark, setDark] = useState(false)
   const [query, setQuery] = useState('')
-  const [searchMode, setSearchMode] = useState('files') // 'files' | 'evidence' | 'ai'
+  const [searchMode, setSearchMode] = useState('files') // 'files' | 'evidence' | 'ai' | 'compare'
   const [view, setView] = useState('list')
   const [filter, setFilter] = useState('All files')
   const [ascending, setAscending] = useState(false)
@@ -90,6 +95,7 @@ function App() {
   const [modelError, setModelError] = useState('')
   const [gpuInfo, setGpuInfo] = useState(null)
   const [storageModalOpen, setStorageModalOpen] = useState(false)
+  const [workflowModal, setWorkflowModal] = useState(null) // { doc, tab: 'summary' | 'extract' } | null
   const engineRef = useRef(null)
   const modelAbortRef = useRef(null)
 
@@ -197,6 +203,10 @@ function App() {
           setReaderDoc(null)
           return
         }
+        if (workflowModal) {
+          setWorkflowModal(null)
+          return
+        }
         if (pendingConsent) {
           setPendingConsent(null)
           return
@@ -217,7 +227,7 @@ function App() {
     }
     window.addEventListener('keydown', closeOnEscape)
     return () => window.removeEventListener('keydown', closeOnEscape)
-  }, [mobileMenuOpen, confirmClearOpen, readerDoc, pendingConsent, storageModalOpen])
+  }, [mobileMenuOpen, confirmClearOpen, readerDoc, workflowModal, pendingConsent, storageModalOpen])
 
   useEffect(() => {
     if (mobileMenuOpen) mobileTopbarRef.current?.querySelector('.mobile-nav a')?.focus()
@@ -277,6 +287,14 @@ function App() {
     setReaderDoc(doc)
     setReaderChunkIndex(0)
     setReaderQuery('')
+  }
+
+  function handleOpenSummarizer(doc) {
+    setWorkflowModal({ doc, tab: 'summary' })
+  }
+
+  function handleOpenExtractor(doc) {
+    setWorkflowModal({ doc, tab: 'extract' })
   }
 
   // Milestone 4: Trigger AI question with explicit per-query consent
@@ -409,6 +427,13 @@ function App() {
           >
             <Sparkles size={17} /> Evidence Assistant <span className="nav-count">{aiMessages.length || 'New'}</span>
           </button>
+          <button
+            className={`nav-link ${searchMode === 'compare' ? 'active' : ''}`}
+            type="button"
+            onClick={() => setSearchMode('compare')}
+          >
+            <GitCompareArrows size={17} /> Compare Documents
+          </button>
           <a className="nav-link" href="#documents" onClick={() => setSearchMode('files')}>
             <FolderOpen size={17} /> Documents <span className="nav-count">{libraryDocs.length}</span>
           </a>
@@ -489,6 +514,16 @@ function App() {
                 }}
               >
                 <Sparkles size={17} /> Evidence Assistant
+              </button>
+              <button
+                className={`nav-link ${searchMode === 'compare' ? 'active' : ''}`}
+                type="button"
+                onClick={() => {
+                  setSearchMode('compare')
+                  closeMobileMenu()
+                }}
+              >
+                <GitCompareArrows size={17} /> Compare Documents
               </button>
               <a
                 className="nav-link"
@@ -795,6 +830,15 @@ function App() {
                 <Sparkles size={15} aria-hidden="true" />
                 <span>Evidence Assistant</span>
               </button>
+              <button
+                role="tab"
+                aria-selected={searchMode === 'compare'}
+                className={`search-mode-tab ${searchMode === 'compare' ? 'active' : ''}`}
+                onClick={() => setSearchMode('compare')}
+              >
+                <GitCompareArrows size={15} aria-hidden="true" />
+                <span>Compare</span>
+              </button>
             </div>
 
             {/* AI Assistant View (Active when searchMode === 'ai') */}
@@ -824,8 +868,24 @@ function App() {
               </Suspense>
             )}
 
-            {/* Search and Toolbar (Active when NOT in AI mode) */}
-            {searchMode !== 'ai' && (
+            {/* Cross-Document Comparison View (Active when searchMode === 'compare') */}
+            {searchMode === 'compare' && (
+              <Suspense
+                fallback={
+                  <div className="comparison-view" style={{ minHeight: 280, display: 'grid', placeItems: 'center' }}>
+                    <Loader size={20} className="spin-icon" />
+                  </div>
+                }
+              >
+                <ComparisonView
+                  documents={libraryDocs}
+                  onInspectPassage={handleInspectPassage}
+                />
+              </Suspense>
+            )}
+
+            {/* Search and Toolbar (Active when in Files or Evidence mode) */}
+            {searchMode !== 'ai' && searchMode !== 'compare' && (
               <div className="library-toolbar">
                 <label className="search-box">
                   <Search size={17} aria-hidden="true" />
@@ -939,6 +999,24 @@ function App() {
                           <BookOpen size={13} aria-hidden="true" />
                           <span>Read</span>
                         </button>
+                        <button
+                          className="doc-inspect-btn"
+                          onClick={() => handleOpenSummarizer(doc)}
+                          title={`Generate section summary of ${doc.name}`}
+                          aria-label={`Generate section summary of ${doc.name}`}
+                        >
+                          <FileText size={13} aria-hidden="true" />
+                          <span>Summary</span>
+                        </button>
+                        <button
+                          className="doc-inspect-btn"
+                          onClick={() => handleOpenExtractor(doc)}
+                          title={`Extract structured data from ${doc.name}`}
+                          aria-label={`Extract structured data from ${doc.name}`}
+                        >
+                          <Layers size={13} aria-hidden="true" />
+                          <span>Extract</span>
+                        </button>
 
                         {doc.sample ? (
                           <span className="doc-status sample-status">Sample</span>
@@ -1012,6 +1090,19 @@ function App() {
           modelStatus={modelStatus}
           onClearLibrary={() => setConfirmClearOpen(true)}
         />
+
+        {/* Document Section Summary & Structured Extraction Modal */}
+        {workflowModal && (
+          <Suspense fallback={null}>
+            <DocumentWorkflowsModal
+              document={workflowModal.doc}
+              initialTab={workflowModal.tab}
+              isOpen={Boolean(workflowModal)}
+              onClose={() => setWorkflowModal(null)}
+              onInspectPassage={handleInspectPassage}
+            />
+          </Suspense>
+        )}
 
         {readerDoc && (
           <DocumentReader
