@@ -2521,6 +2521,289 @@ button:disabled { color: var(--muted); opacity: .55; cursor: not-allowed; }
   color: var(--muted);
 }
 
+/* ==========================================================================
+   Phase 13: Token Governance & Operational Cost Observability
+   ========================================================================== */
+
+.token-governance-pill {
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.token-governance-pill:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.governance-modal-card {
+  width: 95%;
+  max-width: 640px;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow-hard);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 150ms ease;
+  max-height: 90vh;
+}
+
+.governance-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--paper);
+  border-bottom: 2px solid var(--ink);
+}
+
+.governance-header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.governance-header-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  background: var(--butter);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.governance-title-text {
+  margin: 0;
+  font-family: var(--heading);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.governance-subtitle-text {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.governance-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.governance-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--heading);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.section-head h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.token-progress-card {
+  padding: 16px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.token-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.token-consumed-number {
+  font-family: var(--heading);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.token-consumed-number small {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.token-percent-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius);
+}
+
+.badge-ok {
+  background: var(--mint);
+}
+
+.badge-warning {
+  background: var(--butter);
+}
+
+.badge-danger {
+  background: #ff7675;
+  color: #fff;
+}
+
+.token-progress-track {
+  width: 100%;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.08);
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.token-progress-fill {
+  height: 100%;
+  transition: width 240ms ease;
+}
+
+.fill-ok {
+  background: var(--mint);
+}
+
+.fill-warning {
+  background: var(--butter);
+}
+
+.fill-danger {
+  background: #d63031;
+}
+
+.token-channels-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.channel-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+.channel-label {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.channel-value {
+  font-family: monospace;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.policy-card {
+  padding: 14px 16px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.policy-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.policy-key {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.policy-pill {
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  background: var(--sky-tint);
+  border: 1px solid var(--ink);
+  border-radius: 3px;
+}
+
+.policy-val {
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.policy-desc {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.privacy-card {
+  padding: 12px 16px;
+  background: var(--mint-tint);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+}
+
+.privacy-card h4 {
+  margin: 0 0 4px;
+  font-family: var(--heading);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.privacy-card p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.governance-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--paper);
+  border-top: 2px solid var(--ink);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.footer-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
 
 
 

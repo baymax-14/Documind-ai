@@ -52,6 +52,8 @@ import {
   askBackendQuestion,
   uploadDocumentToBackend,
   ProcessingStatusBadge,
+  TokenGovernancePill,
+  createTokenBudgetTracker,
 } from './features/documents/index.js'
 
 const DocumentReader = lazy(() => import('./features/documents/components/DocumentReader.jsx'))
@@ -60,6 +62,7 @@ const ExcerptConsentModal = lazy(() => import('./features/documents/components/E
 const ComparisonView = lazy(() => import('./features/documents/components/ComparisonView.jsx'))
 const DocumentWorkflowsModal = lazy(() => import('./features/documents/components/DocumentWorkflowsModal.jsx'))
 const ConversationHistoryModal = lazy(() => import('./features/documents/components/ConversationHistoryModal.jsx'))
+const TokenGovernanceModal = lazy(() => import('./features/documents/components/TokenGovernanceModal.jsx'))
 
 function formatSize(bytes) {
   if (!bytes) return '0 KB'
@@ -121,6 +124,14 @@ function App() {
   const [syncStatuses, setSyncStatuses] = useState(new Map())
   const [activeConversationId, setActiveConversationId] = useState(() => crypto.randomUUID())
   const [historyModalOpen, setHistoryModalOpen] = useState(false)
+
+  // Phase 13: Token Governance & Operational Budgeting
+  const tokenTrackerRef = useRef(null)
+  if (!tokenTrackerRef.current) {
+    tokenTrackerRef.current = createTokenBudgetTracker()
+  }
+  const [tokenMetrics, setTokenMetrics] = useState(() => tokenTrackerRef.current.getMetrics())
+  const [governanceModalOpen, setGovernanceModalOpen] = useState(false)
 
   // Initialize Connection Manager
   useEffect(() => {
@@ -442,6 +453,17 @@ function App() {
         }
       }
 
+      // Phase 13: Record Token Governance Usage
+      if (tokenTrackerRef.current && assistantMsg?.text) {
+        tokenTrackerRef.current.recordUsage({
+          promptText: question,
+          evidenceText: chunks.map((c) => c.text).join('\n'),
+          completionText: assistantMsg.text,
+          iterations: 1,
+        })
+        setTokenMetrics(tokenTrackerRef.current.getMetrics())
+      }
+
       const finalMessages = [...updatedWithUser, assistantMsg]
       setAiMessages(finalMessages)
 
@@ -723,6 +745,10 @@ function App() {
               <span>{gpuInfo ? (gpuInfo.supported ? 'WebGPU Ready' : 'WebGPU Unavailable') : 'WebGPU Checking'} · IndexedDB</span>
               <span className={`status-indicator ${gpuInfo?.supported ? 'indicator-green' : 'indicator-yellow'}`} />
             </button>
+            <TokenGovernancePill
+              metrics={tokenMetrics}
+              onClick={() => setGovernanceModalOpen(true)}
+            />
             <button
               className="icon-button theme-button desktop-theme"
               aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -1276,6 +1302,18 @@ function App() {
             onNewConversation={handleNewConversation}
           />
         </Suspense>
+
+        {/* Phase 13: Token Governance & Operational Budget Modal */}
+        {governanceModalOpen && (
+          <Suspense fallback={null}>
+            <TokenGovernanceModal
+              isOpen={governanceModalOpen}
+              onClose={() => setGovernanceModalOpen(false)}
+              tracker={tokenTrackerRef.current}
+              onReset={() => setTokenMetrics(tokenTrackerRef.current.getMetrics())}
+            />
+          </Suspense>
+        )}
 
         {/* Document Section Summary & Structured Extraction Modal */}
         {workflowModal && (

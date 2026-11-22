@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.errors import AppError, app_error_handler
 from app.core.logging import logger
+from app.core.governance import RateLimitMiddleware
 from app.api.v1.router import api_router
 
 
@@ -38,6 +39,9 @@ app.add_middleware(
 
 # Custom Error Handlers
 app.add_exception_handler(AppError, app_error_handler)
+
+# Rate Limiting & Operational Governance Middleware
+app.add_middleware(RateLimitMiddleware)
 
 # Include v1 Router
 app.include_router(api_router, prefix=settings.API_V1_STR)

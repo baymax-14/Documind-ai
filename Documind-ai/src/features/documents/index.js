@@ -115,4 +115,12 @@ export {
   calculateZoomMetrics,
   bboxToStyle,
 } from './services/visualGrounding.js'
+export { default as TokenGovernancePill } from './components/TokenGovernancePill.jsx'
+export { default as TokenGovernanceModal } from './components/TokenGovernanceModal.jsx'
+export {
+  estimateTokenCount,
+  createTokenBudgetTracker,
+  MAX_AGENT_ITERATIONS,
+  DEFAULT_SESSION_TOKEN_BUDGET,
+} from './services/tokenGovernance.js'
 export { createSyncManager } from './services/syncManager.js'
