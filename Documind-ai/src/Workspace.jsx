@@ -111,6 +111,11 @@ function App() {
       document.documentElement.classList.remove('dark')
       document.body.classList.remove('dark')
     }
+    // The theme belongs to the workspace only; leaving it must not restyle the landing page.
+    return () => {
+      document.documentElement.classList.remove('dark')
+      document.body.classList.remove('dark')
+    }
   }, [dark])
 
   const [query, setQuery] = useState('')

@@ -1,9 +1,8 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
 import { ScrollSmoother } from 'gsap/ScrollSmoother'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin'
 import { Link } from 'react-router-dom'
 import {
   ArrowRight,
@@ -19,6 +18,7 @@ import {
   LayoutGrid,
   Lock,
   MessageSquareText,
+  RotateCcw,
   Search,
   Shield,
   Sparkles,
@@ -27,7 +27,7 @@ import {
 import Brand from './Brand.jsx'
 import './landing.css'
 
-gsap.registerPlugin(useGSAP, ScrollTrigger, ScrollSmoother, ScrambleTextPlugin)
+gsap.registerPlugin(useGSAP, ScrollTrigger, ScrollSmoother)
 
 const demoFiles = [
   { type: 'PDF', name: 'Q3 Market Research.pdf', tone: 'butter', pages: '14 pages', words: '4,280 words' },
@@ -65,16 +65,172 @@ const PLAYGROUND_PROMPTS = [
   },
 ]
 
-function WorkspacePreview() {
+const SEARCH_QUERY = 'enterprise growth regulated'
+
+// The answer is split into parts so it can stream in token by token.
+const ANSWER_PARTS = [
+  'Enterprise growth was driven by a ',
+  { strong: '42% YoY acceleration' },
+  ' in adoption across regulated healthcare and legal sectors ',
+  { cite: 1 },
+  ', where strict compliance policies forbid uploading proprietary briefs to cloud LLMs ',
+  { cite: 2 },
+  '.',
+]
+
+const TOKEN_STEP_MS = 24
+const TOKEN_START_MS = 380
+
+function renderAnswer(onCite) {
+  let index = 0
+  const nodes = ANSWER_PARTS.map((part, partIndex) => {
+    if (typeof part === 'string') {
+      return part.split(/(\s+)/).map((chunk, chunkIndex) => {
+        if (!chunk || /^\s+$/.test(chunk)) return chunk
+        const i = index++
+        return <span className="tok" style={{ '--i': i }} key={`${partIndex}-${chunkIndex}`}>{chunk}</span>
+      })
+    }
+    if (part.strong) {
+      const i = index++
+      return <strong className="tok" style={{ '--i': i }} key={partIndex}>{part.strong}</strong>
+    }
+    const i = index++
+    return (
+      <button type="button" className="inline-cite-pill tok-cite" style={{ '--i': i }} key={partIndex} onClick={onCite}>
+        [{part.cite}]
+      </button>
+    )
+  })
+  return { nodes, count: index }
+}
+
+const TABS = [
+  { id: 'overview', label: 'Overview', icon: <LayoutGrid size={14} aria-hidden="true" />, extra: <b>3</b> },
+  { id: 'search', label: 'Evidence Search', icon: <FileSearch size={14} aria-hidden="true" /> },
+  { id: 'assistant', label: 'AI Assistant', icon: <Sparkles size={14} aria-hidden="true" />, extra: <small>WebGPU</small> },
+]
+
+function prefersReducedMotion() {
+  return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+function WorkspacePreview({ introDone }) {
   const [activeTab, setActiveTab] = useState('overview')
+  // idle → waiting to autoplay; running → walkthrough playing; done → visitor in control
+  const [tour, setTour] = useState('idle')
+  const [typed, setTyped] = useState(SEARCH_QUERY.length)
+  const [assistantSeen, setAssistantSeen] = useState(false)
+  const [indicator, setIndicator] = useState(null)
+  const sectionRef = useRef(null)
+  const railRef = useRef(null)
+  const buttonRefs = useRef({})
+  const timers = useRef([])
+
+  const clearTimers = useCallback(() => {
+    timers.current.forEach(clearTimeout)
+    timers.current = []
+  }, [])
+
+  const goTo = useCallback((id) => {
+    setActiveTab((current) => {
+      if (current === 'assistant' && id !== 'assistant') setAssistantSeen(true)
+      return id
+    })
+  }, [])
+
+  const runTour = useCallback(() => {
+    clearTimers()
+    const at = (ms, fn) => timers.current.push(setTimeout(fn, ms))
+    setTour('running')
+    setAssistantSeen(false)
+    goTo('search')
+    setTyped(0)
+    const typeStart = 320
+    const typeStep = 42
+    for (let i = 1; i <= SEARCH_QUERY.length; i += 1) at(typeStart + i * typeStep, () => setTyped(i))
+    const typedAt = typeStart + SEARCH_QUERY.length * typeStep
+    at(typedAt + 2300, () => goTo('assistant'))
+    at(typedAt + 2300 + 2400, () => setTour('done'))
+  }, [clearTimers, goTo])
+
+  const takeControl = useCallback(() => {
+    if (tour === 'done') return
+    clearTimers()
+    setTyped(SEARCH_QUERY.length)
+    setTour('done')
+  }, [tour, clearTimers])
+
+  // Autoplay the walkthrough once: after the hero intro, while the preview is mostly on screen.
+  useEffect(() => {
+    if (!introDone || tour !== 'idle') return undefined
+    if (prefersReducedMotion() || !('IntersectionObserver' in window)) {
+      setTour('done')
+      return undefined
+    }
+    const node = sectionRef.current
+    let delay
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting || document.hidden) return
+      observer.disconnect()
+      delay = setTimeout(runTour, 500)
+    }, { threshold: 0.55 })
+    observer.observe(node)
+    return () => {
+      observer.disconnect()
+      clearTimeout(delay)
+    }
+  }, [introDone, tour, runTour])
+
+  useEffect(() => clearTimers, [clearTimers])
+
+  // Slide one shared indicator between rail buttons instead of swapping fills.
+  useLayoutEffect(() => {
+    const rail = railRef.current
+    const measure = () => {
+      const button = buttonRefs.current[activeTab]
+      if (!button || !rail || button.offsetParent === null) return
+      setIndicator({ y: button.offsetTop, h: button.offsetHeight })
+    }
+    measure()
+    if (!rail || !('ResizeObserver' in window)) return undefined
+    const resize = new ResizeObserver(measure)
+    resize.observe(rail)
+    return () => resize.disconnect()
+  }, [activeTab])
+
+  const queryDone = typed >= SEARCH_QUERY.length
+  const streamAnswer = tour === 'running' || !assistantSeen
+  const answer = renderAnswer(() => {
+    takeControl()
+    goTo('search')
+  })
+  const chipsDelay = TOKEN_START_MS + answer.count * TOKEN_STEP_MS + 80
+  const tourLabel = activeTab === 'search' ? 'Searching the evidence' : activeTab === 'assistant' ? 'Answering with citations' : 'Starting'
 
   return (
-    <section className="preview-side" aria-label="Interactive workspace preview">
+    <section
+      className="preview-side"
+      aria-label="Interactive workspace preview"
+      ref={sectionRef}
+      onPointerDown={takeControl}
+      onKeyDown={takeControl}
+    >
       <div className="preview-caption">
         <span>Interactive preview</span>
-        <strong>Click tabs to inspect</strong>
+        {tour === 'running' ? (
+          <strong className="preview-tour-status" aria-live="polite">
+            <i aria-hidden="true" /> Walkthrough · {tourLabel}
+          </strong>
+        ) : tour === 'done' && !prefersReducedMotion() ? (
+          <button type="button" className="preview-replay" onClick={(event) => { event.stopPropagation(); runTour() }} onPointerDown={(event) => event.stopPropagation()}>
+            <RotateCcw size={12} aria-hidden="true" /> Replay walkthrough
+          </button>
+        ) : (
+          <strong>Click tabs to inspect</strong>
+        )}
       </div>
-      <div className="workspace-preview" data-ui="workspace-preview" aria-label="Interactive preview of the DocuMind workspace">
+      <div className={`workspace-preview ${tour === 'running' ? 'is-touring' : ''}`} data-ui="workspace-preview" aria-label="Interactive preview of the DocuMind workspace">
         <div className="preview-topbar">
           <span className="preview-brand">
             <Brand className="brand-lockup" markClassName="preview-brand-mark" wordmarkClassName="preview-brand-wordmark" />
@@ -87,7 +243,7 @@ function WorkspacePreview() {
         </div>
 
         <div className="preview-body">
-          <aside className="preview-rail" aria-label="Preview workspace navigation">
+          <aside className="preview-rail" aria-label="Preview workspace navigation" ref={railRef}>
             <div className="preview-workspace">
               <span>A</span>
               <div>
@@ -95,32 +251,27 @@ function WorkspacePreview() {
                 <small>Local Workspace</small>
               </div>
             </div>
-            <button
-              type="button"
-              className={`preview-nav-btn ${activeTab === 'overview' ? 'active' : ''}`}
-              onClick={() => setActiveTab('overview')}
-            >
-              <LayoutGrid size={14} aria-hidden="true" />
-              <span>Overview</span>
-              <b>3</b>
-            </button>
-            <button
-              type="button"
-              className={`preview-nav-btn ${activeTab === 'search' ? 'active' : ''}`}
-              onClick={() => setActiveTab('search')}
-            >
-              <FileSearch size={14} aria-hidden="true" />
-              <span>Evidence Search</span>
-            </button>
-            <button
-              type="button"
-              className={`preview-nav-btn ${activeTab === 'assistant' ? 'active' : ''}`}
-              onClick={() => setActiveTab('assistant')}
-            >
-              <Sparkles size={14} aria-hidden="true" />
-              <span>AI Assistant</span>
-              <small>WebGPU</small>
-            </button>
+            {indicator && (
+              <span
+                className="preview-rail-indicator"
+                aria-hidden="true"
+                style={{ transform: `translateY(${indicator.y}px)`, height: indicator.h }}
+              />
+            )}
+            {TABS.map(({ id, label, icon, extra }) => (
+              <button
+                key={id}
+                type="button"
+                ref={(node) => { buttonRefs.current[id] = node }}
+                className={`preview-nav-btn ${activeTab === id ? 'active' : ''}`}
+                aria-pressed={activeTab === id}
+                onClick={() => goTo(id)}
+              >
+                {icon}
+                <span>{label}</span>
+                {extra}
+              </button>
+            ))}
             <div className="preview-rail-note">
               <Lock size={12} aria-hidden="true" style={{ display: 'inline', marginRight: 4 }} />
               100% on-device · Zero server calls
@@ -170,37 +321,39 @@ function WorkspacePreview() {
 
             {activeTab === 'search' && (
               <div className="preview-tab-pane">
-                <div className="preview-search-bar">
+                <div className={`preview-search-bar ${queryDone ? '' : 'is-typing'}`}>
                   <Search size={14} aria-hidden="true" />
-                  <input readOnly value="enterprise growth regulated" aria-label="Sample search query" />
-                  <kbd>2 results</kbd>
+                  <input readOnly size={Math.max(typed, 1)} value={SEARCH_QUERY.slice(0, typed)} aria-label="Sample search query" />
+                  <kbd>{queryDone ? '2 results' : 'Searching'}</kbd>
                 </div>
-                <div className="preview-search-results">
-                  <div className="preview-match-card">
-                    <div className="preview-match-head">
-                      <strong>Q3 Market Research.pdf</strong>
-                      <span className="preview-locator-chip">Page 4</span>
+                {queryDone && (
+                  <div className="preview-search-results">
+                    <div className="preview-match-card" style={{ '--i': 0 }}>
+                      <div className="preview-match-head">
+                        <strong>Q3 Market Research.pdf</strong>
+                        <span className="preview-locator-chip">Page 4</span>
+                      </div>
+                      <p>
+                        "...Enterprise revenue accelerated by 42% YoY, driven primarily by <mark style={{ '--m': 0 }}>regulated</mark> legal and healthcare sectors requiring <mark style={{ '--m': 1 }}>enterprise growth</mark> tools with zero cloud data retention..."
+                      </p>
                     </div>
-                    <p>
-                      "...Enterprise revenue accelerated by 42% YoY, driven primarily by <mark>regulated</mark> legal and healthcare sectors requiring <mark>enterprise growth</mark> tools with zero cloud data retention..."
-                    </p>
-                  </div>
-                  <div className="preview-match-card">
-                    <div className="preview-match-head">
-                      <strong>Customer Interviews.pdf</strong>
-                      <span className="preview-locator-chip">Page 11</span>
+                    <div className="preview-match-card" style={{ '--i': 1 }}>
+                      <div className="preview-match-head">
+                        <strong>Customer Interviews.pdf</strong>
+                        <span className="preview-locator-chip">Page 11</span>
+                      </div>
+                      <p>
+                        "...Compliance officers at large institutions noted that <mark style={{ '--m': 0 }}>regulated</mark> teams cannot approve cloud APIs, accelerating demand for on-device <mark style={{ '--m': 1 }}>enterprise</mark> workbenches..."
+                      </p>
                     </div>
-                    <p>
-                      "...Compliance officers at large institutions noted that <mark>regulated</mark> teams cannot approve cloud APIs, accelerating demand for on-device <mark>enterprise</mark> workbenches..."
-                    </p>
                   </div>
-                </div>
+                )}
                 <p className="preview-footnote">Sub-millisecond keyword retrieval across extracted passage chunks</p>
               </div>
             )}
 
             {activeTab === 'assistant' && (
-              <div className="preview-tab-pane">
+              <div className={`preview-tab-pane ${streamAnswer ? 'is-streaming' : ''}`} style={{ '--chips-delay': `${chipsDelay}ms` }}>
                 <div className="preview-chat-container">
                   <div className="preview-chat-bubble user">
                     <span className="bubble-author">You</span>
@@ -213,9 +366,7 @@ function WorkspacePreview() {
                         <Cpu size={10} aria-hidden="true" /> On-Device WebGPU Model
                       </span>
                     </div>
-                    <p>
-                      Enterprise growth was driven by a <strong>42% YoY acceleration</strong> in adoption across regulated healthcare and legal sectors <button type="button" className="inline-cite-pill" onClick={() => setActiveTab('search')}>[1]</button>, where strict compliance policies forbid uploading proprietary briefs to cloud LLMs <button type="button" className="inline-cite-pill" onClick={() => setActiveTab('search')}>[2]</button>.
-                    </p>
+                    <p className="preview-answer">{answer.nodes}</p>
                     <div className="preview-citations-list">
                       <div className="preview-cite-chip">
                         <span className="cite-idx">[1]</span>
@@ -491,9 +642,13 @@ function PrivacyFAQ() {
 
 function LandingPage() {
   const pageRef = useRef(null)
+  const [introDone, setIntroDone] = useState(false)
 
   useGSAP(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
+    if (prefersReducedMotion()) {
+      setIntroDone(true)
+      return undefined
+    }
 
     const canUseSmoothScroll = window.matchMedia('(min-width: 901px) and (hover: hover) and (pointer: fine)').matches
     const smoother = canUseSmoothScroll ? ScrollSmoother.create({
@@ -502,23 +657,25 @@ function LandingPage() {
       smooth: 0.7,
       effects: false,
     }) : null
-    const headingLines = pageRef.current?.querySelectorAll('[data-scramble-text]')
 
-    if (headingLines?.length) {
-      const intro = gsap.timeline({ defaults: { ease: 'power2.out' } })
-      headingLines.forEach((line) => {
-        intro.to(line, {
-          duration: 0.72,
-          scrambleText: {
-            text: line.dataset.scrambleText,
-            chars: 'lowerCase',
-            speed: 0.35,
-          },
-        }, line === headingLines[0] ? 0.2 : '-=0.34')
-      })
-      const previewRows = pageRef.current?.querySelectorAll('.preview-file')
-      if (previewRows?.length) intro.fromTo(previewRows, { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.32, stagger: 0.055 }, '-=0.22')
-    }
+    // Hero sequence: the headline rises out of its line boxes, the butter highlighter
+    // marks "documents" like an evidence match, then the workspace is set down on the desk.
+    const ink = '#000'
+    const lift = (distance) => ({ x: distance, y: distance, boxShadow: `0px 0px 0px ${ink}` })
+    const intro = gsap.timeline({
+      defaults: { ease: 'expo.out' },
+      onComplete: () => setIntroDone(true),
+    })
+
+    intro
+      .from('.hero-line-inner', { yPercent: 108, duration: 0.9, stagger: 0.11 }, 0.1)
+      .fromTo('.hero-mark', { '--mark-scale': 0 }, { '--mark-scale': 1, duration: 0.55, ease: 'power3.inOut' }, 0.62)
+      .from('.hero-support, .hero-actions', { y: 14, opacity: 0, duration: 0.7, stagger: 0.08, clearProps: 'transform,opacity' }, 0.5)
+      .from('.trust-pill', { ...lift(2), opacity: 0, duration: 0.45, stagger: 0.05, clearProps: 'transform,boxShadow,opacity' }, 0.78)
+      .from('.prototype-note', { ...lift(3), opacity: 0, duration: 0.55, clearProps: 'transform,boxShadow,opacity' }, 0.95)
+      .from('.preview-caption', { opacity: 0, duration: 0.5 }, 0.3)
+      .from('.workspace-preview', { ...lift(6), duration: 0.8, clearProps: 'transform,boxShadow' }, 0.3)
+      .from('.preview-file', { y: 8, opacity: 0, duration: 0.45, stagger: 0.06, clearProps: 'transform,opacity' }, 0.7)
 
     return () => {
       smoother?.kill()
@@ -576,16 +733,20 @@ function LandingPage() {
             <div className="landing-split">
               <section className="hero-copy" aria-labelledby="hero-heading">
                 <div className="hero-inner">
-                  <h1 className="reveal-on-scroll" id="hero-heading" aria-label="Understand your documents faster.">
-                    <span className="hero-heading-line" data-scramble-text="Understand your" aria-hidden="true">Understand your</span>
-                    <span className="hero-heading-line" data-scramble-text="documents faster." aria-hidden="true">documents faster.</span>
+                  <h1 id="hero-heading" aria-label="Understand your documents faster.">
+                    <span className="hero-heading-line" aria-hidden="true">
+                      <span className="hero-line-inner">Understand your</span>
+                    </span>
+                    <span className="hero-heading-line" aria-hidden="true">
+                      <span className="hero-line-inner"><span className="hero-mark">documents</span> faster.</span>
+                    </span>
                   </h1>
 
-                  <p className="hero-support reveal-on-scroll" style={{ '--reveal-delay': '70ms' }}>
+                  <p className="hero-support">
                     The private document workspace for research and reports. Extract, search, and synthesize insights entirely in your browser using local WebGPU acceleration. User files and queries never leave your machine.
                   </p>
 
-                  <div className="hero-actions reveal-on-scroll" style={{ '--reveal-delay': '140ms' }}>
+                  <div className="hero-actions">
                     <Link className="button-primary" to="/workspace">
                       Open your workspace <ArrowRight size={18} aria-hidden="true" />
                     </Link>
@@ -594,7 +755,7 @@ function LandingPage() {
                     </a>
                   </div>
 
-                  <div className="hero-trust-bar reveal-on-scroll" style={{ '--reveal-delay': '180ms' }}>
+                  <div className="hero-trust-bar">
                     <div className="trust-pill">
                       <Lock size={13} aria-hidden="true" /> Zero Cloud Uploads
                     </div>
@@ -609,7 +770,7 @@ function LandingPage() {
                     </div>
                   </div>
 
-                  <aside className="prototype-note reveal-on-scroll" style={{ '--reveal-delay': '210ms' }} aria-label="Privacy guarantee">
+                  <aside className="prototype-note" aria-label="Privacy guarantee">
                     <strong>Local-first privacy guarantee</strong>
                     <p>
                       Files added to the workspace are parsed on-device and stored in your browser's IndexedDB. Optional on-device AI runs directly on your GPU; weights are cached locally and no data is ever sent to external servers.
@@ -617,7 +778,7 @@ function LandingPage() {
                   </aside>
                 </div>
               </section>
-              <WorkspacePreview />
+              <WorkspacePreview introDone={introDone} />
             </div>
 
             <CapabilitiesBento />

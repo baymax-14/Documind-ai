@@ -115,6 +115,7 @@
 }
 .preview-caption {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin: 0 auto 10px;
@@ -172,6 +173,7 @@
   grid-template-columns: minmax(140px, 32%) minmax(0, 1fr);
 }
 .preview-rail {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -204,6 +206,8 @@
 .preview-workspace small { color: var(--muted); font-size: 10px; line-height: 1.25; }
 
 .preview-nav-btn {
+  position: relative;
+  z-index: 1;
   display: flex;
   min-height: 35px;
   align-items: center;
@@ -216,14 +220,27 @@
   font-weight: 600;
   text-align: left;
   cursor: pointer;
-  transition: all 120ms ease;
+  transition: background-color 120ms ease, border-color 120ms ease;
   white-space: nowrap;
 }
-.preview-nav-btn:hover { background: var(--surface); border-color: var(--ink); }
-.preview-nav-btn.active {
-  border-color: var(--ink);
+.preview-nav-btn:not(.active):hover { background: var(--surface); border-color: var(--ink); }
+.preview-nav-btn.active { font-weight: 700; }
+.preview-nav-btn { min-width: 0; }
+.preview-nav-btn svg, .preview-nav-btn b, .preview-nav-btn small { flex: none; }
+.preview-nav-btn span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.preview-nav-btn:active { transform: translate(1px, 1px); }
+/* One shared indicator slides between tabs so the change of place reads as movement. */
+.preview-rail-indicator {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 10px;
+  right: 10px;
+  border: 1.5px solid var(--ink);
   background: var(--mint);
   box-shadow: 2px 2px 0 var(--ink);
+  transition: transform 320ms var(--landing-ease-out), height 320ms var(--landing-ease-out);
+  pointer-events: none;
 }
 .preview-nav-btn b {
   display: grid;
@@ -313,16 +330,32 @@
   background: var(--surface);
   margin-bottom: 12px;
 }
+.preview-search-bar.is-typing { box-shadow: 2px 2px 0 var(--ink); }
+.preview-search-bar.is-typing::after {
+  content: '';
+  order: 1;
+  width: 2px;
+  height: 15px;
+  margin-left: -6px;
+  background: var(--ink);
+  animation: caret-blink 900ms steps(1) infinite;
+}
+.preview-search-bar.is-typing kbd { order: 2; background: var(--butter); }
 .preview-search-bar input {
+  flex: 0 1 auto;
+  field-sizing: content;
+  min-width: 1ch;
+  max-width: 100%;
   border: 0;
   outline: 0;
   background: transparent;
   color: var(--ink);
   font-size: 12px;
   font-weight: 600;
-  width: 100%;
 }
+.preview-search-bar:not(.is-typing) input { flex: 1 1 auto; }
 .preview-search-bar kbd {
+  margin-left: auto;
   padding: 2px 6px;
   border: 1px solid var(--ink);
   background: var(--mint);
@@ -350,9 +383,10 @@
   color: #2d3436;
 }
 .preview-match-card mark {
-  background: var(--butter);
   padding: 1px 3px;
   border: 1px solid var(--ink);
+  background: linear-gradient(var(--butter), var(--butter)) no-repeat 0 0 / 100% 100%;
+  color: var(--ink);
   font-weight: 700;
 }
 
@@ -433,7 +467,30 @@
   letter-spacing: -.04em;
   text-wrap: balance;
 }
-.hero-heading-line { display: block; }
+.hero-heading-line {
+  display: block;
+  /* Line mask: room for descenders, then pulled back so spacing stays unchanged. */
+  overflow: clip;
+  padding-block: 0.04em 0.1em;
+  margin-block: -0.04em -0.1em;
+}
+.hero-line-inner { display: block; }
+.hero-mark {
+  --mark-scale: 1;
+  position: relative;
+  z-index: 0;
+  white-space: nowrap;
+}
+.hero-mark::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0.14em -0.08em 0.02em;
+  border: 2px solid var(--ink);
+  background: var(--butter);
+  transform: scaleX(var(--mark-scale));
+  transform-origin: left center;
+}
 .hero-support {
   max-width: 48ch;
   margin: 20px 0 0;
@@ -932,6 +989,74 @@
 .landing-footer p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.4; text-align: center; }
 .landing-footer > a:last-child { display: inline-flex; align-items: center; justify-self: end; gap: 5px; font-weight: 700; font-size: 14px; }
 
+
+/* Preview walkthrough motion.
+   Material idea: things arrive by lifting off the page (hard shadow grows from zero),
+   and evidence is marked with a butter highlighter sweep. */
+@keyframes pane-in { from { opacity: 0; transform: translateY(6px); } }
+@keyframes lift-in {
+  from { opacity: 0; transform: translate(3px, 3px); box-shadow: 0 0 0 var(--ink); }
+  45% { opacity: 1; }
+}
+@keyframes mark-sweep {
+  from { background-size: 0% 100%; border-color: transparent; }
+  70% { border-color: transparent; }
+}
+@keyframes token-in { from { opacity: 0; filter: blur(3px); } }
+@keyframes caret-blink { 50% { opacity: 0; } }
+@keyframes tour-pulse { 50% { background: var(--paper); } }
+
+.preview-tab-pane { animation: pane-in 240ms var(--landing-ease-out) both; }
+.preview-match-card {
+  box-shadow: 2px 2px 0 var(--ink);
+  animation: lift-in 420ms var(--landing-ease-out) both;
+  animation-delay: calc(var(--i, 0) * 110ms);
+}
+.preview-match-card mark {
+  animation: mark-sweep 460ms cubic-bezier(0.65, 0, 0.35, 1) both;
+  animation-delay: calc(var(--i, 0) * 110ms + 300ms + var(--m, 0) * 160ms);
+}
+.is-streaming .preview-chat-bubble { animation: lift-in 380ms var(--landing-ease-out) both; }
+.is-streaming .preview-chat-bubble.assistant { animation-delay: 220ms; }
+.is-streaming .tok { display: inline-block; animation: token-in 260ms ease-out both; animation-delay: calc(380ms + var(--i) * 24ms); }
+.is-streaming .tok-cite { animation: lift-in 300ms var(--landing-ease-out) both; animation-delay: calc(380ms + var(--i) * 24ms); }
+.is-streaming .preview-citations-list { animation: pane-in 300ms var(--landing-ease-out) both; animation-delay: var(--chips-delay); }
+.is-streaming .preview-cite-chip { animation: lift-in 340ms var(--landing-ease-out) both; animation-delay: var(--chips-delay); }
+.is-streaming .preview-cite-chip + .preview-cite-chip { animation-delay: calc(var(--chips-delay) + 90ms); }
+.preview-cite-chip { box-shadow: 1px 1px 0 var(--ink); }
+.inline-cite-pill { box-shadow: 1px 1px 0 var(--ink); }
+.inline-cite-pill:hover { background: var(--mint); }
+
+.preview-tour-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.preview-tour-status i {
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid var(--ink);
+  background: var(--mint);
+  animation: tour-pulse 1s steps(1) infinite;
+}
+.preview-replay {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  gap: 6px;
+  margin: -6px 0;
+  padding: 3px 9px;
+  border: 1.5px solid var(--ink);
+  background: var(--surface);
+  box-shadow: 2px 2px 0 var(--ink);
+  color: var(--ink);
+  font: 700 12px/1.2 var(--heading);
+  cursor: pointer;
+  transition: transform 140ms var(--landing-ease-out), box-shadow 140ms var(--landing-ease-out), background-color 140ms ease;
+}
+.preview-replay:hover { background: var(--butter-tint); }
+.preview-replay:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); }
+
 /* Motion & Accessibility */
 .reveal-on-scroll { opacity: 1; transform: none; }
 html[data-motion-ready] .reveal-on-scroll:not(.is-visible) { opacity: 0; transform: translateY(22px); }
@@ -984,9 +1109,17 @@ html[data-motion-ready] .reveal-on-scroll { transition: opacity 280ms var(--land
   .preview-rail { display: none; }
   .playground-prompt-tabs { flex-direction: column; }
   .playground-tab { border-right: 0; border-bottom: 1.5px solid var(--ink); width: 100%; }
+  .preview-caption:has(.preview-tour-status) > span:first-child { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html[data-motion-ready] .reveal-on-scroll:not(.is-visible) { opacity: 1; transform: none; }
   .nav-cta, .button-primary, html[data-motion-ready] .reveal-on-scroll { transition: none; }
+  /* Keep state changes legible as gentle fades; drop travel, sweeps, and streaming. */
+  .preview-rail-indicator { transition: none; }
+  .preview-tab-pane { animation: fade-only 160ms ease-out both; }
+  .preview-match-card, .preview-match-card mark, .is-streaming .preview-chat-bubble,
+  .is-streaming .tok, .is-streaming .tok-cite, .is-streaming .preview-citations-list,
+  .is-streaming .preview-cite-chip, .preview-tour-status i, .preview-search-bar.is-typing::after { animation: none; }
 }
+@keyframes fade-only { from { opacity: 0; } }
