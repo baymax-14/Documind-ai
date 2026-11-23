@@ -29,6 +29,12 @@
         ],
         "createdAt": "2026-11-10T16:52:53.167Z",
         "reason": "Line 112 is a black structural divider between the demo workspace navigation rail and content, not a colored side-tab accent."
+      },
+      {
+        "rule": "overused-font",
+        "value": "space grotesk",
+        "createdAt": "2026-11-23T08:52:41.331Z",
+        "reason": "user confirmed keeping the neobrutalist theme; Space Grotesk is the display face in DESIGN.md and the README's design system"
       }
     ]
   }

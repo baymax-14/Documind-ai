@@ -1,33 +1,24 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
-import { ScrollSmoother } from 'gsap/ScrollSmoother'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Link } from 'react-router-dom'
 import {
   ArrowRight,
   ArrowUpRight,
-  BookOpen,
   CheckCircle2,
   Cpu,
-  Database,
   FileSearch,
   FileText,
-  FolderOpen,
-  HelpCircle,
   LayoutGrid,
   Lock,
-  MessageSquareText,
   RotateCcw,
   Search,
-  Shield,
   Sparkles,
-  Zap,
 } from 'lucide-react'
 import Brand from './Brand.jsx'
 import './landing.css'
 
-gsap.registerPlugin(useGSAP, ScrollTrigger, ScrollSmoother)
+gsap.registerPlugin(useGSAP)
 
 const demoFiles = [
   { type: 'PDF', name: 'Q3 Market Research.pdf', tone: 'butter', pages: '14 pages', words: '4,280 words' },
@@ -65,6 +56,76 @@ const PLAYGROUND_PROMPTS = [
   },
 ]
 
+// Each row is a fact about cloud AI chat tools in general and about DocuMind; each stamp links to its proof.
+const LEDGER_ROWS = [
+  {
+    label: 'Where your file goes',
+    them: "Uploaded to the provider's servers",
+    us: "Stays in this browser's IndexedDB",
+    stamp: 'Local',
+    href: '#proof-local',
+    proof: 'see how files are stored',
+  },
+  {
+    label: 'Who runs the model',
+    them: 'The provider, on its own hardware',
+    us: 'Your GPU, with Qwen2.5 0.5B on WebGPU',
+    stamp: 'GPU',
+    href: '#proof-gpu',
+    proof: 'see the on-device model',
+  },
+  {
+    label: 'How you check an answer',
+    them: 'Often a summary with no page number',
+    us: 'Click the citation and the reader opens on that page',
+    stamp: 'p. 11',
+    href: '#live-demo',
+    proof: 'watch a cited answer',
+  },
+  {
+    label: 'Without internet',
+    them: 'Stops working',
+    us: 'Keeps working once the 350 MB model is cached',
+    stamp: 'Offline',
+    href: '#proof-offline',
+    proof: 'read about the model download',
+  },
+]
+
+// The facts each ledger stamp stands for, as rows of the same ruled grammar.
+const PROOF_ROWS = [
+  {
+    id: 'proof-local',
+    stamp: 'Local',
+    title: 'Files stay in this browser',
+    facts: ['Parsed by PDF.js and Mammoth in a web worker', 'Stored in IndexedDB until you delete them', 'Cleared from the workspace storage settings'],
+  },
+  {
+    id: 'proof-gpu',
+    stamp: 'GPU',
+    title: 'The model runs on your graphics card',
+    facts: ['Qwen2.5 0.5B through WebLLM on WebGPU', 'About 350 MB, downloaded once when you ask', 'SmolLM2 360M as a lighter choice, about 230 MB'],
+  },
+  {
+    id: 'proof-cite',
+    stamp: 'p. 11',
+    title: 'Every answer points to its page',
+    facts: ['Citations name the file and the page or section', 'Click one and the reader opens at that passage', 'With no matching passage, DocuMind says so'],
+  },
+  {
+    id: 'proof-offline',
+    stamp: 'Offline',
+    title: 'Works without internet',
+    facts: ['The cached model answers with no network', 'Without WebGPU, search and citations still work', 'No account to sign in to'],
+  },
+  {
+    id: 'proof-formats',
+    stamp: '25 MB',
+    title: 'Reads PDF, Word and text files',
+    facts: ['PDF, DOCX and TXT', 'Up to 25 MB a file', 'Tables found in a file export as CSV'],
+  },
+]
+
 const SEARCH_QUERY = 'enterprise growth regulated'
 
 // The answer is split into parts so it can stream in token by token.
@@ -77,6 +138,8 @@ const ANSWER_PARTS = [
   { cite: 2 },
   '.',
 ]
+
+const DEMO_STEPS = ['Search the evidence', 'Mark the matching passages', 'Answer with page citations']
 
 const TOKEN_STEP_MS = 24
 const TOKEN_START_MS = 380
@@ -115,7 +178,109 @@ function prefersReducedMotion() {
   return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-function WorkspacePreview({ introDone }) {
+// Real checks on the visitor's own browser: nothing here is invented or sent anywhere.
+function formatGigabytes(bytes) {
+  if (!Number.isFinite(bytes) || bytes <= 0) return null
+  return `${(bytes / 1024 ** 3).toFixed(1)} GB`
+}
+
+function useDeviceChecks() {
+  const [checks, setChecks] = useState({ gpu: null, gpuName: null, storage: null, model: null })
+
+  useEffect(() => {
+    let cancelled = false
+    const set = (patch) => { if (!cancelled) setChecks((current) => ({ ...current, ...patch })) }
+
+    async function checkGpu() {
+      try {
+        if (!navigator.gpu) return set({ gpu: 'none' })
+        const adapter = await navigator.gpu.requestAdapter()
+        if (!adapter) return set({ gpu: 'none' })
+        const info = adapter.info || (adapter.requestAdapterInfo ? await adapter.requestAdapterInfo() : null)
+        set({ gpu: 'ready', gpuName: info?.vendor || null })
+      } catch {
+        set({ gpu: 'none' })
+      }
+    }
+
+    async function checkStorage() {
+      try {
+        const estimate = await navigator.storage?.estimate?.()
+        const free = estimate ? formatGigabytes((estimate.quota || 0) - (estimate.usage || 0)) : null
+        set({ storage: free || 'unknown' })
+      } catch {
+        set({ storage: 'unknown' })
+      }
+    }
+
+    async function checkModel() {
+      try {
+        if (!('caches' in window)) return set({ model: 'unknown' })
+        const cached = await caches.has('webllm/model')
+        set({ model: cached ? 'cached' : 'missing' })
+      } catch {
+        set({ model: 'unknown' })
+      }
+    }
+
+    checkGpu()
+    checkStorage()
+    checkModel()
+    return () => { cancelled = true }
+  }, [])
+
+  return checks
+}
+
+const SCAN_LINES = [92, 78, 88, 64, 0, 86, 94, 71, 0, 83, 90, 58, 0, 88, 76, 66]
+const CITED_LINE = 6
+
+function gpuLabel(checks) {
+  if (checks.gpu === 'ready') return 'WebGPU here'
+  if (checks.gpu === 'none') return 'No WebGPU: search mode'
+  return 'Checking WebGPU'
+}
+
+function PageScan({ checks }) {
+  const done = checks.gpu && checks.storage && checks.model
+  const gpuText = checks.gpu === null ? 'Checking' : checks.gpu === 'ready' ? `Ready${checks.gpuName ? `, ${checks.gpuName}` : ''}` : 'Not available: search mode'
+  const storageText = checks.storage === null ? 'Checking' : checks.storage === 'unknown' ? 'Not reported' : `${checks.storage} free`
+  const modelText = checks.model === null ? 'Checking' : checks.model === 'cached' ? 'Cached, works offline' : checks.model === 'missing' ? 'Not downloaded yet' : 'Not reported'
+
+  return (
+    <div className="scan-panel">
+      <span className="cross cross--tl" aria-hidden="true" />
+      <span className="cross cross--tr" aria-hidden="true" />
+      <span className="cross cross--bl" aria-hidden="true" />
+      <span className="cross cross--br" aria-hidden="true" />
+      <p className="scan-status" aria-live="polite">
+        <span className="scan-dot" aria-hidden="true" />
+        {done ? '> Browser checked' : '> Checking this browser'}
+      </p>
+
+      <figure className="scan-page" aria-label="A document page with one cited line marked in red">
+        <span className="scan-page__head">Customer Interviews.pdf / p. 11</span>
+        <div className="scan-page__lines" aria-hidden="true">
+          {SCAN_LINES.map((width, index) => (
+            width === 0
+              ? <span className="scan-gap" key={index} />
+              : <span className={`scan-line ${index === CITED_LINE ? 'is-cited' : ''}`} style={{ '--w': `${width}%` }} key={index} />
+          ))}
+          <span className="scan-beam" />
+          <span className="scan-cite" aria-hidden="true" style={{ '--cite-top': `${(100 * (CITED_LINE + 0.5)) / SCAN_LINES.length}%` }}>Cited in answer [1]</span>
+        </div>
+      </figure>
+
+      <dl className="scan-readout" aria-label="Checks on this browser">
+        <div><dt>WebGPU</dt><dd className={checks.gpu === 'ready' ? 'is-ok' : undefined}>{gpuText}</dd></div>
+        <div><dt>Storage</dt><dd>{storageText}</dd></div>
+        <div><dt>Model</dt><dd className={checks.model === 'cached' ? 'is-ok' : undefined}>{modelText}</dd></div>
+      </dl>
+    </div>
+  )
+}
+
+function WorkspacePreview({ introDone, onStepChange, checks }) {
   const [activeTab, setActiveTab] = useState('overview')
   // idle → waiting to autoplay; running → walkthrough playing; done → visitor in control
   const [tour, setTour] = useState('idle')
@@ -201,6 +366,12 @@ function WorkspacePreview({ introDone }) {
 
   const queryDone = typed >= SEARCH_QUERY.length
   const streamAnswer = tour === 'running' || !assistantSeen
+  // Which of the three demo steps the preview is showing (0 = the library overview).
+  const step = activeTab === 'assistant' ? 3 : activeTab === 'search' ? (queryDone ? 2 : 1) : 0
+
+  useEffect(() => {
+    onStepChange?.(step)
+  }, [step, onStepChange])
   const answer = renderAnswer(() => {
     takeControl()
     goTo('search')
@@ -217,7 +388,7 @@ function WorkspacePreview({ introDone }) {
       onKeyDown={takeControl}
     >
       <div className="preview-caption">
-        <span>Interactive preview</span>
+        <span className="sample-mark">Sample files</span>
         {tour === 'running' ? (
           <strong className="preview-tour-status" aria-live="polite">
             <i aria-hidden="true" /> Walkthrough · {tourLabel}
@@ -237,7 +408,7 @@ function WorkspacePreview({ introDone }) {
           </span>
           <div className="preview-top-tags">
             <span className="preview-local">
-              <i aria-hidden="true" /> WebGPU On-Device
+              <i aria-hidden="true" /> {gpuLabel(checks)}
             </span>
           </div>
         </div>
@@ -274,7 +445,7 @@ function WorkspacePreview({ introDone }) {
             ))}
             <div className="preview-rail-note">
               <Lock size={12} aria-hidden="true" style={{ display: 'inline', marginRight: 4 }} />
-              100% on-device · Zero server calls
+              Files and model stay in this browser
             </div>
           </aside>
 
@@ -286,7 +457,7 @@ function WorkspacePreview({ introDone }) {
                     <h2>Document Library</h2>
                     <p>3 research files parsed and staged locally in IndexedDB.</p>
                   </div>
-                  <span className="preview-demo-tag">Ready</span>
+                  <span className="preview-demo-tag">Sample</span>
                 </div>
                 <div className="preview-stats" aria-label="Workspace metrics">
                   <div className="preview-stat mint">
@@ -296,7 +467,7 @@ function WorkspacePreview({ introDone }) {
                   <div className="preview-stat blue">
                     <span>On-Device AI Engine</span>
                     <strong>Qwen 2.5</strong>
-                    <small>WebGPU Active</small>
+                    <small>{checks.gpu === 'ready' ? 'Can run here' : checks.gpu === 'none' ? 'Needs WebGPU' : 'Checking'}</small>
                   </div>
                 </div>
                 <div className="preview-library-heading">
@@ -315,7 +486,7 @@ function WorkspacePreview({ introDone }) {
                     </li>
                   ))}
                 </ul>
-                <p className="preview-footnote">Parsed locally in browser · Ready for instant evidence retrieval</p>
+                <p className="preview-footnote">Parsed in this browser · Ready to search</p>
               </div>
             )}
 
@@ -348,7 +519,7 @@ function WorkspacePreview({ introDone }) {
                     </div>
                   </div>
                 )}
-                <p className="preview-footnote">Sub-millisecond keyword retrieval across extracted passage chunks</p>
+                <p className="preview-footnote">Keyword search across extracted passages, with page locators</p>
               </div>
             )}
 
@@ -363,7 +534,7 @@ function WorkspacePreview({ introDone }) {
                     <div className="bubble-head">
                       <span className="bubble-author">DocuMind Assistant</span>
                       <span className="bubble-tag">
-                        <Cpu size={10} aria-hidden="true" /> On-Device WebGPU Model
+                        <Cpu size={10} aria-hidden="true" /> Sample answer
                       </span>
                     </div>
                     <p className="preview-answer">{answer.nodes}</p>
@@ -381,7 +552,7 @@ function WorkspacePreview({ introDone }) {
                     </div>
                   </div>
                 </div>
-                <p className="preview-footnote">Synthesized on your GPU · Every claim anchored to exact reader locators</p>
+                <p className="preview-footnote">Written on your GPU · Each claim links to its page</p>
               </div>
             )}
           </div>
@@ -391,104 +562,46 @@ function WorkspacePreview({ introDone }) {
   )
 }
 
-function CapabilitiesBento() {
+function ProofLedger() {
   return (
-    <section className="capabilities-bar" id="features" aria-labelledby="features-heading">
-      <div className="bento-header reveal-on-scroll">
-        <h2 id="features-heading">Architecture designed for absolute trust</h2>
+    <section className="proof-section" id="features" aria-labelledby="features-heading">
+      <div className="section-intro numbered">
+        <span className="sec-label">/04</span>
+        <h2 id="features-heading">The facts behind each stamp</h2>
         <p>
-          Traditional AI document tools send your confidential files to remote servers. DocuMind runs the entire pipeline—from PDF parsing to neural LLM inference—purely in your local browser.
+          Each row of the comparison links here. These are the parts of DocuMind you can check for yourself in the workspace.
         </p>
       </div>
 
-      <div className="bento-grid">
-        <article className="bento-card card-wide card-mint reveal-on-scroll" style={{ '--reveal-delay': '0ms' }}>
-          <div className="card-top">
-            <span className="card-icon"><Cpu size={24} aria-hidden="true" /></span>
-            <span className="bento-tag tag-mint">WebGPU Accelerated</span>
-          </div>
-          <div className="card-body">
-            <h3>On-Device Neural Model Synthesis</h3>
-            <p>
-              Run modern quantized language models (Qwen 2.5 0.5B) directly on your local GPU via WebLLM and Apache TVM. Model weight shards (~350 MB) download once into your browser's persistent Cache API and execute completely offline without cloud API tokens.
-            </p>
-          </div>
-          <div className="card-spec-row">
-            <span><Zap size={13} aria-hidden="true" /> Zero Cloud Uploads</span>
-            <span><Database size={13} aria-hidden="true" /> Cache API Persistence</span>
-            <span><Lock size={13} aria-hidden="true" /> Apache 2.0 Open Weights</span>
-          </div>
-        </article>
-
-        <article className="bento-card card-butter reveal-on-scroll" style={{ '--reveal-delay': '60ms' }}>
-          <div className="card-top">
-            <span className="card-icon"><FileSearch size={22} aria-hidden="true" /></span>
-            <span className="bento-tag tag-butter">Sub-millisecond</span>
-          </div>
-          <div className="card-body">
-            <h3>Deterministic Passage Search</h3>
-            <p>
-              Tokenized, stop-word filtered keyword retrieval across thousands of document passages in milliseconds. Immediate highlighted matches with exact page and paragraph locators.
-            </p>
-          </div>
-          <div className="card-pill-row">
-            <span className="feature-pill">Exact Page Locators</span>
-            <span className="feature-pill">Zero Hallucinations</span>
-          </div>
-        </article>
-
-        <article className="bento-card card-sky reveal-on-scroll" style={{ '--reveal-delay': '120ms' }}>
-          <div className="card-top">
-            <span className="card-icon"><BookOpen size={22} aria-hidden="true" /></span>
-            <span className="bento-tag tag-sky">Direct Nav</span>
-          </div>
-          <div className="card-body">
-            <h3>Verifiable Passage Citations</h3>
-            <p>
-              Every response is strictly bounded to retrieved evidence. Click any citation chip to instantly open the Document Reader at the cited chunk with smooth auto-scroll.
-            </p>
-          </div>
-          <div className="card-pill-row">
-            <span className="feature-pill">Passage-Level Anchors</span>
-            <span className="feature-pill">One-Click Reader Jump</span>
-          </div>
-        </article>
-
-        <article className="bento-card card-wide card-white reveal-on-scroll" style={{ '--reveal-delay': '180ms' }}>
-          <div className="card-top">
-            <span className="card-icon"><Shield size={24} aria-hidden="true" /></span>
-            <span className="bento-tag tag-mint">Zero Telemetry</span>
-          </div>
-          <div className="card-body">
-            <h3>Client-Side Privacy Vault</h3>
-            <p>
-              Client-side PDF and DOCX parsers decode file bytes in background Web Workers. Documents persist securely in your browser's IndexedDB. No accounts, no cookies, no user tracking, and no external proxies.
-            </p>
-          </div>
-          <div className="card-spec-row">
-            <span><Database size={13} aria-hidden="true" /> IndexedDB Storage</span>
-            <span><Cpu size={13} aria-hidden="true" /> Web Worker Parsers</span>
-            <span><Shield size={13} aria-hidden="true" /> Zero Telemetry</span>
-          </div>
-        </article>
-      </div>
+      <ol className="proof-ledger">
+        {PROOF_ROWS.map((row) => (
+          <li className="proof-row" id={row.id} key={row.id}>
+            <span className="proof-stamp">{row.stamp}</span>
+            <h3>{row.title}</h3>
+            <ul>
+              {row.facts.map((fact) => <li key={fact}>{fact}</li>)}
+            </ul>
+          </li>
+        ))}
+      </ol>
     </section>
   )
 }
 
-function GroundingPlayground() {
+function GroundingPlayground({ checks }) {
   const [selectedPrompt, setSelectedPrompt] = useState(PLAYGROUND_PROMPTS[0])
 
   return (
     <section className="playground-section" id="interactive-demo" aria-labelledby="playground-heading">
-      <div className="playground-intro reveal-on-scroll">
-        <h2 id="playground-heading">Inspect how verifiable grounding works</h2>
+      <div className="section-intro numbered">
+        <span className="sec-label">/05</span>
+        <h2 id="playground-heading">Pick a question and see the passage it cites</h2>
         <p>
-          Select a sample research query to see how DocuMind isolates matching source passages and links answers directly to original page citations without hallucinations.
+          <span className="sample-mark">Sample files</span> The answer on the right uses only the passage on the left, and names its page.
         </p>
       </div>
 
-      <div className="playground-container reveal-on-scroll">
+      <div className="playground-container">
         <div className="playground-prompt-tabs" role="tablist" aria-label="Sample research questions">
           {PLAYGROUND_PROMPTS.map((p) => (
             <button
@@ -507,7 +620,7 @@ function GroundingPlayground() {
         <div className="playground-display-split">
           <div className="playground-panel source-panel">
             <div className="panel-header">
-              <span className="panel-badge butter">Retrieved Source Passage</span>
+              <span className="panel-stamp">Source</span>
               <span className="panel-doc-meta">
                 <strong>{selectedPrompt.doc}</strong> · {selectedPrompt.locator}
               </span>
@@ -519,15 +632,15 @@ function GroundingPlayground() {
             </div>
             <div className="panel-footer">
               <CheckCircle2 size={14} aria-hidden="true" />
-              <span>Extracted locally via Web Worker parser</span>
+              <span>Read in this browser by a web worker</span>
             </div>
           </div>
 
           <div className="playground-panel answer-panel">
             <div className="panel-header">
-              <span className="panel-badge mint">Grounded Answer</span>
+              <span className="panel-stamp panel-stamp--mint">Answer</span>
               <span className="panel-doc-meta">
-                <Cpu size={12} aria-hidden="true" /> On-Device WebGPU
+                <Cpu size={12} aria-hidden="true" /> {gpuLabel(checks)}
               </span>
             </div>
             <div className="panel-content">
@@ -538,7 +651,6 @@ function GroundingPlayground() {
                 <span className="cite-badge">[1]</span>
                 <span className="cite-doc">{selectedPrompt.doc}</span>
                 <span className="cite-loc">{selectedPrompt.locator}</span>
-                <span className="cite-verified">Verified Passage</span>
               </div>
             </div>
             <div className="panel-footer action-footer">
@@ -553,84 +665,41 @@ function GroundingPlayground() {
   )
 }
 
-function HowItWorks() {
-  return (
-    <section className="how-section" id="how-it-works" aria-labelledby="how-heading">
-      <div className="how-intro reveal-on-scroll">
-        <div>
-          <h2 id="how-heading">A clear, verifiable path through your research</h2>
-        </div>
-        <p>
-          Start with local file selection, search evidence passages, and ask questions with verifiable citations. No remote AI model connected without your explicit permission.
-        </p>
-      </div>
-
-      <ol className="steps-list">
-        <li className="step-item step-available reveal-on-scroll" style={{ '--reveal-delay': '0ms' }}>
-          <div>
-            <span className="step-num-pill">01</span>
-            <h3>Add Documents Locally</h3>
-            <p>
-              Select PDF, DOCX, or TXT files up to 25 MB. Text extraction executes in background browser workers; files are persisted in local IndexedDB. Zero cloud uploads.
-            </p>
-          </div>
-          <span className="step-status">100% In-Browser</span>
-        </li>
-        <li className="step-item step-available reveal-on-scroll" style={{ '--reveal-delay': '70ms' }}>
-          <div>
-            <span className="step-num-pill">02</span>
-            <h3>Search Evidence or Query AI</h3>
-            <p>
-              Query across document chunks with sub-millisecond keyword retrieval, or synthesize answers directly on your GPU using local Qwen 2.5 on-device inference.
-            </p>
-          </div>
-          <span className="step-status">Dual-Mode Inference</span>
-        </li>
-        <li className="step-item step-citations reveal-on-scroll" style={{ '--reveal-delay': '140ms' }}>
-          <div>
-            <span className="step-num-pill">03</span>
-            <h3>Verify Every Citation</h3>
-            <p>
-              Every statement links directly to bracketed citations. Click any citation to open the full Document Reader right at the source page and paragraph offset.
-            </p>
-          </div>
-          <span className="step-status">Verifiable Grounding</span>
-        </li>
-      </ol>
-    </section>
-  )
-}
-
 function PrivacyFAQ() {
   const faqs = [
     {
-      q: 'Do my documents or questions ever leave my machine?',
-      a: 'Never. Document parsing (PDF, DOCX, TXT), chunking, indexing, and neural AI inference run 100% locally in your browser. No files, text snippets, or questions are ever sent to an external server.',
+      q: 'Do my files or questions leave my computer?',
+      a: 'Not unless you allow it. Parsing, chunking, search and the on-device model all run in your browser. If you connect a remote model, DocuMind asks before it sends any excerpt.',
     },
     {
-      q: 'How does the on-device AI model run without an API key?',
-      a: 'DocuMind uses WebGPU and WebLLM to compile optimized shaders directly on your graphics hardware. Weights (~350 MB) download once from CDN into your browser\'s Cache API for instant offline inference.',
+      q: 'How does the model run without an API key?',
+      a: 'WebLLM runs the model on your graphics card through WebGPU. Its weights, about 350 MB, download once into the browser cache when you ask, and later answers work offline.',
     },
     {
       q: 'What if my device does not support WebGPU?',
-      a: 'DocuMind automatically falls back to deterministic local Evidence Preview. You get exact keyword excerpts and verified citations with zero model weight downloads required.',
+      a: 'DocuMind switches to Evidence Preview: it shows the matching passages with their pages, with no model to download.',
     },
     {
-      q: 'What file formats and sizes are supported?',
-      a: 'DocuMind handles PDF, DOCX, and TXT files up to 25 MB per file. You can add multiple files, organize them in your local library, and manage browser storage at any time.',
+      q: 'Which files can I add?',
+      a: 'PDF, DOCX and TXT files, up to 25 MB each. Add as many as your browser storage holds, and remove them from the library at any time.',
+    },
+    {
+      q: 'Do I need an account?',
+      a: 'No. Open the workspace and add a file; there is nothing to sign up for.',
     },
   ]
 
   return (
     <section className="faq-section" id="faq" aria-labelledby="faq-heading">
-      <div className="faq-intro reveal-on-scroll">
-        <h2 id="faq-heading">Frequently asked questions</h2>
-        <p>Everything you need to know about DocuMind's privacy guarantees and local technology stack.</p>
+      <div className="section-intro numbered">
+        <span className="sec-label">/06</span>
+        <h2 id="faq-heading">Questions</h2>
+        <p>About your files, the model and the browser.</p>
       </div>
 
-      <div className="faq-grid reveal-on-scroll">
-        {faqs.map((item, idx) => (
-          <article className="faq-card" key={idx}>
+      <div className="faq-list">
+        {faqs.map((item) => (
+          <article className="faq-row" key={item.q}>
             <h3>{item.q}</h3>
             <p>{item.a}</p>
           </article>
@@ -643,6 +712,8 @@ function PrivacyFAQ() {
 function LandingPage() {
   const pageRef = useRef(null)
   const [introDone, setIntroDone] = useState(false)
+  const [demoStep, setDemoStep] = useState(0)
+  const checks = useDeviceChecks()
 
   useGSAP(() => {
     if (prefersReducedMotion()) {
@@ -650,64 +721,37 @@ function LandingPage() {
       return undefined
     }
 
-    const canUseSmoothScroll = window.matchMedia('(min-width: 901px) and (hover: hover) and (pointer: fine)').matches
-    const smoother = canUseSmoothScroll ? ScrollSmoother.create({
-      wrapper: '#smooth-wrapper',
-      content: '#smooth-content',
-      smooth: 0.7,
-      effects: false,
-    }) : null
-
-    // Hero sequence: the headline rises out of its line boxes, the butter highlighter
-    // marks "documents" like an evidence match, then the workspace is set down on the desk.
-    const ink = '#000'
-    const lift = (distance) => ({ x: distance, y: distance, boxShadow: `0px 0px 0px ${ink}` })
+    // Hero sequence: the headline lines rise, the red beam sweeps the page and stops on
+    // the cited line; the ledger's stamps press in once when the ledger is reached.
     const intro = gsap.timeline({
       defaults: { ease: 'expo.out' },
       onComplete: () => setIntroDone(true),
     })
 
     intro
-      .from('.hero-line-inner', { yPercent: 108, duration: 0.9, stagger: 0.11 }, 0.1)
-      .fromTo('.hero-mark', { '--mark-scale': 0 }, { '--mark-scale': 1, duration: 0.55, ease: 'power3.inOut' }, 0.62)
-      .from('.hero-support, .hero-actions', { y: 14, opacity: 0, duration: 0.7, stagger: 0.08, clearProps: 'transform,opacity' }, 0.5)
-      .from('.trust-pill', { ...lift(2), opacity: 0, duration: 0.45, stagger: 0.05, clearProps: 'transform,boxShadow,opacity' }, 0.78)
-      .from('.prototype-note', { ...lift(3), opacity: 0, duration: 0.55, clearProps: 'transform,boxShadow,opacity' }, 0.95)
-      .from('.preview-caption', { opacity: 0, duration: 0.5 }, 0.3)
-      .from('.workspace-preview', { ...lift(6), duration: 0.8, clearProps: 'transform,boxShadow' }, 0.3)
-      .from('.preview-file', { y: 8, opacity: 0, duration: 0.45, stagger: 0.06, clearProps: 'transform,opacity' }, 0.7)
+      .from('.cx-hero h1 .line', { yPercent: 105, duration: 0.85, stagger: 0.09, clearProps: 'transform' }, 0.05)
+      .from('.cx-hero .sec-label, .cx-sub, .cx-lead', { opacity: 0, y: 10, duration: 0.6, stagger: 0.06, clearProps: 'transform,opacity' }, 0.35)
+      .from('.cx-hero .hero-actions > *', { opacity: 0, y: 10, duration: 0.6, stagger: 0.06, clearProps: 'transform,opacity' }, 0.55)
+      .from('.scan-line', { scaleX: 0, transformOrigin: 'left center', duration: 0.5, stagger: 0.025, ease: 'power3.out', clearProps: 'transform' }, 0.3)
+      .fromTo('.scan-beam', { top: '0%', opacity: 1 }, { top: () => `${(100 * (CITED_LINE + 0.5)) / SCAN_LINES.length}%`, duration: 1.1, ease: 'power2.inOut' }, 0.6)
+      .to('.scan-beam', { opacity: 0, duration: 0.3 }, '>')
+      .from('.scan-line.is-cited, .scan-cite', { backgroundColor: '#0b0b0b', opacity: 0.6, duration: 0.35 }, '<')
 
-    return () => {
-      smoother?.kill()
-    }
-  }, { scope: pageRef })
-
-  useLayoutEffect(() => {
-    const root = pageRef.current
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (!root || reduceMotion || !('IntersectionObserver' in window)) return undefined
-
-    const targets = root.querySelectorAll('.reveal-on-scroll')
-    if (!targets.length) return undefined
-    document.documentElement.dataset.motionReady = 'true'
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
+    const ledger = pageRef.current?.querySelector('.ledger-frame')
+    const stamps = pageRef.current?.querySelectorAll('.ledger-stamp')
+    let observer
+    if (ledger && stamps?.length && 'IntersectionObserver' in window) {
+      gsap.set(stamps, { scale: 1.4, opacity: 0 })
+      observer = new IntersectionObserver(([entry]) => {
         if (!entry.isIntersecting) return
-        entry.target.classList.add('is-visible')
-        observer.unobserve(entry.target)
-      })
-    }, { threshold: 0.12, rootMargin: '0px 0px -4% 0px' })
-    targets.forEach((target) => observer.observe(target))
-    function revealFocused(event) {
-      event.target.closest('.reveal-on-scroll')?.classList.add('is-visible')
+        observer.disconnect()
+        gsap.to(stamps, { scale: 1, opacity: 1, duration: 0.3, stagger: 0.12, ease: 'power3.in', clearProps: 'transform,opacity' })
+      }, { threshold: 0.4 })
+      observer.observe(ledger)
     }
-    root.addEventListener('focusin', revealFocused)
-    return () => {
-      observer.disconnect()
-      root.removeEventListener('focusin', revealFocused)
-      delete document.documentElement.dataset.motionReady
-    }
-  }, [])
+
+    return () => observer?.disconnect()
+  }, { scope: pageRef })
 
   return (
     <div className="landing" ref={pageRef}>
@@ -717,82 +761,115 @@ function LandingPage() {
           <Brand className="brand-lockup" markClassName="landing-brand-mark" wordmarkClassName="landing-wordmark" />
         </Link>
         <nav className="landing-nav" aria-label="Main navigation">
-          <a href="#features">Capabilities</a>
-          <a href="#interactive-demo">Live Demo</a>
-          <a href="#how-it-works">How it works</a>
-          <a href="#faq">FAQ</a>
+          <a href="#ledger">Compare</a>
+          <a href="#live-demo">Live demo</a>
+          <a href="#features">Facts</a>
+          <a href="#interactive-demo">Try it</a>
+          <a href="#faq">Questions</a>
           <Link className="nav-cta" to="/workspace">
             Open workspace <ArrowUpRight size={16} aria-hidden="true" />
           </Link>
         </nav>
       </header>
 
-      <div id="smooth-wrapper">
-        <div id="smooth-content">
           <main id="main-content">
-            <div className="landing-split">
-              <section className="hero-copy" aria-labelledby="hero-heading">
-                <div className="hero-inner">
-                  <h1 id="hero-heading" aria-label="Understand your documents faster.">
-                    <span className="hero-heading-line" aria-hidden="true">
-                      <span className="hero-line-inner">Understand your</span>
-                    </span>
-                    <span className="hero-heading-line" aria-hidden="true">
-                      <span className="hero-line-inner"><span className="hero-mark">documents</span> faster.</span>
-                    </span>
-                  </h1>
-
-                  <p className="hero-support">
-                    The private document workspace for research and reports. Extract, search, and synthesize insights entirely in your browser using local WebGPU acceleration. User files and queries never leave your machine.
-                  </p>
-
-                  <div className="hero-actions">
-                    <Link className="button-primary" to="/workspace">
-                      Open your workspace <ArrowRight size={18} aria-hidden="true" />
-                    </Link>
-                    <a className="text-link" href="#interactive-demo">
-                      Try live demo <ArrowRight size={16} aria-hidden="true" />
-                    </a>
-                  </div>
-
-                  <div className="hero-trust-bar">
-                    <div className="trust-pill">
-                      <Lock size={13} aria-hidden="true" /> Zero Cloud Uploads
-                    </div>
-                    <div className="trust-pill">
-                      <Cpu size={13} aria-hidden="true" /> WebGPU On-Device
-                    </div>
-                    <div className="trust-pill">
-                      <FileSearch size={13} aria-hidden="true" /> Exact Citations
-                    </div>
-                    <div className="trust-pill">
-                      <Database size={13} aria-hidden="true" /> Browser IndexedDB
-                    </div>
-                  </div>
-
-                  <aside className="prototype-note" aria-label="Privacy guarantee">
-                    <strong>Local-first privacy guarantee</strong>
-                    <p>
-                      Files added to the workspace are parsed on-device and stored in your browser's IndexedDB. Optional on-device AI runs directly on your GPU; weights are cached locally and no data is ever sent to external servers.
-                    </p>
-                  </aside>
+            <section className="cx-hero" aria-labelledby="hero-heading">
+              <p className="cx-rail" aria-hidden="true"><span>Document AI, on device</span></p>
+              <div className="cx-hero__text">
+                <div className="numbered">
+                <span className="sec-label">/01</span>
+                <h1 id="hero-heading" aria-label="Document AI that stays on your computer">
+                  <span className="line-mask" aria-hidden="true"><span className="line">Document AI</span></span>
+                  <span className="line-mask" aria-hidden="true"><span className="line">that stays on</span></span>
+                  <span className="line-mask" aria-hidden="true"><span className="line">your computer</span></span>
+                </h1>
                 </div>
-              </section>
-              <WorkspacePreview introDone={introDone} />
-            </div>
+                <p className="cx-sub">Local. Cited. Offline.</p>
+                <p className="cx-lead">
+                  Ask questions across PDF, Word and text files. Every answer cites the page it came from, and the model runs on your own GPU.
+                </p>
+                <div className="hero-actions">
+                  <Link className="button-primary" to="/workspace">
+                    Open workspace <ArrowUpRight size={18} aria-hidden="true" />
+                  </Link>
+                  <a className="text-link" href="#live-demo">
+                    Watch a cited answer <span className="bracket" aria-hidden="true">[ ]</span>
+                  </a>
+                </div>
+              </div>
+              <PageScan checks={checks} />
+            </section>
 
-            <CapabilitiesBento />
-            <GroundingPlayground />
-            <HowItWorks />
+            <section className="ledger-section" id="ledger" aria-labelledby="ledger-heading">
+              <div className="section-intro numbered">
+                <span className="sec-label">/02</span>
+                <h2 id="ledger-heading">Same question, two tools</h2>
+                <p>Four facts about where your files go. Each DocuMind stamp links to its proof further down.</p>
+              </div>
+              <div className="ledger-frame">
+                <table className="ledger" role="table">
+                  <caption className="sr-only">The same question asked of a cloud AI chat tool and of DocuMind</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col" className="ledger-corner">Question</th>
+                      <th scope="col" className="ledger-them">Cloud AI chat</th>
+                      <th scope="col" className="ledger-us">DocuMind</th>
+                    </tr>
+                  </thead>
+                  <tbody role="rowgroup">
+                    {LEDGER_ROWS.map((row) => (
+                      <tr key={row.label} role="row">
+                        <th scope="row" role="rowheader">{row.label}</th>
+                        <td data-label="Cloud AI chat" role="cell">{row.them}</td>
+                        <td data-label="DocuMind" className="ledger-us" role="cell">
+                          <span className="ledger-cell">
+                            <a className="ledger-stamp" href={row.href} aria-label={`${row.stamp}: ${row.proof}`}>{row.stamp}</a>
+                            <span>{row.us}</span>
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <p className="hero-note">No account. PDF, DOCX and TXT up to 25 MB.</p>
+            </section>
+
+            <section className="demo-section" id="live-demo" aria-labelledby="demo-heading">
+              <div className="demo-copy">
+                <div className="numbered">
+                  <span className="sec-label">/03</span>
+                  <h2 id="demo-heading">Watch it answer from your files</h2>
+                </div>
+                <p>
+                  The preview runs the same three steps as the workspace: it searches every passage, marks the matches, then writes an answer that cites each page it used.
+                </p>
+                <ol className="demo-steps">
+                  {DEMO_STEPS.map((label, index) => (
+                    <li key={label} className={demoStep === index + 1 ? 'is-active' : undefined} aria-current={demoStep === index + 1 ? 'step' : undefined}>
+                      <span>{String(index + 1).padStart(2, '0')}</span>{label}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <WorkspacePreview introDone={introDone} onStepChange={setDemoStep} checks={checks} />
+            </section>
+
+            <ProofLedger />
+            <GroundingPlayground checks={checks} />
             <PrivacyFAQ />
           </main>
 
-          <section className="landing-cta reveal-on-scroll" aria-label="Call to action">
-            <h2>Ready to work smarter with your documents?</h2>
-            <p>Start browsing demo files or add your own in the local workspace. No registration or credit card required.</p>
+          <section className="landing-cta" aria-label="Call to action">
+            <div className="numbered">
+              <span className="sec-label">/07</span>
+              <h2>Open your workspace and add a file</h2>
+            </div>
+            <p>No account and nothing to install. Your files stay in this browser until you delete them.</p>
             <div className="cta-actions">
               <Link className="button-primary" to="/workspace">
-                Open your workspace <ArrowRight size={18} aria-hidden="true" />
+                Open workspace <ArrowUpRight size={18} aria-hidden="true" />
               </Link>
             </div>
             <span className="cta-shortcut">
@@ -802,11 +879,14 @@ function LandingPage() {
 
           <footer className="landing-footer">
             <Link className="footer-brand" to="/">DocuMind AI</Link>
-            <p>Local-first workspace · Files and queries run on-device and are never sent to a server.</p>
-            <a href="#how-it-works">How it works <ArrowUpRight size={14} aria-hidden="true" /></a>
+            <p>Files are read and stored in your browser. Excerpts go to a remote model only if you allow it.</p>
+            <a href="#features">See the facts <ArrowUpRight size={14} aria-hidden="true" /></a>
           </footer>
-        </div>
-      </div>
+          <div className="status-bar">
+            <span><i aria-hidden="true" /> Files: local</span>
+            <Link className="status-bar__go" to="/workspace">&gt; Open workspace_</Link>
+            <span>Formats: PDF / DOCX / TXT</span>
+          </div>
     </div>
   )
 }

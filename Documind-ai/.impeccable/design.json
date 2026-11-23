@@ -1,37 +1,361 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-10T15:31:37Z",
+  "generatedAt": "2026-11-23T09:54:45Z",
   "title": "Design System: DocuMind AI",
   "extensions": {
     "colorMeta": {
-      "ink": { "role": "neutral", "displayName": "Pitch Black", "canonical": "#000000", "tonalRamp": ["#000000", "#171713", "#25251F"] },
-      "cream": { "role": "neutral", "displayName": "Warm Cream", "canonical": "#FFFDF5", "tonalRamp": ["#FFFDF5", "#F8F4E9", "#F1EBDC"] },
-      "white": { "role": "neutral", "displayName": "Paper White", "canonical": "#FFFFFF", "tonalRamp": ["#FFFFFF", "#F7F7F4", "#ECECE7"] },
-      "mint": { "role": "primary", "displayName": "Soft Mint", "canonical": "#88D498", "tonalRamp": ["#E8F7EB", "#88D498", "#26733B"] },
-      "sky": { "role": "secondary", "displayName": "Sky Blue", "canonical": "#74B9FF", "tonalRamp": ["#E9F4FF", "#74B9FF", "#14568E"] },
-      "butter": { "role": "tertiary", "displayName": "Butter Yellow", "canonical": "#FFD23F", "tonalRamp": ["#FFF4C9", "#FFD23F", "#6D5200"] },
-      "mint-tint": { "role": "surface", "displayName": "Mint Tint", "canonical": "#D8F0DC", "tonalRamp": ["#E8F7EB", "#D8F0DC", "#C4E5CA"] },
-      "sky-tint": { "role": "surface", "displayName": "Sky Tint", "canonical": "#D4EAFF", "tonalRamp": ["#E9F4FF", "#D4EAFF", "#C0DFFF"] },
-      "butter-tint": { "role": "surface", "displayName": "Butter Tint", "canonical": "#FFE99A", "tonalRamp": ["#FFF4C9", "#FFE99A", "#F5DB79"] }
+      "ink": {
+        "role": "neutral",
+        "displayName": "Pitch Black",
+        "canonical": "#000000",
+        "tonalRamp": [
+          "#000000",
+          "#171713",
+          "#25251F"
+        ]
+      },
+      "cream": {
+        "role": "neutral",
+        "displayName": "Warm Cream",
+        "canonical": "#FFFDF5",
+        "tonalRamp": [
+          "#FFFDF5",
+          "#F8F4E9",
+          "#F1EBDC"
+        ]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "#FFFFFF",
+          "#F7F7F4",
+          "#ECECE7"
+        ]
+      },
+      "mint": {
+        "role": "primary",
+        "displayName": "Soft Mint",
+        "canonical": "#88D498",
+        "tonalRamp": [
+          "#E8F7EB",
+          "#88D498",
+          "#26733B"
+        ]
+      },
+      "sky": {
+        "role": "secondary",
+        "displayName": "Sky Blue",
+        "canonical": "#74B9FF",
+        "tonalRamp": [
+          "#E9F4FF",
+          "#74B9FF",
+          "#14568E"
+        ]
+      },
+      "butter": {
+        "role": "tertiary",
+        "displayName": "Butter Yellow",
+        "canonical": "#FFD23F",
+        "tonalRamp": [
+          "#FFF4C9",
+          "#FFD23F",
+          "#6D5200"
+        ]
+      },
+      "mint-tint": {
+        "role": "surface",
+        "displayName": "Mint Tint",
+        "canonical": "#D8F0DC",
+        "tonalRamp": [
+          "#E8F7EB",
+          "#D8F0DC",
+          "#C4E5CA"
+        ]
+      },
+      "sky-tint": {
+        "role": "surface",
+        "displayName": "Sky Tint",
+        "canonical": "#D4EAFF",
+        "tonalRamp": [
+          "#E9F4FF",
+          "#D4EAFF",
+          "#C0DFFF"
+        ]
+      },
+      "butter-tint": {
+        "role": "surface",
+        "displayName": "Butter Tint",
+        "canonical": "#FFE99A",
+        "tonalRamp": [
+          "#FFF4C9",
+          "#FFE99A",
+          "#F5DB79"
+        ]
+      },
+      "front-red": {
+        "role": "primary",
+        "surface": "front-page",
+        "displayName": "Signal Red",
+        "canonical": "#d3110f",
+        "tonalRamp": [
+          "#3d0504",
+          "#6a0908",
+          "#9a0d0b",
+          "#d3110f",
+          "#e9524f",
+          "#f39592",
+          "#fbe2e1",
+          "#fef3f3"
+        ]
+      },
+      "front-red-tint": {
+        "role": "surface",
+        "surface": "front-page",
+        "displayName": "Red Tint",
+        "canonical": "#fbe2e1",
+        "tonalRamp": [
+          "#f6c4c2",
+          "#fbe2e1",
+          "#fef3f3"
+        ]
+      },
+      "front-ground": {
+        "role": "neutral",
+        "surface": "front-page",
+        "displayName": "Instrument Grey",
+        "canonical": "#f1f1ef",
+        "tonalRamp": [
+          "#dcdcd8",
+          "#e7e7e4",
+          "#f1f1ef",
+          "#f8f8f7"
+        ]
+      },
+      "front-panel": {
+        "role": "neutral",
+        "surface": "front-page",
+        "displayName": "Sheet White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#f1f1ef",
+          "#f8f8f7",
+          "#ffffff"
+        ]
+      },
+      "front-ink": {
+        "role": "neutral",
+        "surface": "front-page",
+        "displayName": "Press Black",
+        "canonical": "#0b0b0b",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#1e1e1c",
+          "#33332f"
+        ]
+      },
+      "front-frame": {
+        "role": "neutral",
+        "surface": "front-page",
+        "displayName": "Frame Black",
+        "canonical": "#0b0b0b",
+        "tonalRamp": [
+          "#0b0b0b"
+        ]
+      },
+      "front-muted": {
+        "role": "neutral",
+        "surface": "front-page",
+        "displayName": "Graphite",
+        "canonical": "#55554f",
+        "tonalRamp": [
+          "#33332f",
+          "#55554f",
+          "#7a7a73",
+          "#a3a39d"
+        ]
+      },
+      "front-line": {
+        "role": "neutral",
+        "surface": "front-page",
+        "displayName": "Hairline",
+        "canonical": "rgba(11, 11, 11, 0.14)",
+        "tonalRamp": [
+          "rgba(11, 11, 11, 0.14)"
+        ]
+      },
+      "front-close-muted": {
+        "role": "neutral",
+        "surface": "front-page",
+        "displayName": "Close Grey",
+        "canonical": "#c9c9c4",
+        "tonalRamp": [
+          "#a3a39d",
+          "#c9c9c4",
+          "#e2e2de"
+        ]
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Workspace Display", "purpose": "Compact page titles in the application shell." },
-      "body": { "displayName": "Interface Text", "purpose": "Document names, explanatory copy, and controls." }
+      "display": {
+        "displayName": "Workspace Display",
+        "purpose": "Compact page titles in the application shell."
+      },
+      "body": {
+        "displayName": "Interface Text",
+        "purpose": "Document names, explanatory copy, and controls."
+      },
+      "front-display": {
+        "displayName": "Poster Display",
+        "surface": "front-page",
+        "purpose": "Hero headline only; clamp(52px, 5.4vw, 86px), uppercase."
+      },
+      "front-headline": {
+        "displayName": "Section Headline",
+        "surface": "front-page",
+        "purpose": "Section headings, clamp(38px, 4.6vw, 68px); closing heading up to 112px."
+      },
+      "front-title": {
+        "displayName": "Row Title",
+        "surface": "front-page",
+        "purpose": "Fact rows and question headings, uppercase."
+      },
+      "front-body": {
+        "displayName": "Instrument Text",
+        "surface": "front-page",
+        "purpose": "Lead copy, answers, explanations at width axis 87.5."
+      },
+      "front-label": {
+        "displayName": "Control Label",
+        "surface": "front-page",
+        "purpose": "Buttons, navigation, text links, section marks; uppercase."
+      },
+      "front-readout": {
+        "displayName": "Readout",
+        "surface": "front-page",
+        "purpose": "Readout rows, captions, status bar, tabs."
+      },
+      "front-stamp": {
+        "displayName": "Stamp",
+        "surface": "front-page",
+        "purpose": "Ledger stamps, fact stamps, sample marks; uppercase."
+      }
     },
     "shadows": [
-      { "name": "panel-hard", "value": "3px 3px 0 #000000", "purpose": "Structural offset for selected metric panels." },
-      { "name": "action-hard", "value": "4px 4px 0 #000000", "purpose": "Depth cue for the primary action and active navigation." },
-      { "name": "action-pressed", "value": "0 0 0 #000000", "purpose": "Shadow collapses when an action is pressed." }
+      {
+        "name": "panel-hard",
+        "value": "3px 3px 0 #000000",
+        "purpose": "Structural offset for selected metric panels."
+      },
+      {
+        "name": "action-hard",
+        "value": "4px 4px 0 #000000",
+        "purpose": "Depth cue for the primary action and active navigation."
+      },
+      {
+        "name": "action-pressed",
+        "value": "0 0 0 #000000",
+        "purpose": "Shadow collapses when an action is pressed."
+      },
+      {
+        "name": "front-none",
+        "surface": "front-page",
+        "value": "none",
+        "purpose": "The front page casts no shadows. Lift is drawn with an offset second frame instead: a 1px #0b0b0b frame filled #f1f1ef, inset 10px -10px -10px 10px behind the scanned page (6px on phones)."
+      }
     ],
     "motion": [
-      { "name": "mechanical-snap", "value": "120ms ease", "purpose": "Short transform and shadow feedback on buttons." },
-      { "name": "reduced-motion", "value": "0.01ms", "purpose": "Respect prefers-reduced-motion for transitions and scrolling." }
+      {
+        "name": "mechanical-snap",
+        "value": "120ms ease",
+        "purpose": "Short transform and shadow feedback on buttons."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "0.01ms",
+        "purpose": "Respect prefers-reduced-motion for transitions and scrolling."
+      },
+      {
+        "name": "front-ease",
+        "surface": "front-page",
+        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Default easing for front-page state transitions (button fill 160ms, press 120ms, tab and step 160-200ms)."
+      },
+      {
+        "name": "front-scan",
+        "surface": "front-page",
+        "value": "red 2px beam sweep, stops on the cited line",
+        "purpose": "Signature load interaction while the readouts resolve from real browser checks."
+      },
+      {
+        "name": "front-blink",
+        "surface": "front-page",
+        "value": "steps(1) blink, 900ms-1.2s",
+        "purpose": "Live-state squares and the typing caret."
+      },
+      {
+        "name": "front-reduced-motion",
+        "surface": "front-page",
+        "value": "transitions none; panes fade only",
+        "purpose": "prefers-reduced-motion removes sweeps, rises, and blinks."
+      }
     ],
     "breakpoints": [
-      { "name": "phone", "value": "480px" },
-      { "name": "mobile-shell", "value": "760px" },
-      { "name": "stacked-workspace", "value": "900px" },
-      { "name": "compact-rail", "value": "1120px" }
+      {
+        "name": "phone",
+        "value": "480px"
+      },
+      {
+        "name": "mobile-shell",
+        "value": "760px"
+      },
+      {
+        "name": "stacked-workspace",
+        "value": "900px"
+      },
+      {
+        "name": "compact-rail",
+        "value": "1120px"
+      },
+      {
+        "name": "front-phone",
+        "surface": "front-page",
+        "value": "480px"
+      },
+      {
+        "name": "front-ledger-cards",
+        "surface": "front-page",
+        "value": "760px"
+      },
+      {
+        "name": "front-stacked",
+        "surface": "front-page",
+        "value": "960px"
+      },
+      {
+        "name": "front-no-rail",
+        "surface": "front-page",
+        "value": "1180px"
+      }
+    ],
+    "surfaces": [
+      {
+        "route": "/workspace",
+        "system": "workspace",
+        "northStar": "The Paper Workbench",
+        "tokenPrefix": "",
+        "source": "workspace stylesheets and components",
+        "note": "Pastel neobrutalist system; governs the workspace and all application surfaces until the user decides otherwise."
+      },
+      {
+        "route": "/",
+        "system": "front-page",
+        "northStar": "The Instrument Sheet",
+        "tokenPrefix": "front-",
+        "source": "src/landing.css (scoped under .landing), src/LandingPage.jsx",
+        "note": "Cyber-brutalist signal-red system; governs the marketing front page only."
+      }
     ]
   },
   "components": [
@@ -50,17 +374,148 @@
       "description": "Filename search in the document library.",
       "html": "<input class=\"ds-search\" aria-label=\"Search documents by file name\" placeholder=\"Search by file name\" />",
       "css": ".ds-search { width: 100%; min-height: 42px; padding: 8px 10px; border: 2px solid #000; background: #fff; color: #000; font: 400 16px/1.5 'DM Sans', sans-serif; } .ds-search:focus-visible { outline: 3px solid #74B9FF; outline-offset: 3px; }"
+    },
+    {
+      "name": "Front Primary Button",
+      "kind": "button",
+      "surface": "front-page",
+      "refersTo": "front-button-primary",
+      "description": "Black action that turns red on hover; opens the workspace.",
+      "html": "<a class=\"ds-fp-btn\" href=\"#\">Open workspace <svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg></a>",
+      "css": ".ds-fp-btn { display: inline-flex; min-height: 48px; align-items: center; gap: 14px; padding: 12px 20px; border: 1px solid #0b0b0b; border-radius: 0; background: #0b0b0b; color: #fff; font-family: 'Martian Mono', ui-monospace, monospace; font-variation-settings: 'wdth' 87.5; font-size: 13px; font-weight: 600; line-height: 1.2; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none; transition: background-color 160ms cubic-bezier(0.22,1,0.36,1), border-color 160ms cubic-bezier(0.22,1,0.36,1), transform 120ms cubic-bezier(0.22,1,0.36,1); } .ds-fp-btn svg { color: #d3110f; transition: transform 160ms cubic-bezier(0.22,1,0.36,1), color 160ms; } .ds-fp-btn:hover { background: #d3110f; border-color: #d3110f; } .ds-fp-btn:hover svg { color: #fff; transform: translate(2px,-2px); } .ds-fp-btn:active { transform: translateY(1px); } .ds-fp-btn:focus-visible { outline: 2px solid #d3110f; outline-offset: 3px; }"
+    },
+    {
+      "name": "Front Close Button",
+      "kind": "button",
+      "surface": "front-page",
+      "refersTo": "front-button-close",
+      "description": "Red action on the black closing band; turns white on hover.",
+      "html": "<div class=\"ds-fp-band\"><a class=\"ds-fp-close\" href=\"#\">Open workspace</a></div>",
+      "css": ".ds-fp-band { padding: 32px; background: #0b0b0b; } .ds-fp-close { display: inline-flex; min-height: 56px; align-items: center; padding: 12px 20px; border: 1px solid #d3110f; background: #d3110f; color: #fff; font-family: 'Martian Mono', ui-monospace, monospace; font-variation-settings: 'wdth' 87.5; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none; transition: background-color 160ms cubic-bezier(0.22,1,0.36,1); } .ds-fp-close:hover { border-color: #fff; background: #fff; color: #0b0b0b; } .ds-fp-close:focus-visible { outline: 2px solid #d3110f; outline-offset: 3px; }"
+    },
+    {
+      "name": "Front Stamp",
+      "kind": "chip",
+      "surface": "front-page",
+      "refersTo": "front-stamp",
+      "description": "Red-framed proof stamp in the ledger; fills red on hover.",
+      "html": "<a class=\"ds-fp-stamp\" href=\"#\">Page cited</a>",
+      "css": ".ds-fp-stamp { display: inline-flex; min-height: 26px; align-items: center; padding: 2px 8px; border: 1px solid #d3110f; border-radius: 0; color: #d3110f; font-family: 'Martian Mono', ui-monospace, monospace; font-variation-settings: 'wdth' 87.5; font-size: 11px; font-weight: 700; text-transform: uppercase; text-decoration: none; transition: background-color 140ms, color 140ms; } .ds-fp-stamp:hover { background: #d3110f; color: #fff; } .ds-fp-stamp:focus-visible { outline: 2px solid #d3110f; outline-offset: 3px; }"
+    },
+    {
+      "name": "Front Readout Box",
+      "kind": "card",
+      "surface": "front-page",
+      "refersTo": "front-readout",
+      "description": "Framed key/value list of real browser checks.",
+      "html": "<dl class=\"ds-fp-readout\"><div><dt>WebGPU</dt><dd>Checking...</dd></div><div><dt>Storage</dt><dd>Checking...</dd></div><div><dt>Model</dt><dd>Checking...</dd></div></dl>",
+      "css": ".ds-fp-readout { display: grid; width: 380px; margin: 0; border: 1px solid #0b0b0b; background: #fff; font-family: 'Martian Mono', ui-monospace, monospace; font-variation-settings: 'wdth' 87.5; } .ds-fp-readout > div { display: grid; grid-template-columns: 96px 1fr; border-bottom: 1px solid rgba(11,11,11,0.14); } .ds-fp-readout > div:last-child { border-bottom: 0; } .ds-fp-readout dt, .ds-fp-readout dd { margin: 0; padding: 9px 12px; font-size: 12px; line-height: 1.4; font-weight: 600; } .ds-fp-readout dt { border-right: 1px solid rgba(11,11,11,0.14); color: #55554f; text-transform: uppercase; }"
+    },
+    {
+      "name": "Front Numbered Heading",
+      "kind": "custom",
+      "surface": "front-page",
+      "description": "Section mark in a 56px gutter beside the heading, topped by a red rule; never above the heading.",
+      "html": "<div class=\"ds-fp-numbered\"><span class=\"ds-fp-mark\">/02</span><h2 class=\"ds-fp-h2\">Cloud chat against DocuMind</h2></div>",
+      "css": ".ds-fp-numbered { display: grid; grid-template-columns: 56px minmax(0,1fr); align-items: start; background: #f1f1ef; color: #0b0b0b; } .ds-fp-mark { padding-top: 0.5em; border-top: 1px solid #d3110f; color: #d3110f; font-family: 'Martian Mono', ui-monospace, monospace; font-variation-settings: 'wdth' 87.5; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; } .ds-fp-h2 { margin: 0; font: 400 56px/0.95 'Anton', 'Arial Narrow', sans-serif; text-transform: uppercase; }"
+    },
+    {
+      "name": "Front Nav",
+      "kind": "nav",
+      "surface": "front-page",
+      "description": "Mono links split by red slashes, black action at the right.",
+      "html": "<nav class=\"ds-fp-nav\"><a href=\"#\">Ledger</a><a href=\"#\">Demo</a><a href=\"#\">Facts</a><a class=\"ds-fp-nav-cta\" href=\"#\">Open workspace</a></nav>",
+      "css": ".ds-fp-nav { display: flex; align-items: center; min-height: 72px; padding: 0 24px; border-bottom: 1px solid #0b0b0b; background: #f1f1ef; font-family: 'Martian Mono', ui-monospace, monospace; font-variation-settings: 'wdth' 87.5; } .ds-fp-nav a { padding: 8px 14px; color: #0b0b0b; font-size: 13px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none; } .ds-fp-nav a:not(.ds-fp-nav-cta) + a:not(.ds-fp-nav-cta)::before { content: '/'; margin: 0 14px 0 -14px; color: #d3110f; } .ds-fp-nav a:not(.ds-fp-nav-cta):hover { color: #d3110f; } .ds-fp-nav-cta { margin-left: 22px; padding: 12px 20px !important; border: 1px solid #0b0b0b; background: #0b0b0b; color: #fff !important; letter-spacing: 0.04em !important; } .ds-fp-nav-cta:hover { background: #d3110f; border-color: #d3110f; } .ds-fp-nav a:focus-visible { outline: 2px solid #d3110f; outline-offset: 3px; }"
+    },
+    {
+      "name": "Front Prompt Tabs",
+      "kind": "custom",
+      "surface": "front-page",
+      "refersTo": "front-tab",
+      "description": "Playground prompt tabs split by hairlines; active inverts to black.",
+      "html": "<div class=\"ds-fp-tabs\"><button class=\"ds-fp-tab is-active\">Notice period</button><button class=\"ds-fp-tab\">Revenue</button></div>",
+      "css": ".ds-fp-tabs { display: flex; border: 1px solid #0b0b0b; background: #fff; } .ds-fp-tab { min-height: 48px; padding: 12px 20px; border: 0; border-right: 1px solid rgba(11,11,11,0.14); background: transparent; color: #0b0b0b; font-family: 'Martian Mono', ui-monospace, monospace; font-variation-settings: 'wdth' 87.5; font-size: 12px; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: background-color 160ms, color 160ms; } .ds-fp-tab:hover { color: #d3110f; } .ds-fp-tab.is-active { background: #0b0b0b; color: #fff; } .ds-fp-tab:focus-visible { outline: 2px solid #d3110f; outline-offset: 3px; }"
     }
   ],
   "narrative": {
     "northStar": "The Paper Workbench",
     "overview": "A warm reading surface meets the explicit geometry of a working desk. Black strokes and compact controls make actions easy to find; mint, sky, and butter mark action and state without suggesting unfinished AI behavior is live. The dashboard stays compact and practical, while document content remains calm to scan.",
-    "keyCharacteristics": ["Cream canvas and black structure", "Three pastel accents", "Square geometry and tactile offset shadows", "Readable interface typography", "Honest sample and prototype labels"],
-    "rules": [
-      { "name": "The Honest Surface Rule", "body": "Label samples and distinguish local page-session behavior from server capabilities.", "section": "components" },
-      { "name": "The Three Pastels Rule", "body": "Use mint, sky, and butter; do not add gradients, glow, or glass.", "section": "colors" }
+    "keyCharacteristics": [
+      "Cream canvas and black structure",
+      "Three pastel accents",
+      "Square geometry and tactile offset shadows",
+      "Readable interface typography",
+      "Honest sample and prototype labels"
     ],
-    "dos": ["Do use the exact user-specified color values.", "Do keep controls keyboard accessible and respect reduced motion."],
-    "donts": ["Don't imply prototype files are uploaded, persisted, parsed, or analyzed.", "Don't use gradients, glow, or glass effects."]
+    "rules": [
+      {
+        "name": "The Honest Surface Rule",
+        "body": "Label samples and distinguish local page-session behavior from server capabilities.",
+        "section": "components"
+      },
+      {
+        "name": "The Three Pastels Rule",
+        "body": "Use mint, sky, and butter; do not add gradients, glow, or glass.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "Do use the exact user-specified color values.",
+      "Do keep controls keyboard accessible and respect reduced motion."
+    ],
+    "donts": [
+      "Don't imply prototype files are uploaded, persisted, parsed, or analyzed.",
+      "Don't use gradients, glow, or glass effects."
+    ],
+    "surfaces": {
+      "front-page": {
+        "route": "/",
+        "northStar": "The Instrument Sheet",
+        "overview": "The front page presents DocuMind as a machine that checks the visitor's own browser live and shows its work. It reads like a printed instrument sheet: a light grey ground ruled with hairlines, black 1px frames, square corners, huge uppercase Anton, and every other word in a narrow monospace. One signal red marks what the machine is pointing at: labels, the cited line, stamps, and live states. Density is high but ordered. Content sits in framed ledgers and ruled rows rather than floating cards, and depth comes from line work, never from blur or block shadows. Every readout shows real data from the visitor's browser or the product's documented facts.",
+        "keyCharacteristics": [
+          "Light grey ground, white framed panels, near-black ink, one red.",
+          "1px black frames and 1px hairline grids; square corners throughout.",
+          "Anton for display, Martian Mono at width 87.5 for body, labels, readouts, and buttons.",
+          "Numbered section marks in a gutter beside the heading.",
+          "Live readouts bound to real browser checks."
+        ],
+        "rules": [
+          {
+            "name": "The One Red Rule",
+            "body": "Signal red is the only accent on the front page. It marks what the machine points at; it never decorates. No second accent, no pastels, no gradients beyond the flat hairline grid.",
+            "section": "colors"
+          },
+          {
+            "name": "The Real Readout Rule",
+            "body": "Every number or status the page displays comes from the visitor's browser (WebGPU, free storage, model cache) or from documented product facts. A readout without a real source does not ship.",
+            "section": "colors"
+          },
+          {
+            "name": "The Two Faces Rule",
+            "body": "Anton is reserved for display and headline sizes and the large preview figures. Everything else is Martian Mono at width 87.5; never introduce a third family or a system display face.",
+            "section": "typography"
+          },
+          {
+            "name": "The Line-Not-Shadow Rule",
+            "body": "Lift is drawn, never cast. Use a frame, a hairline, an offset second frame, or inversion; never a block shadow, blur, or glow.",
+            "section": "elevation"
+          }
+        ],
+        "dos": [
+          "Do keep Signal Red (#d3110f) as the only accent, used for section marks, the cited line, stamps, citations, and live states.",
+          "Do draw depth with 1px frames, hairlines, the offset second frame, or inversion.",
+          "Do bind every readout to a real browser check or a documented product fact, and show an honest unknown when a check cannot resolve.",
+          "Do set section numbers /01 to /07 in the gutter beside the heading's first line, topped by a 1px red rule.",
+          "Do keep Anton for display and headline sizes and Martian Mono at width 87.5 for everything else."
+        ],
+        "donts": [
+          "Don't use block shadows, hard offset shadows, blur, glow, or rounded corners on the front page.",
+          "Don't add a second accent color or carry mint, sky, or butter onto the front page.",
+          "Don't invent stats, user counts, customer names, or logos.",
+          "Don't place section numbers above a heading as an eyebrow or kicker.",
+          "Don't carry front-page tokens into the workspace until the user decides to move the workspace to this system."
+        ]
+      }
+    }
   }
 }

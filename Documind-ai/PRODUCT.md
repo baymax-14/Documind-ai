@@ -30,6 +30,8 @@ The PRD describes planned document parsing, RAG-based chat, page citations, comp
 
 Product name: DocuMind AI. The user requests a Neo-Brutalist Pastel Harmony palette: warm cream (#FFFDF5 or #FBF7EE), soft mint (#88D498), sky blue (#74B9FF), butter yellow (#FFD23F), and black (#000000) for text and structure. Keep long-form document reading calm and legible, with stronger expression on dashboard and marketing surfaces.
 
+Front page (decided 2026-11-23): the user chose a cyber-brutalist look for the marketing front page to reach a younger audience: signal red as the only accent on a light grey ground, black type, hairline grids, numbered section labels and monospace readouts. Every readout on the page shows real data (from the visitor's own browser or the product's documented facts), never invented stats or customer logos. The workspace keeps the pastel neobrutalist system until the user decides to carry the new look over.
+
 ## Evidence on Hand
 
 The supplied PRD is at `C:\Users\USER\Downloads\DocuMind_AI_Updated_PRD_Neobrutalism.docx`. The repository README identifies sample documents and workspace metrics as prototype/mock content. Do not present them as verified user data or product performance.
