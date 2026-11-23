@@ -191,9 +191,11 @@ function App() {
 
   // Initialize Connection Manager
   useEffect(() => {
+    // Poll the optional backend only when one is configured; in local-only mode the
+    // status pill can still check on demand.
     const manager = createConnectionManager({
       onChange: (info) => setConnectionInfo(info),
-      autoStart: true,
+      autoStart: Boolean(import.meta.env.VITE_API_BASE_URL),
     })
     connManagerRef.current = manager
     return () => manager.destroy()

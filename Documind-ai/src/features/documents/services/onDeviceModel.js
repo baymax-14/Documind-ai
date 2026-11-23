@@ -153,115 +153,69 @@ export async function initializeOnDeviceEngine({
     throw new Error(gpuCheck.reason || 'WebGPU is not supported in this browser.')
   }
 
-  // 2. Try loading native WebLLM if available in browser
-  try {
-    // Attempt dynamic import of @mlc-ai/web-llm if present
-    const webllmPkg = '@mlc-ai/web-llm'
-    const webllmModule = await import(/* @vite-ignore */ webllmPkg).catch(() => null)
-    if (webllmModule && typeof webllmModule.CreateMLCEngine === 'function') {
-      const engine = await webllmModule.CreateMLCEngine(modelId, {
-        initProgressCallback: (report) => {
-          onProgress?.({
-            progress: report.progress || 0,
-            text: report.text || 'Downloading model weights...',
-          })
-        },
+  // 2. Load WebLLM (bundled as its own lazy chunk) and confirm it ships this model
+  const webllm = await import('@mlc-ai/web-llm')
+  const known = webllm.prebuiltAppConfig?.model_list?.some((m) => m.model_id === modelId)
+  if (!known) {
+    throw new Error(`The model ${modelId} is not available in this version of WebLLM.`)
+  }
+  if (signal?.aborted) {
+    throw new DOMException('Model initialization cancelled by user.', 'AbortError')
+  }
+
+  // 3. Download (or read from the browser cache) and compile the model on the GPU.
+  // WebLLM cannot cancel a load in flight, so a cancel rejects at once and the
+  // engine is unloaded as soon as the load settles.
+  let cancelled = false
+  const enginePromise = webllm.CreateMLCEngine(modelId, {
+    initProgressCallback: (report) => {
+      if (cancelled) return
+      onProgress?.({
+        progress: typeof report.progress === 'number' ? report.progress : 0,
+        text: report.text || 'Downloading model weights…',
       })
-      return engine
+    },
+  })
+
+  const engine = await new Promise((resolve, reject) => {
+    const onAbort = () => {
+      cancelled = true
+      enginePromise.then((e) => e.unload()).catch(() => {})
+      reject(new DOMException('Model download cancelled by user.', 'AbortError'))
     }
-  } catch (err) {
-    if (err.name === 'AbortError') throw err
-    console.warn('[DocuMind AI] WebLLM native bundle not present, falling back to local WebGPU runner:', err)
-  }
+    signal?.addEventListener('abort', onAbort, { once: true })
+    enginePromise.then(
+      (e) => { signal?.removeEventListener('abort', onAbort); resolve(e) },
+      (err) => { signal?.removeEventListener('abort', onAbort); reject(err) },
+    )
+  })
 
-  // 3. Robust in-browser local engine runner for testing & demonstration
-  // Simulates incremental weight chunk downloads into Cache API with cancellation support
-  const steps = [
-    { progress: 0.15, text: 'Connecting to HuggingFace CDN & checking cache…' },
-    { progress: 0.35, text: 'Fetching model architecture & tokenizer (35 MB)…' },
-    { progress: 0.65, text: 'Downloading quantized weights (315 MB)…' },
-    { progress: 0.85, text: 'Compiling WebGPU shaders & TVM runtime…' },
-    { progress: 1.0, text: 'Model ready in WebGPU memory.' },
-  ]
-
-  for (const step of steps) {
-    if (signal?.aborted) {
-      throw new DOMException('Model download cancelled by user.', 'AbortError')
-    }
-    onProgress?.(step)
-    // Simulated step latency (respecting abort signal)
-    await new Promise((resolve, reject) => {
-      const timer = setTimeout(resolve, 220)
-      if (signal) {
-        signal.addEventListener('abort', () => {
-          clearTimeout(timer)
-          reject(new DOMException('Model download cancelled by user.', 'AbortError'))
-        })
-      }
-    })
-  }
-
-  // Return operational engine object adhering to OpenAI chatCompletion interface
+  // 4. Expose the engine through the small interface the rest of the app calls
   return {
     modelId,
-    type: 'on-device-webgpu',
-    chatCompletion: async ({ messages, signal: completionSignal }) => {
+    type: 'webllm',
+    chatCompletion: async ({ messages, temperature, max_tokens: maxTokens, signal: completionSignal }) => {
       if (completionSignal?.aborted) {
         throw new DOMException('Generation cancelled by user.', 'AbortError')
       }
-
-      await new Promise((resolve, reject) => {
-        const timer = setTimeout(resolve, 380)
-        if (completionSignal) {
-          completionSignal.addEventListener('abort', () => {
-            clearTimeout(timer)
-            reject(new DOMException('Generation cancelled by user.', 'AbortError'))
-          })
-        }
-      })
-
-      // Extract context passages from user prompt
-      const userContent = messages.find((m) => m.role === 'user')?.content || ''
-      const passages = []
-      const regex = /\[Passage (\d+)\] Source: ([^\n]+)\n([^\n]+)/g
-      let match
-      while ((match = regex.exec(userContent)) !== null) {
-        passages.push({
-          num: match[1],
-          source: match[2],
-          text: match[3],
+      const onAbort = () => engine.interruptGenerate()
+      completionSignal?.addEventListener('abort', onAbort, { once: true })
+      try {
+        const response = await engine.chat.completions.create({
+          messages,
+          temperature,
+          max_tokens: maxTokens,
         })
-      }
-
-      if (passages.length === 0) {
-        return {
-          choices: [
-            {
-              message: {
-                content: 'Based on the documents, no relevant evidence was found to answer this question.',
-              },
-            },
-          ],
+        if (completionSignal?.aborted) {
+          throw new DOMException('Generation cancelled by user.', 'AbortError')
         }
-      }
-
-      // Generate strictly grounded response referencing passage citations [1], [2]
-      const synthesizedSummary = passages
-        .map((p) => `According to ${p.source}, ${p.text.slice(0, 150).trim()}… [${p.num}]`)
-        .join(' ')
-
-      return {
-        choices: [
-          {
-            message: {
-              content: synthesizedSummary,
-            },
-          },
-        ],
+        return response
+      } finally {
+        completionSignal?.removeEventListener('abort', onAbort)
       }
     },
     unload: async () => {
-      // Free resources
+      await engine.unload()
       return true
     },
   }

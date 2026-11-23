@@ -701,8 +701,10 @@
   .landing-cta { grid-template-columns: 1fr; }
   .cta-actions { grid-column: 1; grid-row: auto; }
 }
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .landing-nav > a:not(.nav-cta) { display: none; }
+}
+@media (max-width: 760px) {
   .ledger, .ledger tbody { display: block; }
   .ledger thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .ledger tbody tr { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--frame); }

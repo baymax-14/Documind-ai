@@ -7,9 +7,12 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 600,
     rollupOptions: {
-      external: ['@mlc-ai/web-llm'],
       output: {
         manualChunks(id) {
+          // WebLLM (about 6 MB) loads only when the user sets up the on-device model
+          if (id.includes('node_modules/@mlc-ai/web-llm')) {
+            return 'vendor-webllm'
+          }
           if (id.includes('node_modules/gsap') || id.includes('node_modules/@gsap')) {
             return 'vendor-gsap'
           }

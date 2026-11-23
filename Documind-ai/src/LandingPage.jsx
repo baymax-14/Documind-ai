@@ -591,6 +591,20 @@ function ProofLedger() {
 function GroundingPlayground({ checks }) {
   const [selectedPrompt, setSelectedPrompt] = useState(PLAYGROUND_PROMPTS[0])
 
+  // Arrow keys, Home and End move between the question tabs and focus the new one.
+  function onTabKey(event) {
+    const keys = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }
+    const index = PLAYGROUND_PROMPTS.findIndex((p) => p.id === selectedPrompt.id)
+    let next = null
+    if (event.key in keys) next = (index + keys[event.key] + PLAYGROUND_PROMPTS.length) % PLAYGROUND_PROMPTS.length
+    if (event.key === 'Home') next = 0
+    if (event.key === 'End') next = PLAYGROUND_PROMPTS.length - 1
+    if (next === null) return
+    event.preventDefault()
+    setSelectedPrompt(PLAYGROUND_PROMPTS[next])
+    document.getElementById(`prompt-tab-${PLAYGROUND_PROMPTS[next].id}`)?.focus()
+  }
+
   return (
     <section className="playground-section" id="interactive-demo" aria-labelledby="playground-heading">
       <div className="section-intro numbered">
@@ -602,12 +616,16 @@ function GroundingPlayground({ checks }) {
       </div>
 
       <div className="playground-container">
-        <div className="playground-prompt-tabs" role="tablist" aria-label="Sample research questions">
+        <div className="playground-prompt-tabs" role="tablist" aria-label="Sample research questions" onKeyDown={onTabKey}>
           {PLAYGROUND_PROMPTS.map((p) => (
             <button
               key={p.id}
+              id={`prompt-tab-${p.id}`}
+              type="button"
               role="tab"
               aria-selected={selectedPrompt.id === p.id}
+              aria-controls="prompt-panel"
+              tabIndex={selectedPrompt.id === p.id ? 0 : -1}
               className={`playground-tab ${selectedPrompt.id === p.id ? 'active' : ''}`}
               onClick={() => setSelectedPrompt(p)}
             >
@@ -617,7 +635,7 @@ function GroundingPlayground({ checks }) {
           ))}
         </div>
 
-        <div className="playground-display-split">
+        <div className="playground-display-split" role="tabpanel" id="prompt-panel" aria-labelledby={`prompt-tab-${selectedPrompt.id}`} tabIndex={0}>
           <div className="playground-panel source-panel">
             <div className="panel-header">
               <span className="panel-stamp">Source</span>
