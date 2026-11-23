@@ -75,9 +75,11 @@ The platform can operate **100% locally on-device** (via WebGPU, WebLLM, and cli
 - **IndexedDB Session Persistence**: AI chat conversations, parsed document chunks, and user preferences persist securely in IndexedDB across reloads with automatic session hydration.
 - **Token Observability & Governance**: Real-time token usage telemetry, operational budget limits, and hardware diagnostics.
 
-### 8. Tactile Neo-Brutalist Design System ("The Paper Workbench")
-- **Distinctive Editorial Aesthetic**: Space Grotesk + DM Sans typography, tactile pastel palette (Mint, Sky, Butter), and solid black strokes.
-- **Ergonomic Precision**: Tabular numerals (`tabular-nums`) to eliminate update jitter, proportional mechanical button physics, and comprehensive high-contrast Light and Dark themes.
+### 8. Cyber-Brutalist Design System ("The Instrument Sheet")
+- **One System, Two Surfaces**: The front page (`/`) and the workspace (`/workspace`) share one look: a light grey ground, near-black ink, 1px frames and hairline grids, square corners, no drop shadows, and a single signal red reserved for primary actions, selection, focus and live states.
+- **Three Faces, Fixed Jobs**: Anton for display headlines, Martian Mono for the interface, labels and data, and Source Serif 4 for long reading (documents, AI answers and quoted passages).
+- **Real Readouts Only**: The front page checks the visitor's own browser live (WebGPU availability, free storage, whether the model is cached) instead of showing invented statistics.
+- **Ergonomic Precision**: Tabular numerals (`tabular-nums`) to eliminate update jitter, and matching light and dark themes in the workspace.
 
 ---
 
@@ -139,9 +141,10 @@ DocuMind AI combines a local-first browser runtime with an enterprise hybrid ret
 - **File Ingestion**: [React Dropzone](https://react-dropzone.js.org/) for drag-and-drop validation, size partitioning, and multi-file staging.
 
 ### 2. Styling, Motion & Design System
-- **Design Language**: Custom **"The Paper Workbench"** neobrutalist design system with high-contrast pastel palettes (Mint `#88d498`, Butter `#ffd23f`, Sky `#74b9ff`), solid pitch-black structural borders (`2px/3px solid var(--ink)`), and hard box shadows (`4px 4px 0 var(--ink)`).
+- **Design Language**: Custom **"The Instrument Sheet"** cyber-brutalist design system: grey ground `#f1f1ef`, ink `#0b0b0b`, one signal red `#d3110f`, 1px structural frames and hairline grids, square corners and no box shadows. Tokens and rules live in [`Documind-ai/DESIGN.md`](Documind-ai/DESIGN.md).
+- **Typography**: [Anton](https://fonts.google.com/specimen/Anton) (display), [Martian Mono](https://fonts.google.com/specimen/Martian+Mono) (interface) and [Source Serif 4](https://fonts.google.com/specimen/Source+Serif+4) (reading text), loaded from Google Fonts.
 - **CSS Architecture**: [Tailwind CSS v4](https://tailwindcss.com/) with native modern CSS variables, `tabular-nums` alignment, and full Dark Mode (`.dark` / `color-scheme: dark`) synchronization across the entire viewport.
-- **Animation & Motion**: [GSAP 3](https://gsap.com/) (`@gsap/react`, `ScrollSmoother`, `ScrollTrigger`, `ScrambleTextPlugin`) for fluid hero typography reveals, section transitions, and responsive spring physics.
+- **Animation & Motion**: [GSAP 3](https://gsap.com/) (`@gsap/react`) for the front page's one entrance sequence (headline rise, a scan line landing on the cited passage, ledger stamps pressing in), plus short CSS transitions for workspace states. Everything rests under `prefers-reduced-motion`.
 - **Iconography**: [Lucide React](https://lucide.dev/) stroke-based accessible iconography.
 
 ### 3. On-Device AI & Hardware Acceleration
@@ -195,7 +198,7 @@ The frontend runs completely standalone with full on-device WebGPU and IndexedDB
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/your-username/Documind-ai.git
+git clone https://github.com/baymax-14/Documind-ai.git
 cd Documind-ai/Documind-ai
 
 # 2. Install dependencies
@@ -304,7 +307,6 @@ npm run build
 
 ```text
 Documind-ai/
-├── .github/                   # CI/CD workflows and issue templates
 ├── backend/                   # FastAPI Backend
 │   ├── app/
 │   │   ├── api/v1/            # API endpoints (chat, documents, citations)
@@ -319,10 +321,10 @@ Documind-ai/
 ├── Documind-ai/               # React 19 Frontend
 │   ├── src/
 │   │   ├── features/documents/# Core services (WebLLM, VLM reasoning, re-ranking, IndexedDB, etc.)
-│   │   ├── LandingPage.jsx    # Neobrutalist landing page
+│   │   ├── LandingPage.jsx    # Front page: live browser readouts, comparison ledger, demo
 │   │   ├── Workspace.jsx      # Research workspace & assistant interface
-│   │   ├── styles.css         # The Paper Workbench design system styles
-│   │   └── landing.css        # Landing page styling & animations
+│   │   ├── styles.css         # Workspace styles (Instrument Sheet, light and dark)
+│   │   └── landing.css        # Front page styles (Instrument Sheet)
 │   ├── tests/                 # Frontend node:test suite (122 tests across 21 suites)
 │   └── package.json           # Frontend dependencies & scripts
 ├── docker-compose.yml         # Multi-container orchestration (PostgreSQL, Redis, Qdrant, Backend)

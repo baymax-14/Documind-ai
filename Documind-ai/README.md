@@ -1,6 +1,6 @@
 # DocuMind AI — Local prototype
 
-A responsive React + Vite landing page and workspace prototype for researchers and students. The interface follows the Neo-Brutalist Pastel Harmony design system described in [DESIGN.md](DESIGN.md). The home page is `/`; the workspace is `/workspace`.
+A responsive React + Vite landing page and workspace prototype for researchers and students. The interface follows the cyber-brutalist Instrument Sheet design system described in [DESIGN.md](DESIGN.md): one signal red on a light grey ground, monospace interface type and 1px frames. The home page is `/`; the workspace is `/workspace`.
 
 ## Start locally
 
@@ -18,7 +18,7 @@ npm run dev
 
 ## Working in the prototype
 
-- The landing page shows the current workspace interface as demo content and explains which capabilities are connected.
+- The front page checks your own browser live (WebGPU, free storage, whether the model is cached), compares DocuMind with cloud AI chat row by row, and plays a sample walkthrough of the workspace, with sample files marked as samples.
 - Choose or drag in PDF, DOCX, and TXT files up to 25 MB each.
 - Document text is extracted locally on-device using `pdfjs-dist` (for PDF), `mammoth` (for DOCX), and browser UTF-8 decoding (for TXT).
 - Review files in the Import Queue and explicitly choose **Add to local library** to persist extracted records to IndexedDB in your browser.
@@ -33,8 +33,8 @@ npm run dev
   - **Strict Source Grounding**: Every generated statement or excerpt is anchored to passage-level citations linked directly into the Document Reader.
 - Search documents by filename, filter by file type, sort by recent or filename, and switch between list and grid views.
 - Switch between light and dark appearances.
-- Sample documents are clearly marked. The workspace operates seamlessly in local-only mode (on-device WebGPU and IndexedDB) and can optionally connect to the PaperQA FastAPI + PostgreSQL + Qdrant backend service via `VITE_API_BASE_URL`. Multi-document comparison is planned for Phase 8.
+- Sample documents are clearly marked. The workspace operates seamlessly in local-only mode (on-device WebGPU and IndexedDB) and can optionally connect to the PaperQA FastAPI + PostgreSQL + Qdrant backend service via `VITE_API_BASE_URL`. Compare documents side by side across analysis dimensions in the Compare view.
 
 ## Stack
 
-React, Vite, Tailwind CSS v4, Lucide React, React Router, Zustand, TanStack Query, and Motion.
+React, Vite, Tailwind CSS v4, GSAP, Lucide React, React Router, Zustand, TanStack Query, and Motion. Fonts: Anton, Martian Mono and Source Serif 4.
