@@ -1,17 +1,36 @@
 ---
 name: DocuMind AI
-description: A clear document workspace with a tactile pastel neobrutalist interface.
+description: A document workspace printed like an instrument sheet; one signal red, 1px lines, mono interface, serif reading.
 colors:
-  ink: "#000000"
-  cream: "#FFFDF5"
-  white: "#FFFFFF"
-  mint: "#88D498"
-  sky: "#74B9FF"
-  butter: "#FFD23F"
-  mint-tint: "#D8F0DC"
-  sky-tint: "#D4EAFF"
-  butter-tint: "#FFE99A"
-  # Front page (/) surface: tokens prefixed front-, scoped under .landing in src/landing.css
+  # Workspace (/workspace): unprefixed tokens, CSS custom properties on :root in src/styles.css
+  ink: "#0b0b0b"
+  paper: "#f1f1ef"
+  surface: "#ffffff"
+  muted: "#55554f"
+  line: "rgba(11, 11, 11, 0.14)"
+  red: "#d3110f"
+  red-tint: "#fbe2e1"
+  on-red: "#ffffff"
+  grey-strong: "#dcdcd7"
+  grey-mid: "#e6e6e2"
+  grey-soft: "#e9e9e5"
+  grey-tint: "#ebebe8"
+  grey-faint: "#f4f4f2"
+  # Workspace dark theme (.dark on the .app root)
+  dark-ink: "#f1f1ef"
+  dark-paper: "#0b0b0b"
+  dark-surface: "#161616"
+  dark-muted: "#a3a39d"
+  dark-line: "rgba(241, 241, 239, 0.16)"
+  dark-red: "#ff3b30"
+  dark-red-tint: "#3a1513"
+  dark-grey-strong: "#2c2c2a"
+  dark-grey-mid: "#242422"
+  dark-grey-soft: "#262624"
+  dark-grey-tint: "#1f1f1e"
+  dark-grey-faint: "#1b1b1a"
+  dark-grey-faint-alt: "#1d1d1c"
+  # Front page (/): tokens prefixed front-, scoped under .landing in src/landing.css
   front-ground: "#f1f1ef"
   front-panel: "#ffffff"
   front-ink: "#0b0b0b"
@@ -23,42 +42,53 @@ colors:
   front-close-muted: "#c9c9c4"
 typography:
   display:
-    fontFamily: "Space Grotesk, sans-serif"
-    fontSize: "2rem"
-    fontWeight: 700
+    fontFamily: "Anton, Arial Narrow, sans-serif"
+    fontSize: "2.25rem"
+    fontWeight: 400
     lineHeight: 1.12
-    letterSpacing: "-0.035em"
+    letterSpacing: "-0.01em"
   headline:
-    fontFamily: "Space Grotesk, sans-serif"
-    fontSize: "1.5rem"
-    fontWeight: 700
-    lineHeight: 1.2
-    letterSpacing: "-0.02em"
-  title:
-    fontFamily: "Space Grotesk, sans-serif"
-    fontSize: "1.25rem"
+    fontFamily: "Martian Mono, ui-monospace, monospace"
+    fontSize: "20px"
     fontWeight: 700
     lineHeight: 1.25
+    fontVariation: "'wdth' 87.5"
+  title:
+    fontFamily: "Martian Mono, ui-monospace, monospace"
+    fontSize: "15px"
+    fontWeight: 700
+    lineHeight: 1.3
+    fontVariation: "'wdth' 87.5"
   body:
-    fontFamily: "DM Sans, sans-serif"
-    fontSize: "1rem"
+    fontFamily: "Martian Mono, ui-monospace, monospace"
+    fontSize: "16px"
     fontWeight: 400
     lineHeight: 1.5
+    fontVariation: "'wdth' 87.5"
   label:
-    fontFamily: "DM Sans, sans-serif"
-    fontSize: "0.875rem"
-    fontWeight: 600
-    lineHeight: 1.4
-  caption:
-    fontFamily: "DM Sans, sans-serif"
-    fontSize: "0.75rem"
-    fontWeight: 500
-    lineHeight: 1.3
-  micro:
-    fontFamily: "DM Sans, sans-serif"
-    fontSize: "0.6875rem"
+    fontFamily: "Martian Mono, ui-monospace, monospace"
+    fontSize: "14px"
     fontWeight: 700
-    lineHeight: 1.2
+    lineHeight: 1.25
+    letterSpacing: "0.04em"
+    fontVariation: "'wdth' 87.5"
+  caption:
+    fontFamily: "Martian Mono, ui-monospace, monospace"
+    fontSize: "12px"
+    fontWeight: 600
+    lineHeight: 1.3
+    fontVariation: "'wdth' 87.5"
+  micro:
+    fontFamily: "Martian Mono, ui-monospace, monospace"
+    fontSize: "11px"
+    fontWeight: 700
+    lineHeight: 1.3
+    fontVariation: "'wdth' 87.5"
+  read:
+    fontFamily: "Source Serif 4, Georgia, serif"
+    fontSize: "1.0625rem"
+    fontWeight: 400
+    lineHeight: 1.65
   front-display:
     fontFamily: "Anton, Arial Narrow, sans-serif"
     fontSize: "86px"
@@ -103,9 +133,6 @@ typography:
     fontVariation: "'wdth' 87.5"
 rounded:
   none: "0px"
-  tight: "2px"
-  subtle: "3px"
-  standard: "4px"
   front-square: "0px"
 spacing:
   xs: "4px"
@@ -113,31 +140,82 @@ spacing:
   md: "16px"
   lg: "24px"
   xl: "32px"
+  rail: "248px"
+  content-max: "1250px"
   front-grid: "32px"
   front-mark-gutter: "56px"
   front-offset-frame: "10px"
   front-wrap: "1312px"
 components:
   button-primary:
-    backgroundColor: "{colors.mint}"
-    textColor: "{colors.ink}"
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.paper}"
     typography: "{typography.label}"
-    rounded: "{rounded.standard}"
-    padding: "12px 16px"
+    rounded: "{rounded.none}"
+    padding: "0 16px"
     height: "46px"
+  button-primary-hover:
+    backgroundColor: "{colors.red}"
+    textColor: "{colors.on-red}"
   button-secondary:
-    backgroundColor: "{colors.white}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     typography: "{typography.label}"
-    rounded: "{rounded.standard}"
-    padding: "10px 14px"
+    rounded: "{rounded.none}"
+    padding: "0 16px"
+    height: "46px"
+  nav-link:
+    backgroundColor: "{colors.paper}"
+    textColor: "{colors.ink}"
+    typography: "{typography.label}"
+    rounded: "{rounded.none}"
+    padding: "0 8px"
     height: "42px"
-  input-search:
-    backgroundColor: "{colors.white}"
+  nav-link-active:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.paper}"
+  tab:
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     rounded: "{rounded.none}"
-    padding: "8px 10px"
-    height: "42px"
+    padding: "6px 12px"
+  tab-active:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.paper}"
+  pill:
+    backgroundColor: "{colors.paper}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.none}"
+    padding: "8px 14px"
+  pill-selected:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.paper}"
+  input-search:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    rounded: "{rounded.none}"
+    padding: "0 8px"
+    height: "44px"
+  drop-zone:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.none}"
+    padding: "24px"
+    height: "176px"
+  drop-zone-hover:
+    backgroundColor: "{colors.red-tint}"
+  document-card:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.none}"
+    padding: "12px 16px"
+    height: "68px"
+  reader-chunk-highlight:
+    backgroundColor: "{colors.red-tint}"
+    textColor: "{colors.ink}"
+    typography: "{typography.read}"
+    rounded: "{rounded.none}"
   front-button-primary:
     backgroundColor: "{colors.front-ink}"
     textColor: "{colors.front-panel}"
@@ -188,136 +266,161 @@ components:
 
 # Design System: DocuMind AI
 
-**Surface scope.** This file holds two systems. The workspace (/workspace) and every application surface use the pastel neobrutalist system below, "The Paper Workbench", unprefixed tokens. The front page (/) uses its own cyber-brutalist red system, "The Instrument Sheet", recorded under **Front Page System (/)** at the end of this file with tokens prefixed `front-`. Do not mix the two: a workspace screen never takes signal red or Anton, and the front page never takes mint, sky, butter, or hard offset shadows. The workspace keeps the pastel system until the user decides to carry the front-page look over.
+**Surface scope.** Both shipping surfaces use one system, "The Instrument Sheet". The workspace (/workspace) and every application surface carry it through the unprefixed tokens above, defined as CSS custom properties on `:root` and `.dark` in src/styles.css; the sections from Overview to Do's and Don'ts below describe that workspace adaptation. The front page (/) carries the same world through its own `front-` tokens scoped under `.landing` in src/landing.css, recorded under **Front Page System (/)**. The two share ground, ink, frame, and signal red; they differ in density (the front page is a poster, the workspace a quiet tool) and in one face (the workspace adds a serif for reading). The earlier pastel system, "The Paper Workbench", is retired from every shipping surface as of 2026-11-23 and is kept at the end of this file as history only; none of its tokens or devices may be used on new work.
 
 ## Overview
 
-**Creative North Star: “The Paper Workbench”**
+**Creative North Star: "The Instrument Sheet"**
 
-DocuMind AI pairs a warm reading surface with the clear geometry of a working desk. Strong black strokes and compact, tactile controls make actions easy to locate. Mint, sky, and butter mark the upload path, file types, and workspace state without suggesting that unimplemented AI services are active.
+The workspace is the same printed instrument sheet as the front page, set down as a working tool. A light grey ground holds white panels framed in 1px black; corners are square; nothing casts a shadow. The interface speaks in narrow Martian Mono, the page title alone in uppercase Anton, and everything a person reads at length (document passages, answers, quoted excerpts) in Source Serif 4.
 
-The dashboard is a working surface, so headings stay compact, controls stay familiar, and document rows remain calm to scan. The dark theme uses near-black surfaces with the same pastel accents. It retains the same hierarchy and keyboard affordances.
+Layouts stay familiar and calm: a fixed rail, a capped content column, hairline-ruled rows. Signal red is reserved for the few things that matter at any moment: the primary action under the pointer, the current selection, progress and live work, and keyboard focus. Where something is merely current (the active nav item, the selected document, the active tab), it is a solid ink bar, not a colour. Dark mode is the same sheet inverted: near-black ground, charcoal panels, off-white ink, a brighter red.
 
 **Key Characteristics:**
 
-- Warm cream canvas and pitch-black text and structure.
-- Mint, sky, and butter used as clear surface signals.
-- Crisp 2–3px borders, square corners, and hard offset shadows.
-- Space Grotesk headings with DM Sans interface text.
-- Prototype and sample states labeled plainly.
+- Instrument grey ground, white panels, near-black ink, one signal red.
+- 1px strokes everywhere; square corners; no block shadows.
+- Martian Mono (width 87.5) for the interface, Anton for the page title only, Source Serif 4 for reading.
+- The current place is a solid ink bar; red marks primary, selected, live, and focus.
+- Former pastel state fills are neutral greys; the only tint is pale red.
+- Dark mode is the same system inverted, not a second palette.
 
 ## Colors
 
-The palette uses black for legibility and structure, cream for the main light canvas, and three soft accents for action and classification.
+A near-monochrome sheet with one signal accent and a ladder of neutral greys for state.
 
 ### Primary
 
-- **Soft Mint** (#88D498): Primary action and active workspace state.
-
-### Secondary
-
-- **Sky Blue** (#74B9FF): Secondary actions and DOC/DOCX file markers.
-
-### Tertiary
-
-- **Butter Yellow** (#FFD23F): Prototype notices, sample markers, and PDF file markers.
+- **Signal Red** (`red`; dark `dark-red`): Primary-action hover fill, the dashed upload frame, progress fills, the highlighted reader chunk frame, card and status-pill hover frames, text selection, keyboard focus, and destructive or failed states (danger buttons, failed badges). Never a fill for notices or reading panels.
+- **Red Tint** (`red-tint`; dark `dark-red-tint`): The highlighted reader chunk and the upload zone on hover. Its only fills.
+- **On Red** (`on-red`): White label on any red fill, in both themes.
 
 ### Neutral
 
-- **Pitch Black** (#000000): Light-theme text, strokes, and hard shadow color.
-- **Warm Cream** (#FFFDF5): Main light-theme canvas.
-- **Paper White** (#FFFFFF): Inputs and quiet content surfaces.
-- **Mint Tint** (#D8F0DC), **Sky Tint** (#D4EAFF), **Butter Tint** (#FFE99A): Secondary status fills and metric surfaces.
+- **Press Black** (`ink`; dark `dark-ink` off-white): Type, every 1px frame, primary-action fill, and the solid bar of the active nav item, selected pill, and active tab.
+- **Instrument Grey** (`paper`; dark `dark-paper`): Page ground, the rail, and the label colour on ink-filled controls.
+- **Sheet White** (`surface`; dark `dark-surface` charcoal): Panels, document rows, inputs, the upload zone, and PDF file markers.
+- **Graphite** (`muted`; dark `dark-muted`): Secondary copy, subtitles, metadata.
+- **Hairline** (`line`; dark `dark-line`): Internal rules and row dividers.
+- **State Greys** (`grey-strong`, `grey-mid`, `grey-soft`, `grey-tint`, `grey-faint`; dark `dark-grey-*`): Neutral fills for hover rows, file-type markers, metric and status surfaces. They occupy the slots the pastels used to fill (CSS `--mint`, `--sky`, `--butter`, `--mint-tint`, `--sky-tint`/`--butter-tint`), so state reads by shape, label, and ink, never by hue.
 
 ### Named Rules
 
-**The Honest Surface Rule.** Sample files are marked as samples; items added by the user are labeled local; planned AI and server capabilities are described as unavailable.
+**The Red Means Now Rule.** Red marks only what is primary, selected, live, focused, or failing. It is never a fill for a notice, banner, or reading panel; a notice is a framed white panel with ink text.
 
-**The Three Pastels Rule.** Use the named mint, sky, and butter palette. Do not add gradients, glow, or glass effects.
+**The Ink Bar Rule.** The current place (active nav item, selected document pill, active tab) is a solid ink bar with paper-coloured text. Never a pastel, never a red fill.
+
+**The Honest Surface Rule.** Sample files are marked as samples; items added by the user are labeled local; planned AI and server capabilities are described as unavailable.
 
 ## Typography
 
-**Display Font:** Space Grotesk, sans-serif  
-**Body Font:** DM Sans, sans-serif  
-**Label Font:** DM Sans, sans-serif
+**Display Font:** Anton (with Arial Narrow, sans-serif)
+**Body Font:** Martian Mono (with ui-monospace, monospace), width axis 87.5
+**Reading Font:** Source Serif 4 (with Georgia, serif)
 
-**Character:** Space Grotesk gives workspace titles a firm, compact voice. DM Sans keeps filenames, help text, and controls easy to read.
+**Character:** Mono at 87.5 width makes every control and label read as instrument print; Anton gives the page a single poster-weight title that ties it to the front page; the serif lets long passages and answers read like a document rather than a terminal.
 
 ### Hierarchy
 
-- **Display** (700, 24–32px, 1.12): App page titles.
-- **Headline** (700, 24px, 1.2): Main section headings.
-- **Title** (700, 20px, 1.25): Upload panel headings and compact component titles.
-- **Body** (400, 16px, 1.5): Explanatory text and reading content.
-- **Label** (600, 14px, 1.4): Buttons, navigation, and primary controls.
-- **Caption** (500, 12–13px, 1.3): Timestamps, relative time, and secondary metadata descriptions.
-- **Micro** (700, 10–11px, 1.2): Engine badges, source locators, table cell coordinates, and pill tags (uppercase with 0.03em tracking).
+- **Display** (Anton 400, clamp 1.75–2.25rem, 1.12, -0.01em, uppercase; 1.65–1.9rem on phones): The page h1 only.
+- **Headline** (Martian Mono 700, 19–20px, 1.2–1.25): Panel and section headings.
+- **Title** (Martian Mono 700, 15–17px, 1.3): Card titles, reader and evidence headings.
+- **Body** (Martian Mono 400, 16px, 1.5): Subtitles, explanatory copy, search input text.
+- **Label** (Martian Mono 700, 14px, 0.04em, uppercase on buttons): Buttons and navigation; tabs and pills at 13px.
+- **Caption** (Martian Mono 600, 12px, 1.3–1.5): Metadata, timestamps, notes.
+- **Micro** (Martian Mono 700, 10–11px, 1.3): Badges, locator tags, counts.
+- **Read** (Source Serif 4 400, 1.0625rem, 1.65, width axis reset): Reader chunk text, chat answer bubbles, and every quoted excerpt.
 
-Use tabular figures for changing counts. Keep body text left aligned and allow filenames to wrap or truncate only when the full filename remains available as a title.
+Use tabular figures for changing counts.
+
+### Named Rules
+
+**The Three Roles Rule.** Martian Mono for the interface, Anton for the page title only, Source Serif 4 for reading text only. No fourth family; Anton never appears below the h1, and the serif never sets a control.
 
 ## Layout
 
-The desktop shell uses a fixed 248px navigation rail and a fluid content area capped at 1250px. Keep a consistent 24–64px canvas inset, 12–16px between related controls, and 30–40px between major sections. The upload action and local-prototype explanation share the first working area; the document library follows directly beneath.
+The desktop shell keeps a fixed 248px rail with a 1px ink right rule and a fluid content column capped at 1250px, inset clamp(24px, 4vw, 64px). Related controls sit 8–16px apart; major sections 28–32px. The upload panel and its companion panel share the first row; the document library follows in hairline rows.
 
-At 1120px, reduce the rail and let the upload copy wrap before its action. At 900px, stack the upload and prototype panels and place the search toolbar on separate rows. At 760px, replace the rail with a compact header and an expandable mobile navigation sheet. Keep 16–20px page margins on phones. At 480px, stack document cards and keep file controls thumb-sized.
+At 1120px the rail compacts; at 900px the upload panels and toolbar stack; at 760px the rail becomes a compact header with a full-height menu sheet; at 640px document rows move their actions to a second full-width line and the status pills wrap from the left edge; at 480px cards stack and the primary action runs full width.
 
 ## Elevation & Depth
 
-Use hard offset shadows as structural neobrutalist depth. A resting panel may use a 3px offset; the primary action may use 4px. Never use blur, ambient shadow, glow, or a gradient. Pressed buttons move into the plane and collapse their shadow. Borders remain the primary edge cue.
+Flat. The workspace casts no block shadows (`--shadow-hard: none`). Depth comes from line work and inversion: 1px ink frames on white panels over the grey ground, hairline rules inside them, and the solid ink bar for the current place. Hover never lifts a card or pill; it changes the frame to red.
+
+### Named Rules
+
+**The Line-Not-Shadow Rule.** Lift is drawn, never cast. Use a frame, a hairline, or inversion; never a block shadow, blur, or glow.
 
 ## Shapes
 
-Use square corners for the outer frame and document rows. Standard controls may use a consistent 4px radius. Borders are 2px for controls and panels, with a 3px dashed stroke for the upload target. Avoid pills except where a small file or state label benefits from a compact tag.
+Square corners throughout (`--radius: 0`). Strokes are 1px: solid ink for frames, controls, and rows; hairline for internal rules; red dashed for the upload target; red solid for hover and the highlighted reader chunk. Small round status dots are the only circles.
 
 ## Components
 
 ### Buttons
 
-- **Primary:** Mint fill, black 2px stroke, 4px hard offset shadow, 46px minimum height. On press, translate 4px and remove the shadow.
-- **Secondary:** White fill, black 2px stroke, 3px hard offset shadow, 42px minimum height.
-- **Focus:** A visible 3px sky-blue outline with a 3px offset.
+- **Shape:** Square (0px), 1px ink frame, 46px minimum height, 0 16px padding.
+- **Primary** (`.primary-button`, the ask-document action, the reader return action): Ink fill, paper-coloured uppercase label at 0.04em.
+- **Hover / Focus:** Fill and frame turn red with a white label and a 1px up-left nudge (140ms, cubic-bezier(0.23, 1, 0.32, 1)); press drops 1px. Focus is a 2px red outline at 2px offset.
+- **Secondary:** White fill, ink frame and label, uppercase; inside the upload zone it fills red on hover.
 
-### Chips
+### Chips / Pills
 
-- **Style:** Rectangular 1.5px black border, 12px readable text, mint or butter fill according to meaning.
-- **State:** “Sample” identifies example documents. “Local” identifies files added in the current page session.
+- **Style:** Square, 1px ink frame, grey ground, 13px 600 mono.
+- **State:** Selected inverts to the ink bar. Status pills are white, framed in ink, and take a red frame on hover with no movement.
 
 ### Cards / Containers
 
-- **Corner Style:** Square for list rows; 4px for interactive controls.
-- **Background:** Cream for canvas, white for document rows and inputs, pastel tints for the three workspace status panels.
-- **Shadow Strategy:** Hard black offset on primary actions and the status panels; none on ordinary rows.
-- **Border:** 2px solid black; upload target uses 3px dashed black.
-- **Internal Padding:** 10–17px for rows and status panels; 16–26px for primary work areas.
+- **Corner Style:** Square.
+- **Background:** Sheet White over Instrument Grey; state greys for metric and status surfaces.
+- **Shadow Strategy:** None; see Elevation & Depth.
+- **Border:** 1px ink; document cards turn the frame red on hover with no movement.
+- **Internal Padding:** 12–16px for rows; 24px for the upload zone and primary work areas.
 
 ### Inputs / Fields
 
-- **Style:** White fill, 2px black stroke, square corners, 16px search input text.
-- **Focus:** Visible sky-blue outer outline.
-- **Error / Disabled:** State copy stays explicit; do not rely on color alone.
+- **Style:** White fill, 1px ink frame, square, 44px tall, 16px mono text.
+- **Focus:** The red focus outline.
 
 ### Navigation
 
-Keep the brand and workspace scope at the top of the desktop rail. Use plain 14px labels, neutral icons, and a mint active row with a black outline. On phones, show the brand, menu toggle, and theme toggle; the menu opens a full-height sheet with Overview, Documents, and planned destinations.
+Brand and workspace scope at the top of the rail; 14px 600 mono labels with neutral line icons; hover a neutral grey row; the active item is the ink bar, its count badge outlined in paper. On phones the rail becomes a header with menu and theme toggles opening a full-height sheet.
+
+### Tabs
+
+Search mode tabs are framed 13px 700 mono buttons; the active tab is the ink bar.
+
+### Upload Zone
+
+A white panel framed by a 1px red dashed line, 176px minimum height; on hover it takes the red tint.
+
+### Reader
+
+Chunks read in Source Serif 4; the highlighted chunk is framed in 1px red on the red tint, with no shadow.
 
 ## Do's and Don'ts
 
 ### Do:
 
-- **Do** use the exact palette values: #FFFDF5, #000000, #88D498, #74B9FF, and #FFD23F.
-- **Do** mark all sample data and prototype-only behavior.
-- **Do** keep AI, upload-to-server, parsing, comparison, and citations labeled as planned until implemented.
-- **Do** provide keyboard focus and a reduced-motion path.
+- **Do** keep red for primary, selected, live, focus, and failure, and the ink bar for the current place.
+- **Do** draw every edge as a 1px stroke and keep corners square.
+- **Do** set reading text (document chunks, answers, excerpts) in Source Serif 4 and everything else in Martian Mono at width 87.5.
+- **Do** keep Anton to the page h1.
+- **Do** mark all sample data and prototype-only behavior, and keep unimplemented AI and server capabilities labeled as planned.
+- **Do** provide visible keyboard focus and a reduced-motion path.
 
 ### Don't:
 
-- **Don't** add gradients, glow, glass, or extra accent colors.
+- **Don't** use red as a fill for notices, banners, or reading panels.
+- **Don't** use block shadows, hard offset shadows, blur, glow, gradients, or rounded corners.
+- **Don't** bring back mint, sky, or butter hues, or add a second accent.
+- **Don't** lift cards or pills on hover; change the frame instead.
 - **Don't** imply a file is uploaded, persisted, parsed, or analyzed when it remains in page memory.
-- **Don't** use low-contrast gray for running text.
+- **Don't** use low-contrast grey for running text.
 
 ## Front Page System (/)
 
-This section governs the marketing front page at / only (src/LandingPage.jsx, styled by src/landing.css under the `.landing` scope). Its tokens carry the `front-` prefix in the frontmatter. Everything above this section governs the workspace.
+This section governs the marketing front page at / (src/LandingPage.jsx, styled by src/landing.css under the `.landing` scope). Its tokens carry the `front-` prefix in the frontmatter. It is the same Instrument Sheet as the workspace, set at poster density; the sections above govern the workspace.
 
 ### Overview
 
@@ -379,7 +482,7 @@ A near-monochrome sheet with a single signal accent.
 
 #### Named Rules
 
-**The Two Faces Rule.** Anton is reserved for display and headline sizes and the large preview figures. Everything else is Martian Mono at width 87.5; never introduce a third family or a system display face.
+**The Two Faces Rule.** On the front page, Anton is reserved for display and headline sizes and the large preview figures. Everything else is Martian Mono at width 87.5; never introduce a third family or a system display face. (The workspace's reading serif does not apply here; the front page has no long reading text.)
 
 ### Layout
 
@@ -452,4 +555,15 @@ Playground prompts are a row of mono tabs split by hairlines; hover turns the la
 - **Don't** add a second accent color or carry mint, sky, or butter onto the front page.
 - **Don't** invent stats, user counts, customer names, or logos.
 - **Don't** place section numbers above a heading as an eyebrow or kicker.
-- **Don't** carry front-page tokens into the workspace until the user decides to move the workspace to this system.
+
+## Retired: The Paper Workbench (superseded 2026-11-23)
+
+**History only. Do not use on any surface.** This pastel neobrutalist system governed the workspace until 2026-11-23, when the workspace moved to the Instrument Sheet. Its tokens have been removed from the frontmatter and from src/styles.css (the CSS variable names `--mint`, `--sky`, `--butter` and their tints survive but now hold neutral greys). It is recorded so that leftover class names and comments in the code can be understood, not imitated.
+
+### What it was
+
+- **North Star:** "The Paper Workbench": a warm reading surface with the clear geometry of a working desk.
+- **Palette:** Warm Cream canvas (#FFFDF5), Pitch Black text and structure (#000000), Paper White (#FFFFFF); Soft Mint (#88D498) for primary action and active state, Sky Blue (#74B9FF) for secondary actions and DOC/DOCX markers and focus outlines, Butter Yellow (#FFD23F) for prototype notices and PDF markers; tints Mint (#D8F0DC), Sky (#D4EAFF), Butter (#FFE99A) for status panels.
+- **Type:** Space Grotesk 700 headings (20–32px) with DM Sans interface text (11–16px).
+- **Depth and shape:** Hard black offset shadows (3px on panels, 4px on the primary action, collapsing on press); 2px black strokes, a 3px dashed upload target, square rows and 4px control radius.
+- **Rules it held:** The Three Pastels Rule (mint, sky, butter only; no gradients, glow, or glass) and The Honest Surface Rule, which carries forward unchanged into the Instrument Sheet.
