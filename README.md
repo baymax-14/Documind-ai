@@ -26,7 +26,7 @@
   <img src="https://img.shields.io/badge/Redis-7.0-DC382D?style=flat-square&logo=redis&logoColor=white" alt="Redis 7" />
   <img src="https://img.shields.io/badge/WebGPU-Qwen_2.5-0052FF?style=flat-square" alt="WebGPU" />
   <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker" />
-  <img src="https://img.shields.io/badge/Tests-122%20Passing-059669?style=flat-square" alt="122 Passing Tests" />
+  <img src="https://img.shields.io/badge/Tests-136%20Passing-059669?style=flat-square" alt="136 Passing Tests" />
   <img src="https://img.shields.io/badge/License-MIT-black?style=flat-square" alt="License" />
 </p>
 
@@ -43,13 +43,15 @@ The platform can operate **100% locally on-device** (via WebGPU, WebLLM, and cli
 ## Key Features
 
 ### 1. Dual-Mode Grounded AI Assistant
-- **On-Device Neural Model**: Runs quantized local LLMs (`Qwen2.5-0.5B-Instruct` via WebGPU and WebLLM) directly inside the user's browser. Model weights (~350 MB) download once into the browser Cache API for instant, private offline inference.
-- **Deterministic Evidence Fallback**: When WebGPU is unavailable or deferred, DocuMind falls back to instant keyword excerpt retrieval and verified citation synthesis with zero model weight downloads.
+- **On-Device Model, Your Choice**: Runs a quantized LLM through WebLLM on WebGPU inside the browser. Qwen 2.5 1.5B (~1 GB) is the default; Qwen 2.5 3B (~1.8 GB) gives the best answers, and Qwen 2.5 0.5B and SmolLM2 360M are lighter options. The 16-bit build is used automatically on GPUs that support it. Weights download once into the browser cache.
+- **Streamed, Checked Answers**: Answers appear as they are generated. Every `[n]` citation is checked against the passages actually given to the model; citations to passages that do not exist are removed, and an answer with no valid citation is flagged.
+- **Evidence Preview Fallback**: Without a model (no WebGPU, or not set up), DocuMind shows the retrieved passages themselves with their sources, with no model download.
 - **Hallucination Prevention**: Zero synthetic claims. Answers are drawn strictly from retrieved document chunks or explicitly report no matching evidence.
 
 ### 2. High-Performance Hybrid Retrieval & Neural Re-Ranking
 - **BM25 Okapi + Dense Vector Search**: Integrates Lexical BM25 ranking with Qdrant vector embeddings via **Reciprocal Rank Fusion (RRF)**.
-- **Cross-Encoder Neural Re-Ranking**: Second-stage cross-encoder re-ranking scores candidate chunks with deep semantic relevance and provides confidence percentiles.
+- **In-Browser Meaning Search**: An optional ~34 MB sentence-embedding model (BGE small via transformers.js, in a Web Worker) embeds every passage on the device. Questions are matched by keyword and by meaning, and the two rankings are merged with Reciprocal Rank Fusion, so "how fast is the sector growing?" finds "24% year-over-year expansion". Vectors are stored with the document in IndexedDB.
+- **Keyword Re-Ranking**: Keyword results are re-ranked by term coverage and how close the terms sit together (a heuristic, not a neural model). On the backend, a BGE cross-encoder is used when `sentence-transformers` is installed.
 - **Multi-Tenant Isolation**: Rigorous tenant and document isolation (`owner_id` + `document_ids` filters) prevents cross-tenant citation forgery or IDOR leaks.
 - **Resilient Cold-Start Handling**: Built-in non-blocking reconnect backoffs absorb container lag and maintain high availability.
 
@@ -58,9 +60,9 @@ The platform can operate **100% locally on-device** (via WebGPU, WebLLM, and cli
 - **Visual Bounding Box Citations**: Every cited passage is anchored to proportional visual bounding box coordinates on the preview canvas.
 - **Split-Pane Document Reader**: Full-featured drawer with section jumper navigation, text filtering, and one-click jump-to-source.
 
-### 4. Multimodal VLM Chart & Image Reasoning
+### 4. Figure & Table Values
 - **Visual Figure & Chart Detection**: Automatic detection of charts, plots, and architecture diagrams within document pages.
-- **VLM Reasoning Prompts**: Vision-Language prompt templates for automated metric extraction, trend summarization, and data verification from images.
+- **Values From Text Only**: Labelled values in figure and table passages are extracted from the text and can be listed, ranked by stated change, or looked up by label. No image model is used, and nothing is stated that the extracted values do not contain.
 
 ### 5. Automated Structured Schema Extraction
 - **Context-Aware Schema Inference**: Automatically selects optimal extraction schemas based on document type (Research Paper, Market Analysis, Legal Agreement, and Brand & Product Guidelines).
@@ -89,9 +91,11 @@ The platform can operate **100% locally on-device** (via WebGPU, WebLLM, and cli
 flowchart TD
   subgraph Client ["Client Browser (Local-First Workspace)"]
     UI["React 19 + Vite Workspace UI"]
-    Parser["Web Worker Parsers (pdfjs-dist / mammoth)"]
+    Parser["Parsers (pdfjs-dist worker / mammoth) + passage chunker"]
     IDB[("IndexedDB Local Storage")]
     WebGPU["On-Device WebLLM (Qwen 2.5 on GPU)"]
+    Embed["Embedding Worker (BGE small, meaning search)"]
+    UI <--> Embed
     Grounding["Visual Bounding Box & Citations Engine"]
     
     UI <--> Parser
@@ -149,12 +153,13 @@ DocuMind AI combines a local-first browser runtime with an enterprise hybrid ret
 
 ### 3. On-Device AI & Hardware Acceleration
 - **In-Browser LLM Runtime**: [WebLLM](https://webllm.mlc.ai/) powered by **Apache TVM** and **WebGPU**, compiling optimized WGSL shaders directly onto client graphics hardware.
-- **Quantized Neural Weights**: `Qwen2.5-0.5B-Instruct-q4f16_1-MLC` (~350 MB shards) downloaded once into the browser's persistent `Cache API` for zero-token, zero-upload local generation.
-- **Multimodal VLM Reasoning**: Vision-Language Model prompting patterns for detecting charts/figures, isolating bounding box regions, and summarizing visual trends.
+- **Quantized Weights**: Qwen 2.5 1.5B / 3B / 0.5B and SmolLM2 360M (`q4f16_1` or `q4f32_1` builds, chosen from the GPU's `shader-f16` support), downloaded once into the browser's `Cache API`.
+- **Sentence Embeddings**: `Xenova/bge-small-en-v1.5` (8-bit, ~34 MB) through [transformers.js](https://huggingface.co/docs/transformers.js), run in a Web Worker.
 - **Hardware Telemetry**: Navigator WebGPU adapter probing, VRAM limit checks, and live Token Governance budget tracking (`createTokenBudgetTracker`).
 
 ### 4. Client-Side Document Parsing & Local Storage
-- **PDF Extraction**: [pdfjs-dist](https://github.com/mozilla/pdf.js) (Mozilla PDF.js) executing inside background Web Workers for high-speed page-by-page text stream decoding and visual bounding box calculation.
+- **PDF Extraction**: [pdfjs-dist](https://github.com/mozilla/pdf.js) (Mozilla PDF.js) rebuilds each page's reading order (lines, paragraphs, rejoined hyphenation) from positioned text items. Highlight boxes come from the real positions of each passage's text on the page.
+- **Passages**: Text is split into passages of about 900 characters at paragraph and sentence boundaries, starting a new passage at headings, so several passages fit in the model's 4K context.
 - **DOCX Extraction**: [Mammoth.js](https://github.com/mwilliamson/mammoth.js) converting Word XML structures to sanitized semantic HTML chunks and paragraphs.
 - **Local Persistence**: Browser [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) via [idb 8](https://github.com/jakearchibald/idb) across two isolated databases:
   - `documind_db`: Persists staged files, text chunks, and document metadata across reloads.
@@ -164,7 +169,7 @@ DocuMind AI combines a local-first browser runtime with an enterprise hybrid ret
 - **Lexical Retrieval**: In-memory BM25 Okapi with custom tokenization, lowercasing, punctuation stripping, and stop-word filtering (`k1=1.2`, `b=0.75`).
 - **Dense Vector Search**: Qdrant HNSW vector indexing with cosine distance metric.
 - **Reciprocal Rank Fusion (RRF)**: Merges sparse lexical rankings with dense vector embeddings using constant reciprocal scoring ($k=60$).
-- **Cross-Encoder Neural Re-Ranking**: Second-stage semantic re-ranking model scoring candidate chunks for deep query-passage alignment and confidence percentile estimation.
+- **Hybrid Retrieval in the Browser**: Keyword scoring plus embedding similarity, fused with Reciprocal Rank Fusion; a passage found only by meaning must clear a similarity floor, so unrelated questions still get no evidence.
 - **Visual Grounding Engine**: Proportional coordinate normalization algorithms mapping text chunk offsets to visual bounding boxes across page thumbnails and split-pane reader views.
 - **Schema Extraction Engine**: Automated schema inference matching document titles and passages against structured schemas (Research Paper, Market Analysis, Legal Agreement, Product/Brand Guidelines).
 
@@ -184,7 +189,7 @@ DocuMind AI combines a local-first browser runtime with an enterprise hybrid ret
 
 ### 8. DevOps, Testing & Quality Assurance
 - **Containerization**: [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) defining multi-container orchestration across services.
-- **Frontend Test Suite**: Native Node.js Test Runner (`node:test`, `node:assert/strict`) executing **122 automated unit and integration tests across 21 test suites** with zero third-party testing dependencies.
+- **Frontend Test Suite**: Native Node.js Test Runner (`node:test`, `node:assert/strict`) executing **136 automated unit and integration tests across 26 test suites** with zero third-party testing dependencies.
 - **Backend Test Suite**: [pytest 8](https://docs.pytest.org/), `pytest-asyncio`, and `pytest-cov` for backend API and retrieval tests.
 - **Code Quality**: [ESLint 9](https://eslint.org/) flat configuration enforcing clean code (0 errors, 0 warnings enforced).
 
@@ -286,12 +291,12 @@ Interactive documentation is available at `/api/v1/docs` when the backend is run
 
 ## Verification & Testing
 
-DocuMind AI enforces a rigorous automated test suite covering security defenses, adversarial prompt injection neutralization, citation integrity, bounding box normalization, VLM chart reasoning, cross-encoder re-ranking, and cross-document comparison:
+DocuMind AI enforces a rigorous automated test suite covering security defenses, adversarial prompt injection neutralization, citation integrity, bounding box normalization, passage chunking, hybrid keyword + meaning retrieval, answer citation checks, figure value extraction, and cross-document comparison:
 
 ```bash
 cd Documind-ai
 
-# Run all unit and integration tests (122 tests across 21 suites)
+# Run all unit and integration tests (136 tests across 26 suites)
 npm test
 
 # Run ESLint check (0 errors, 0 warnings enforced)
@@ -320,12 +325,12 @@ Documind-ai/
 │   └── requirements.txt       # Python dependencies
 ├── Documind-ai/               # React 19 Frontend
 │   ├── src/
-│   │   ├── features/documents/# Core services (WebLLM, VLM reasoning, re-ranking, IndexedDB, etc.)
+│   │   ├── features/documents/# Core services (WebLLM, embeddings, retrieval, IndexedDB, etc.)
 │   │   ├── LandingPage.jsx    # Front page: live browser readouts, comparison ledger, demo
 │   │   ├── Workspace.jsx      # Research workspace & assistant interface
 │   │   ├── styles.css         # Workspace styles (Instrument Sheet, light and dark)
 │   │   └── landing.css        # Front page styles (Instrument Sheet)
-│   ├── tests/                 # Frontend node:test suite (122 tests across 21 suites)
+│   ├── tests/                 # Frontend node:test suite (136 tests across 26 suites)
 │   └── package.json           # Frontend dependencies & scripts
 ├── docker-compose.yml         # Multi-container orchestration (PostgreSQL, Redis, Qdrant, Backend)
 └── README.md                  # Project documentation

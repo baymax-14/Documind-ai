@@ -90,6 +90,27 @@ export async function saveDocument(doc) {
 }
 
 /**
+ * Attach passage embeddings to a stored document without changing its
+ * other fields (or its place in the library order).
+ *
+ * @param {string} id
+ * @param {{ model: string, dim: number, count: number, data: Float32Array }} vectors
+ * @returns {Promise<boolean>}
+ */
+export async function saveDocumentVectors(id, vectors) {
+  try {
+    const db = await getDB()
+    const record = await db.get(STORE_NAME, id)
+    if (!record) return false
+    await db.put(STORE_NAME, { ...record, vectors })
+    return true
+  } catch (err) {
+    console.warn('[DocuMind DB] Could not save passage embeddings:', err)
+    return false
+  }
+}
+
+/**
  * Delete a single document by its ID from IndexedDB.
  *
  * @param {string} id

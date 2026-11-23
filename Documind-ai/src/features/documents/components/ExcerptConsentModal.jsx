@@ -20,7 +20,7 @@ import {
  * @param {() => void} props.onApprove - Callback when approved.
  * @param {() => void} props.onCancel - Callback when cancelled.
  */
-function ExcerptConsentModal({ question, chunks, onApprove, onCancel }) {
+function ExcerptConsentModal({ question, chunks, retrieval = 'keyword', onApprove, onCancel }) {
   const reduceMotion = useReducedMotion()
   // Close on Escape
   useEffect(() => {
@@ -72,7 +72,7 @@ function ExcerptConsentModal({ question, chunks, onApprove, onCancel }) {
             <span className="consent-label">
               Retrieved Local Passages ({chunks.length}):
             </span>
-            <span className="consent-retrieval-tag">Keyword match preview</span>
+            <span className="consent-retrieval-tag">{retrieval === 'hybrid' ? 'Keyword + meaning search' : 'Keyword search'}</span>
           </div>
 
           <div className="consent-chunks-list">
@@ -95,7 +95,7 @@ function ExcerptConsentModal({ question, chunks, onApprove, onCancel }) {
           <div className="consent-privacy-banner">
             <Info size={15} aria-hidden="true" />
             <span>
-              <strong>Local Keyword Retrieval Prototype:</strong> In this release, passage retrieval runs locally in-browser. Zero file bytes or excerpts leave your machine, and no external AI model is connected.
+              <strong>Stays on this device:</strong> Passages were found in your browser. Only these passages are given to the on-device model (if one is set up); nothing is sent to any server.
             </span>
           </div>
         </div>

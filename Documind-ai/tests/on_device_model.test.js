@@ -29,7 +29,7 @@ describe('On-Device Model Architecture & Fallback (Phase 5 Proof of Concept)', (
   ]
 
   it('evaluates model candidates with verified Apache 2.0 license and download specs', () => {
-    assert.equal(DEFAULT_MODEL_ID, 'Qwen2.5-0.5B-Instruct-q4f32_1-MLC')
+    assert.equal(DEFAULT_MODEL_ID, 'Qwen2.5-1.5B-Instruct-q4f32_1-MLC')
     assert.ok(EVALUATED_MODELS.length >= 2)
 
     for (const model of EVALUATED_MODELS) {

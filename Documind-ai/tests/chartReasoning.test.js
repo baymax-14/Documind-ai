@@ -59,8 +59,8 @@ describe('Multimodal VLM Chart & Image Reasoning Service', () => {
       promptType: 'summarize',
     })
     assert.ok(summaryResult.groundedAnswer.includes('Segment Performance'))
-    assert.ok(summaryResult.confidenceScore >= 0.9)
-    assert.equal(summaryResult.vlmModel, 'Qwen2-VL-2B-Instruct')
+    assert.equal(summaryResult.method, 'Text extraction')
+    assert.equal(summaryResult.answered, true)
 
     // 2. Extract metrics
     const metricsResult = await reasonOverChartWithVLM({
@@ -76,7 +76,9 @@ describe('Multimodal VLM Chart & Image Reasoning Service', () => {
       chart: mockChart,
       promptType: 'high_performers',
     })
-    assert.ok(performersResult.groundedAnswer.includes('Enterprise Research'))
+    // Largest stated change is Biotechnology Labs (+34%)
+    assert.ok(performersResult.groundedAnswer.includes('Biotechnology Labs'))
+    assert.ok(performersResult.groundedAnswer.includes('+34%'))
 
     // 4. Custom query
     const customResult = await reasonOverChartWithVLM({
@@ -85,6 +87,16 @@ describe('Multimodal VLM Chart & Image Reasoning Service', () => {
       promptType: 'custom',
     })
     assert.ok(customResult.groundedAnswer.includes('$5.6M'))
+
+    // 5. A question about something the figure does not contain is not answered,
+    //    and no figure outside the extracted values is stated.
+    const unknown = await reasonOverChartWithVLM({
+      chart: mockChart,
+      question: 'What was churn in Asia?',
+      promptType: 'custom',
+    })
+    assert.equal(unknown.answered, false)
+    assert.ok(!/positive growth|strong retention/i.test(unknown.groundedAnswer))
   })
 
   it('provides well-formed VLM prompt templates', () => {

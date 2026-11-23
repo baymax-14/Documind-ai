@@ -27,6 +27,7 @@ export {
   EVALUATED_MODELS,
 } from './services/onDeviceModel.js'
 export { useDocumentImport } from './hooks/useDocumentImport.js'
+export { useSemanticIndex } from './hooks/useSemanticIndex.js'
 export {
   checkBackendHealth,
   uploadDocumentToBackend,

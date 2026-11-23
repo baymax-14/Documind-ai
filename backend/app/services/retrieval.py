@@ -4,6 +4,7 @@ Enforces strict tenant isolation, document scopes, and preserves complete chunk 
 Includes in-memory fallback index for offline/testing scenarios when Qdrant is unavailable.
 """
 
+import hashlib
 import math
 import re
 import uuid
@@ -49,9 +50,14 @@ class EmbeddingService:
             return vec
 
         for token in tokens:
-            # Deterministic hash bucket
-            h = hash(token) % self.DIMENSIONS
-            vec[h] += 1.0
+            # Stable hash bucket. Python's built-in hash() is salted per process
+            # (PYTHONHASHSEED), so vectors stored in Qdrant would stop matching
+            # query vectors after any restart; a content hash is the same everywhere.
+            digest = hashlib.blake2b(token.encode("utf-8"), digest_size=8).digest()
+            value = int.from_bytes(digest, "little")
+            h = value % self.DIMENSIONS
+            # Signed feature hashing reduces bias from bucket collisions.
+            vec[h] += 1.0 if (value >> 63) & 1 == 0 else -1.0
 
         # Cosine normalize
         norm = math.sqrt(sum(x * x for x in vec))

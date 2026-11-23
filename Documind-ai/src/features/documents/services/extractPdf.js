@@ -1,5 +1,7 @@
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist'
 import { MAX_TEXT_LENGTH } from '../types/document.js'
+import { chunkRanges } from './chunker.js'
+import { layoutPageText, boxForRange } from './pdfLayout.js'
 
 // Configure the PDF.js worker for Vite.
 // Use the minified worker from the build directory via a URL import.
@@ -17,8 +19,10 @@ const MAX_PAGES = 2000
 /**
  * Extract text from a PDF file using pdfjs-dist.
  *
- * Reads the file as an ArrayBuffer in the browser,
- * extracts text page by page, and returns chunks per page.
+ * Reads the file as an ArrayBuffer in the browser, rebuilds each page's
+ * reading text from the positioned text items, and splits each page into
+ * passages of about 900 characters. Every passage carries its page number and
+ * a bounding box taken from the real positions of its text on the page.
  *
  * @param {File} file
  * @returns {Promise<{ text: string, chunks: import('../types/document.js').DocChunk[] }>}
@@ -93,26 +97,28 @@ export async function extractPdf(file) {
       continue
     }
 
-    // Join text items, preserving whitespace between items
-    const pageText = content.items
-      .filter((item) => item.str !== undefined)
-      .map((item) => item.str)
-      .join(' ')
-      .replace(/\s+/g, ' ')
-      .trim()
+    // Rebuild the page's reading text (lines, paragraphs, de-hyphenation) and
+    // remember where each text item sits so passages get real page coordinates.
+    const viewport = page.getViewport({ scale: 1 })
+    const { text: pageText, spans } = layoutPageText(content.items)
 
-    if (pageText.length > 0) {
-      chunks.push({
-        index: chunks.length,
-        text: pageText,
-        locator: `Page ${pageNum}`,
-        page: pageNum,
-        offset: totalLength,
-      })
+    if (pageText.trim().length > 0) {
+      for (const r of chunkRanges(pageText)) {
+        chunks.push({
+          index: chunks.length,
+          text: pageText.slice(r.start, r.end),
+          locator: `Page ${pageNum}`,
+          page: pageNum,
+          offset: totalLength + r.start,
+          bbox: boxForRange(spans, r.start, r.end, viewport.width, viewport.height),
+        })
+      }
 
       textParts.push(pageText)
       totalLength += pageText.length + 1 // +1 for newline separator
     }
+
+    page.cleanup?.()
 
     // Safety check: stop if accumulated text exceeds limit
     if (totalLength > MAX_TEXT_LENGTH) {
@@ -134,4 +140,3 @@ export async function extractPdf(file) {
 
   return { text, chunks }
 }
-

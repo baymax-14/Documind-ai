@@ -10,7 +10,7 @@ import { searchDocuments } from '../src/features/documents/services/search.js'
 import { retrieveEvidenceChunks } from '../src/features/documents/services/aiChat.js'
 import { SEED_DOCS } from '../src/features/documents/data/seedDocs.js'
 
-describe('Cross-Encoder Neural Re-Ranking Pipeline', () => {
+describe('Keyword Re-Ranking Pipeline', () => {
   it('computes cross-token attention density between query and passage', () => {
     const queryTokens = ['market', 'growth', 'retention']
     const densePassage = ['the', 'market', 'experienced', 'rapid', 'growth', 'with', 'high', 'retention']
@@ -83,12 +83,12 @@ describe('Cross-Encoder Neural Re-Ranking Pipeline', () => {
     const topResult = searchRes.results[0]
     assert.ok(topResult.rerankScore !== undefined)
     assert.ok(topResult.rerankScore >= 0 && topResult.rerankScore <= 1.0)
-    assert.equal(topResult.rerankMethod, 'cross-encoder')
+    assert.equal(topResult.rerankMethod, 'term-proximity')
 
     const retrieval = retrieveEvidenceChunks(SEED_DOCS, query, 3)
     assert.equal(retrieval.hasEvidence, true)
     assert.ok(retrieval.chunks[0].rerankScore !== undefined)
-    assert.equal(retrieval.chunks[0].rerankMethod, 'cross-encoder')
+    assert.equal(retrieval.chunks[0].rerankMethod, 'keyword')
   })
 
   it('handles empty candidates or invalid inputs safely without exceptions', () => {

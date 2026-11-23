@@ -100,7 +100,7 @@ export default function PageVisualPreview({
       })
       setVlmResult(res)
     } catch (err) {
-      console.error('[DocuMind AI] VLM Reasoning error:', err)
+      console.error('[DocuMind AI] Figure analysis error:', err)
     } finally {
       setIsVlmAnalyzing(false)
     }
@@ -266,7 +266,7 @@ export default function PageVisualPreview({
                   handleTriggerVLM(visualFigures[0], 'summarize')
                 }
               }}
-              title="Inspect detected figures and run Multimodal VLM reasoning"
+              title="Inspect values found in figure and table passages"
             >
               <BarChart2 size={13} aria-hidden="true" />
               <span>Figures & Charts ({visualFigures.length})</span>
@@ -360,7 +360,7 @@ export default function PageVisualPreview({
                   )
                 })}
 
-                {/* Visual Chart & Figure Overlays with Multimodal VLM anchors */}
+                {/* Figure and table passage overlays */}
                 {visualFigures.map((fig) => (
                   <div
                     key={fig.id}
@@ -371,12 +371,12 @@ export default function PageVisualPreview({
                       setSelectedChartForVLM(fig)
                       handleTriggerVLM(fig, 'summarize')
                     }}
-                    title={`Click to open Multimodal VLM Reasoning for ${fig.title}`}
+                    title={`Inspect the values in ${fig.title}`}
                   >
                     <div className="visual-chart-tag">
                       <BarChart2 size={12} aria-hidden="true" />
                       <span>{fig.title}</span>
-                      <span className="vlm-chip">VLM Ready</span>
+                      <span className="vlm-chip">Values</span>
                     </div>
                   </div>
                 ))}
@@ -391,14 +391,14 @@ export default function PageVisualPreview({
           )}
         </main>
 
-        {/* Multimodal VLM Chart Inspector Drawer */}
+        {/* Figure values inspector */}
         {selectedChartForVLM && (
-          <aside className="vlm-inspector-drawer" aria-label="Multimodal VLM Chart Inspector">
+          <aside className="vlm-inspector-drawer" aria-label="Figure values inspector">
             <div className="vlm-inspector-header">
               <div className="vlm-title-group">
                 <div className="vlm-badge">
                   <Sparkles size={12} aria-hidden="true" />
-                  <span>Multimodal VLM Reasoning</span>
+                  <span>Figure values from text</span>
                 </div>
                 <h4>{selectedChartForVLM.title}</h4>
                 <span className="vlm-source-locator">
@@ -409,8 +409,8 @@ export default function PageVisualPreview({
                 type="button"
                 className="vlm-close-btn"
                 onClick={() => setSelectedChartForVLM(null)}
-                aria-label="Close VLM Inspector"
-                title="Close VLM Inspector"
+                aria-label="Close figure inspector"
+                title="Close figure inspector"
               >
                 <X size={15} />
               </button>
@@ -442,7 +442,7 @@ export default function PageVisualPreview({
             >
               <input
                 type="text"
-                placeholder="Ask VLM about this figure..."
+                placeholder="Ask about a value in this figure…"
                 value={customVlmQuestion}
                 onChange={(e) => setCustomVlmQuestion(e.target.value)}
                 className="vlm-input"
@@ -451,7 +451,7 @@ export default function PageVisualPreview({
                 type="submit"
                 className="primary-button vlm-submit-btn"
                 disabled={isVlmAnalyzing || !customVlmQuestion.trim()}
-                title="Run VLM inference"
+                title="Look up values"
               >
                 {isVlmAnalyzing ? <Loader size={13} className="spin" /> : <Send size={13} />}
               </button>
@@ -462,23 +462,22 @@ export default function PageVisualPreview({
               {isVlmAnalyzing ? (
                 <div className="vlm-loading-state">
                   <Loader size={20} className="spin" />
-                  <p>Multimodal VLM analyzing visual coordinates and data points...</p>
-                  <span>Model: Qwen2-VL-2B-Instruct</span>
+                  <p>Reading values…</p>
                 </div>
               ) : vlmResult ? (
                 <div className="vlm-result-card">
                   <div className="vlm-meta-bar">
-                    <span className="vlm-model-tag">
-                      <Sparkles size={11} /> {vlmResult.vlmModel}
+                    <span className="vlm-model-tag" title="Values are read from the passage text; no image model is used">
+                      <Sparkles size={11} /> {vlmResult.method}
                     </span>
                     <span className="vlm-confidence-badge">
-                      {Math.round(vlmResult.confidenceScore * 100)}% Grounded
+                      {vlmResult.answered ? `${vlmResult.extractedMetrics.length} values` : 'Not answered'}
                     </span>
                     <button
                       type="button"
                       className="vlm-copy-btn"
                       onClick={handleCopyVlmResult}
-                      title="Copy VLM interpretation"
+                      title="Copy result"
                     >
                       {copiedVlm ? <Check size={12} /> : <Copy size={12} />}
                       <span>{copiedVlm ? 'Copied' : 'Copy'}</span>
@@ -498,7 +497,7 @@ export default function PageVisualPreview({
 
                   {vlmResult.extractedMetrics && vlmResult.extractedMetrics.length > 0 && (
                     <div className="vlm-metrics-table-wrapper">
-                      <h5>Extracted Quantitative Series ({vlmResult.extractedMetrics.length})</h5>
+                      <h5>Values found ({vlmResult.extractedMetrics.length})</h5>
                       <div className="vlm-metrics-table">
                         {vlmResult.extractedMetrics.map((m, idx) => (
                           <div key={idx} className="vlm-metric-row">

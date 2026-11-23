@@ -1,10 +1,12 @@
 /**
- * Cross-Encoder Neural Re-Ranking Service for DocuMind AI.
+ * Second-stage keyword re-ranker for DocuMind AI.
  *
- * Implements a high-precision multi-stage neural re-ranking pipeline.
- * While Stage 1 retrieval (BM25 + Bi-Encoder vector cosine similarity) optimizes
- * for high recall, this Stage 2 Cross-Encoder evaluates joint query-passage cross-attention,
- * token proximity clustering, and semantic coverage to eliminate false-positive semantic drift.
+ * A lightweight scoring pass over first-stage keyword results: it rewards
+ * passages that contain more of the query's terms (with partial stem matches),
+ * where those terms sit close together, and exact phrase matches. It is a
+ * heuristic, not a neural cross-encoder; meaning-based ranking comes from the
+ * in-browser embeddings in embeddings.js. (Function names are kept for
+ * compatibility with existing callers.)
  */
 
 import { tokenizeQuery } from './search.js'
@@ -208,7 +210,7 @@ export function crossEncodeRerank(query, candidates, options = {}) {
       ...item,
       rerankScore,
       originalRank: originalIndex + 1,
-      rerankMethod: 'cross-encoder',
+      rerankMethod: 'term-proximity',
       crossAttentionDensity: Math.round(crossAttn * 100),
       proximityScore: Math.round(proximity * 100),
       coverageRatio: Math.round(coverage * 100),

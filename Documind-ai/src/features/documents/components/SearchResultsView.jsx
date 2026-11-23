@@ -30,9 +30,9 @@ function SearchResultsView({ query, results, totalMatches, onInspect, onClear })
             Evidence matches for <span className="search-query-tag">"{query}"</span>
           </h3>
           <span className="search-count-pill">{totalMatches} passage{totalMatches === 1 ? '' : 's'}</span>
-          <span className="neural-rerank-active-badge" title="Stage 2 Neural Cross-Encoder Re-Ranking active">
+          <span className="neural-rerank-active-badge" title="Results re-ranked by how many query terms appear and how close together they are">
             <Zap size={11} aria-hidden="true" />
-            <span>Cross-Encoder Re-Ranked</span>
+            <span>Term-proximity re-ranked</span>
           </span>
         </div>
         <button
@@ -70,7 +70,7 @@ function SearchResultsView({ query, results, totalMatches, onInspect, onClear })
                       {result.rerankScore !== undefined && (
                         <span
                           className="evidence-rerank-pill"
-                          title={`Cross-Encoder Neural Re-Rank: ${Math.round(result.rerankScore * 100)}% confidence · Initial Rank #${result.originalRank || 1}${result.rankDelta ? ` (Shift: ${result.rankDelta > 0 ? `+${result.rankDelta}` : result.rankDelta})` : ''}`}
+                          title={`Re-rank score: ${Math.round(result.rerankScore * 100)}% · Initial Rank #${result.originalRank || 1}${result.rankDelta ? ` (Shift: ${result.rankDelta > 0 ? `+${result.rankDelta}` : result.rankDelta})` : ''}`}
                         >
                           <Zap size={10} aria-hidden="true" />
                           <span>Re-Rank: {Math.round(result.rerankScore * 100)}%</span>

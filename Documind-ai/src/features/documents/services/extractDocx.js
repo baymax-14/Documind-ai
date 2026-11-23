@@ -1,11 +1,12 @@
 import mammoth from 'mammoth'
 import { MAX_TEXT_LENGTH } from '../types/document.js'
+import { chunkRanges, headingBefore } from './chunker.js'
 
 /**
  * Extract text from a DOCX file using mammoth.
  *
  * Reads the file as an ArrayBuffer in the browser,
- * extracts raw text, and splits into paragraph-based chunks.
+ * extracts raw text, and packs paragraphs into retrieval-sized passages.
  *
  * @param {File} file
  * @returns {Promise<{ text: string, chunks: import('../types/document.js').DocChunk[] }>}
@@ -54,38 +55,17 @@ export async function extractDocx(file) {
     }
   }
 
-  // Split into paragraphs (mammoth returns text with newlines between paragraphs)
-  const paragraphs = text.split(/\n+/)
-  const chunks = []
-  let offset = 0
-
-  for (let i = 0; i < paragraphs.length; i++) {
-    const content = paragraphs[i].trim()
-    if (content.length === 0) {
-      offset += paragraphs[i].length + 1
-      continue
+  // Pack paragraphs into retrieval-sized passages (exact slices of the source).
+  const chunks = chunkRanges(text, { separator: /\n+/ }).map((r, i) => {
+    const heading = headingBefore(text, r.start)
+    return {
+      index: i,
+      text: text.slice(r.start, r.end),
+      locator: heading ? `Section ${i + 1} · ${heading}` : `Section ${i + 1}`,
+      offset: r.start,
+      ...(heading ? { heading } : {}),
     }
-
-    const actualOffset = text.indexOf(paragraphs[i], offset)
-
-    chunks.push({
-      index: chunks.length,
-      text: content,
-      locator: `Paragraph ${chunks.length + 1}`,
-      offset: actualOffset >= 0 ? actualOffset : offset,
-    })
-
-    offset = (actualOffset >= 0 ? actualOffset : offset) + paragraphs[i].length + 1
-  }
-
-  if (chunks.length === 0) {
-    chunks.push({
-      index: 0,
-      text: text.trim(),
-      locator: 'Paragraph 1',
-      offset: 0,
-    })
-  }
+  })
 
   return { text, chunks }
 }

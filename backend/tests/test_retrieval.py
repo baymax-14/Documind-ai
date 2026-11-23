@@ -15,6 +15,33 @@ def test_embedding_service_dimensions():
     assert abs(norm - 1.0) < 1e-4
 
 
+
+def test_embedding_is_stable_across_processes():
+    """Vectors stored in Qdrant must match query vectors after a restart.
+
+    Python's built-in hash() is salted per process, so embedding the same text
+    under two different PYTHONHASHSEED values must still give the same vector.
+    """
+    import os
+    import subprocess
+    import sys
+
+    code = (
+        "from app.services.retrieval import EmbeddingService;"
+        "v = EmbeddingService().embed_text('quarterly revenue growth');"
+        "print(','.join(f'{x:.6f}' for x in v))"
+    )
+    outputs = []
+    for seed in ("1", "2"):
+        env = {**os.environ, "PYTHONHASHSEED": seed}
+        res = subprocess.run(
+            [sys.executable, "-c", code],
+            capture_output=True, text=True, env=env, check=True,
+            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        )
+        outputs.append(res.stdout.strip())
+    assert outputs[0] == outputs[1]
+
 def test_bm25_scoring():
     bm25 = BM25Index()
     doc1 = uuid.uuid4()

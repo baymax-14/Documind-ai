@@ -1,14 +1,17 @@
 /**
- * Multimodal VLM Chart & Image Reasoning Service for DocuMind AI.
+ * Figure & Chart Data Service for DocuMind AI.
  *
- * Provides visual document intelligence:
- * 1. Automatic detection of visual charts, plots, KPI matrices, and figures from document pages.
- * 2. Visual bounding box coordinate anchoring for charts on page canvases.
- * 3. Multimodal Vision-Language Model (VLM) reasoning over visual figures,
- *    extracting trend insights, tabular metrics, and answering questions grounded in the visual diagram.
+ * Finds passages that carry figure or table data (labels with values) and
+ * answers questions about them using only the numbers written in the text.
+ * Nothing here looks at images: there is no vision model in this path, and
+ * every sentence it returns is built from extracted values, so it never states
+ * a trend, ranking or figure that the document does not contain.
  */
 
 import { normalizeBoundingBox } from './visualGrounding.js'
+
+/** Method label shown in the UI for results from this service. */
+export const FIGURE_ANALYSIS_METHOD = 'Text extraction'
 
 /**
  * Supported VLM prompt categories for quick visual analysis.
@@ -16,21 +19,21 @@ import { normalizeBoundingBox } from './visualGrounding.js'
 export const VLM_PROMPT_TEMPLATES = [
   {
     id: 'summarize',
-    label: '📈 Summarize Trend',
+    label: 'Summarize values',
     icon: 'trending-up',
-    description: 'Synthesizes high-level visual narrative and trajectory.',
+    description: 'Lists the labelled values found for this figure.',
   },
   {
     id: 'extract_metrics',
-    label: '🔢 Extract All Metrics',
+    label: 'Extract all values',
     icon: 'table',
-    description: 'Pulls every quantitative data point with labels and units.',
+    description: 'Pulls every labelled value with its unit and change.',
   },
   {
     id: 'high_performers',
-    label: '🏆 High-Growth Segments',
+    label: 'Largest change',
     icon: 'award',
-    description: 'Identifies top-performing categories and anomalies.',
+    description: 'Finds the row with the largest stated percentage change.',
   },
 ]
 
@@ -112,14 +115,10 @@ export function detectPageVisualElements(pageInfo) {
 
     if ((hasTable && hasMetrics) || (hasFigureTag && hasMetrics)) {
       // Determine title
-      let title = `Page ${pageNum} Visual Metric Chart`
+      let title = `Page ${pageNum} figure data`
       const headingMatch = text.match(/(?:###?|Figure \d+|Chart \d+|Table \d+)[:\s]+([^\n\r]+)/i)
       if (headingMatch && headingMatch[1]) {
         title = headingMatch[1].trim()
-      } else if (text.includes('Segment Performance')) {
-        title = 'Segment Performance & Customer Retention Chart'
-      } else if (text.includes('Milestones')) {
-        title = 'Architecture Milestones & Resource Budget'
       }
 
       // Infer chart type
@@ -147,7 +146,7 @@ export function detectPageVisualElements(pageInfo) {
       const dataSummary =
         dataPoints.length > 0
           ? `${dataPoints.length} quantitative data series: ${dataPoints.map((d) => `${d.label} (${d.value})`).slice(0, 3).join(', ')}.`
-          : 'High-density visual metrics and performance indicators.'
+          : 'No labelled values could be read from this passage.'
 
       elements.push({
         id: `fig-${pageNum}-${chunkIdx}`,
@@ -165,83 +164,100 @@ export function detectPageVisualElements(pageInfo) {
 }
 
 /**
- * Execute Multimodal VLM reasoning on a visual chart or diagram.
+ * Parse a signed percentage such as "+34%" or "-2.5%".
  *
- * Incorporates visual bounding box geometry, axis labels, and data points
- * to produce grounded vision-language insights.
+ * @param {string} [text]
+ * @returns {number | null}
+ */
+function parsePercent(text) {
+  const m = /([+\-−]?\s*\d+(?:\.\d+)?)\s*%/.exec(text || '')
+  return m ? Number(m[1].replace(/\s|−/g, (c) => (c === '−' ? '-' : ''))) : null
+}
+
+function formatPoint(m) {
+  return `${m.label}: ${m.value}${m.trend ? ` (${m.trend})` : ''}`
+}
+
+/**
+ * Answer a question about a figure from the values extracted from its text.
+ *
+ * Kept under its original name for compatibility; it does not run a vision
+ * model. Results only restate values present in `chart.dataPoints`.
  *
  * @param {Object} params
- * @param {Object} params.chart - Visual chart element object.
+ * @param {Object} params.chart - Figure element from detectPageVisualElements.
  * @param {string} [params.question] - Custom user question.
- * @param {string} [params.promptType='summarize'] - One of VLM_PROMPT_TEMPLATES id.
- * @param {string} [params.modelId='Qwen2-VL-2B-Instruct'] - Active VLM model identifier.
- * @returns {Promise<{ chartId: string, chartTitle: string, chartType: string, visualInterpretation: string, extractedMetrics: Array<any>, trendAnalysis: string, groundedAnswer: string, confidenceScore: number, vlmModel: string, visualLocator: string, bbox: Object }>}
+ * @param {string} [params.promptType='summarize'] - One of VLM_PROMPT_TEMPLATES ids, or 'custom'.
+ * @returns {Promise<{ chartId: string, chartTitle: string, chartType: string, extractedMetrics: Array<any>, trendAnalysis: string, groundedAnswer: string, method: string, visualLocator: string, bbox: Object, answered: boolean }>}
  */
 export async function reasonOverChartWithVLM({
   chart,
   question = '',
   promptType = 'summarize',
-  modelId = 'Qwen2-VL-2B-Instruct',
 }) {
   if (!chart) {
-    throw new Error('A valid chart or visual element must be provided for VLM reasoning.')
+    throw new Error('A valid chart or figure element must be provided.')
   }
 
-  // Simulate local VLM computation latency (~300ms)
-  await new Promise((resolve) => setTimeout(resolve, 300))
-
   const metrics = chart.dataPoints || []
-  const chartTitle = chart.title || 'Visual Chart'
+  const chartTitle = chart.title || 'Figure'
   const locator = chart.sourceLocator || 'Page 1'
 
   let groundedAnswer = ''
   let trendAnalysis = ''
+  let answered = metrics.length > 0
 
-  if (promptType === 'extract_metrics') {
+  if (metrics.length === 0) {
+    groundedAnswer = `No labelled values could be read from the text of ${chartTitle} (${locator}). Open the page to read the figure directly.`
+    answered = false
+  } else if (promptType === 'extract_metrics') {
     groundedAnswer =
-      metrics.length > 0
-        ? `Extracted ${metrics.length} metric points from ${chartTitle} (${locator}):\n` +
-          metrics.map((m) => `• ${m.label}: ${m.value} ${m.trend ? `(${m.trend})` : ''} ${m.detail ? `— ${m.detail}` : ''}`).join('\n')
-        : `Visual elements in ${chartTitle} contain structured KPI indicators with verified bounding coordinate ${chart.bbox.top}% top.`
-    trendAnalysis = 'All metrics successfully verified against source page coordinate bounding boxes.'
+      `${metrics.length} values found in ${chartTitle} (${locator}):\n` +
+      metrics.map((m) => `• ${formatPoint(m)}${m.detail ? ` — ${m.detail}` : ''}`).join('\n')
   } else if (promptType === 'high_performers') {
-    const topMetric = metrics.find((m) => m.trend?.includes('+') || m.value?.includes('$12')) || metrics[0]
-    groundedAnswer = topMetric
-      ? `Highest performing category in ${chartTitle} is **${topMetric.label}** with value **${topMetric.value}** (${topMetric.trend || 'Top tier'}). High customer retention is sustained across all measured groups.`
-      : `High-growth clusters identified across verified coordinates in ${chartTitle}.`
-    trendAnalysis = 'Strong positive year-over-year momentum with minimal dispersion.'
-  } else if (question && question.trim().length > 0) {
-    // Answer specific question
-    const qLower = question.toLowerCase()
-    const matched = metrics.find((m) => qLower.includes(m.label.toLowerCase()) || qLower.includes(m.value.toLowerCase()))
-
-    if (matched) {
-      groundedAnswer = `Based on the visual data in **${chartTitle}** (${locator}), **${matched.label}** recorded **${matched.value}** with ${matched.trend ? `a growth rate of ${matched.trend}` : 'strong retention'}. Details: ${matched.detail || 'Verified on visual canvas'}.`
+    const withChange = metrics
+      .map((m) => ({ m, pct: parsePercent(m.trend) }))
+      .filter((x) => x.pct !== null)
+      .sort((a, b) => b.pct - a.pct)
+    if (withChange.length === 0) {
+      groundedAnswer = `${chartTitle} (${locator}) lists values but no percentage changes, so there is no stated change to rank.`
+      answered = false
     } else {
-      groundedAnswer = `VLM Visual Reasoning for **"${question}"** in **${chartTitle}** (${locator}): The chart visualizes ${metrics.length} data series. Overall trends show positive growth across enterprise segments, led by Enterprise Research ($12.4M) and Biotechnology Labs (+34% YoY).`
+      const top = withChange[0].m
+      groundedAnswer = `The largest stated change in ${chartTitle} (${locator}) is ${top.label} at ${top.trend} (value ${top.value}).`
+      trendAnalysis = `Ranked by stated change: ${withChange.map((x) => `${x.m.label} ${x.m.trend}`).join(', ')}.`
     }
-    trendAnalysis = `Visual coordinate mapping at [${chart.bbox.top}%, ${chart.bbox.left}%] confirms grounded correlation with query.`
+  } else if (question && question.trim().length > 0) {
+    const qLower = question.toLowerCase()
+    const matched = metrics.filter(
+      (m) => qLower.includes(m.label.toLowerCase()) || (m.value && qLower.includes(m.value.toLowerCase())),
+    )
+    if (matched.length > 0) {
+      groundedAnswer = `From ${chartTitle} (${locator}): ` +
+        matched.map((m) => `${formatPoint(m)}${m.detail ? `; ${m.detail}` : ''}`).join('. ') + '.'
+    } else {
+      groundedAnswer = `None of the values in ${chartTitle} (${locator}) is labelled with what the question asks about. The values found are: ${metrics.map(formatPoint).join('; ')}.`
+      answered = false
+    }
   } else {
-    // General summary
-    groundedAnswer = `**Visual Analysis of ${chartTitle}** (${locator}):\n` +
-      `The diagram visualizes key metrics across ${metrics.length > 0 ? metrics.length : 'multiple'} categories. ` +
-      (metrics.length > 0
-        ? `Key data series includes ${metrics.map((m) => `${m.label} at ${m.value}`).join(', ')}. `
-        : '') +
-      `The visual trajectory demonstrates consistent positive expansion with high retention rates.`
-    trendAnalysis = 'Primary growth vector centered around enterprise and biotechnology sectors.'
+    groundedAnswer = `${chartTitle} (${locator}) lists ${metrics.length} values: ${metrics.map(formatPoint).join('; ')}.`
+    const changes = metrics.map((m) => parsePercent(m.trend)).filter((n) => n !== null)
+    if (changes.length > 0) {
+      const up = changes.filter((n) => n > 0).length
+      const down = changes.filter((n) => n < 0).length
+      trendAnalysis = `${changes.length} rows state a change: ${up} up, ${down} down.`
+    }
   }
 
   return {
     chartId: chart.id,
     chartTitle,
     chartType: chart.chartType || 'bar_chart',
-    visualInterpretation: `Multimodal VLM analyzed visual bounding box [top: ${chart.bbox.top}%, left: ${chart.bbox.left}%, width: ${chart.bbox.width}%, height: ${chart.bbox.height}%] on ${locator}.`,
     extractedMetrics: metrics,
     trendAnalysis,
     groundedAnswer,
-    confidenceScore: 0.94,
-    vlmModel: modelId,
+    method: FIGURE_ANALYSIS_METHOD,
+    answered,
     visualLocator: locator,
     bbox: chart.bbox,
   }

@@ -23,12 +23,72 @@ import {
   Zap,
 } from 'lucide-react'
 
+import { EMBEDDING_SIZE_DISPLAY } from '../services/embeddings.js'
+
 const SUGGESTED_PROMPTS = [
   'What were the key drivers behind Q3 market growth?',
   'What are the brand typography and color rules?',
   'What feedback did customer interviews reveal?',
   'What is DocuMind\'s core product thesis and vision?',
 ]
+
+/** Passages the answer cites come first; the rest follow in rank order. */
+function orderCitations(msg) {
+  const list = msg.citations || []
+  if (!Array.isArray(msg.citedIds) || msg.citedIds.length === 0) return list
+  const cited = new Set(msg.citedIds)
+  return [...list.filter((c) => cited.has(c.id)), ...list.filter((c) => !cited.has(c.id))]
+}
+
+function isUncitedPassage(msg, c) {
+  return msg.isRealModel && Array.isArray(msg.citedIds) && msg.citedIds.length > 0 && !msg.citedIds.includes(c.id)
+}
+
+/**
+ * Status and switch for meaning-based search (in-browser sentence embeddings).
+ */
+function SemanticSearchBar({ semantic }) {
+  const { status, progress, indexing, error, enable, disable } = semantic
+  return (
+    <div className={`ai-semantic-bar is-${status}`} role="status" aria-live="polite">
+      <div className="ai-semantic-text">
+        <Search size={13} aria-hidden="true" />
+        {status === 'off' && (
+          <span>
+            <strong>Meaning search is off.</strong> Questions only match passages that share their words.
+          </span>
+        )}
+        {status === 'loading' && (
+          <span>
+            <strong>Loading search model…</strong> {progress?.text || ''}
+          </span>
+        )}
+        {status === 'ready' && (
+          <span>
+            <strong>Meaning search is on.</strong>{' '}
+            {indexing
+              ? `Indexing passages ${indexing.done} of ${indexing.total}…`
+              : 'Questions also find passages that say the same thing in other words.'}
+          </span>
+        )}
+        {status === 'error' && (
+          <span>
+            <strong>Meaning search failed to load.</strong> {error}
+          </span>
+        )}
+      </div>
+      {status === 'off' || status === 'error' ? (
+        <button className="ai-unload-btn" onClick={enable} title={`Download the ${EMBEDDING_SIZE_DISPLAY} search model once; it runs in your browser`}>
+          Turn on ({EMBEDDING_SIZE_DISPLAY})
+        </button>
+      ) : (
+        <button className="ai-unload-btn" onClick={disable}>
+          Turn off
+        </button>
+      )}
+    </div>
+  )
+}
 
 /**
  * Document Evidence & AI Assistant view.
@@ -52,6 +112,11 @@ const SUGGESTED_PROMPTS = [
  * @param {() => void} [props.onCancelModelDownload]
  * @param {() => void} [props.onUnloadModel]
  * @param {() => void} [props.onUseEvidencePreview]
+ * @param {Array<any>} [props.models] - On-device model choices.
+ * @param {string} [props.selectedModelId]
+ * @param {(id: string) => void} [props.onSelectModel]
+ * @param {string} [props.activeModelName]
+ * @param {Object} [props.semantic] - Meaning-search index state from useSemanticIndex.
  */
 function AiAssistantView({
   messages,
@@ -70,7 +135,14 @@ function AiAssistantView({
   onCancelModelDownload,
   onUnloadModel,
   onUseEvidencePreview,
+  models = [],
+  selectedModelId,
+  onSelectModel,
+  activeModelName = 'On-device model',
+  semantic = null,
 }) {
+  const selectedModel = models.find((m) => m.id === selectedModelId) || models[0]
+  const streamingActive = messages.some((m) => m.streaming)
   const [input, setInput] = useState('')
   const [copiedIndex, setCopiedIndex] = useState(null)
   const chatEndRef = useRef(null)
@@ -114,8 +186,8 @@ function AiAssistantView({
             <h3>Document Evidence & AI Assistant</h3>
             <p>
               {modelStatus === 'ready'
-                ? 'Synthesizing answers using on-device WebGPU model grounded strictly in document passages.'
-                : 'Local keyword retrieval showing exact excerpts and citations from your documents.'}
+                ? 'Answers written on your GPU from the retrieved passages, with every sentence cited.'
+                : 'Retrieval runs in your browser and shows the exact passages with their sources.'}
             </p>
           </div>
         </div>
@@ -187,18 +259,43 @@ function AiAssistantView({
               <Sparkles size={18} aria-hidden="true" />
             </div>
             <div>
-              <h4>On-Device AI Model Available</h4>
+              <h4>Set up an on-device model</h4>
               <p>
-                Download Qwen 2.5 0.5B (~350 MB, Apache 2.0) to synthesize answers directly on your GPU. Weights are cached locally for offline use. Your documents and queries never leave your browser.
+                The model writes a short cited answer from the retrieved passages. Weights download once and are cached for offline use; your documents and questions never leave the browser.
               </p>
             </div>
           </div>
+          {models.length > 0 && (
+            <fieldset className="ai-model-picker">
+              <legend className="sr-only">Choose a model</legend>
+              {models.map((m) => (
+                <label key={m.id} className={`ai-model-option ${m.id === selectedModel?.id ? 'is-selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="ai-model"
+                    value={m.id}
+                    checked={m.id === selectedModel?.id}
+                    onChange={() => onSelectModel?.(m.id)}
+                  />
+                  <span className="ai-model-option-body">
+                    <span className="ai-model-option-head">
+                      <strong>{m.name}</strong>
+                      {m.tier === 'recommended' && <span className="ai-model-option-tag">Recommended</span>}
+                      {m.tier === 'best' && <span className="ai-model-option-tag">Best quality</span>}
+                    </span>
+                    <span className="ai-model-option-specs">{m.sizeDisplay} download · {m.vramRequirement}</span>
+                    <span className="ai-model-option-note">{m.strengths}</span>
+                  </span>
+                </label>
+              ))}
+            </fieldset>
+          )}
           <div className="ai-model-setup-actions">
             <button
               className="primary-button ai-setup-btn"
-              onClick={onStartModelDownload}
+              onClick={() => onStartModelDownload?.(selectedModel?.id)}
             >
-              <Sparkles size={14} aria-hidden="true" /> Set Up On-Device Model (~350 MB)
+              <Sparkles size={14} aria-hidden="true" /> Set up {selectedModel?.name || 'model'} ({selectedModel?.sizeDisplay || ''})
             </button>
             <button
               className="secondary-button ai-preview-only-btn"
@@ -244,7 +341,7 @@ function AiAssistantView({
           <div className="ai-active-status">
             <span className="ai-active-dot" />
             <span>
-              <strong>On-Device Model Active:</strong> Qwen 2.5 0.5B (Local WebGPU)
+              <strong>On-device model:</strong> {activeModelName} (WebGPU)
             </span>
           </div>
           <button
@@ -273,7 +370,7 @@ function AiAssistantView({
             <span>Model setup failed: {modelError || 'Could not complete download.'}</span>
           </div>
           <div className="ai-model-error-actions">
-            <button className="secondary-button" onClick={onStartModelDownload}>
+            <button className="secondary-button" onClick={() => onStartModelDownload?.(selectedModel?.id)}>
               Retry
             </button>
             <button className="secondary-button" onClick={onUseEvidencePreview}>
@@ -282,6 +379,8 @@ function AiAssistantView({
           </div>
         </div>
       )}
+
+      {semantic && <SemanticSearchBar semantic={semantic} />}
 
       {/* Message Feed */}
       <div className="ai-feed-container" tabIndex={0} aria-live="polite">
@@ -356,22 +455,48 @@ function AiAssistantView({
                           <FileSearch size={10} aria-hidden="true" /> Local Evidence Preview
                         </span>
                       )}
-                      <span className="ai-engine-tag ai-engine-tag-rerank" title="Passages prioritized via Stage 2 Neural Cross-Encoder Re-Ranking">
-                        <Zap size={10} aria-hidden="true" /> Cross-Encoder Re-Ranked
-                      </span>
+                      {!msg.isBackendGrounded && (
+                        <span
+                          className="ai-engine-tag ai-engine-tag-rerank"
+                          title={msg.retrieval === 'hybrid'
+                            ? 'Passages ranked by keyword match and by meaning, merged with reciprocal rank fusion'
+                            : 'Passages ranked by keyword match'}
+                        >
+                          <Search size={10} aria-hidden="true" />
+                          {msg.retrieval === 'hybrid' ? 'Keyword + meaning search' : 'Keyword search'}
+                        </span>
+                      )}
+                      {msg.isRealModel && msg.modelName && (
+                        <span className="ai-engine-tag" title="Model that wrote this answer">
+                          <Cpu size={10} aria-hidden="true" /> {msg.modelName}
+                        </span>
+                      )}
                     </div>
                   )}
 
                   {/* Response Text */}
                   <div className="ai-msg-text">
-                    <p>{msg.text}</p>
+                    <p>
+                      {msg.text}
+                      {msg.streaming && <span className="ai-stream-caret" aria-hidden="true" />}
+                    </p>
                   </div>
+
+                  {msg.uncited && !msg.streaming && (
+                    <div className="ai-uncited-warning" role="note">
+                      <AlertCircle size={13} aria-hidden="true" />
+                      <span>This answer has no valid citations, so it cannot be traced to a passage. Check it against the passages below.</span>
+                    </div>
+                  )}
 
                   {/* Explicit per-excerpt card with exact citation button */}
                   {msg.citations && msg.citations.length > 0 && (
                     <div className="ai-excerpts-container">
-                      {msg.citations.map((c) => (
-                        <article key={c.id} className="ai-excerpt-card">
+                      {orderCitations(msg).map((c) => (
+                        <article
+                          key={c.id}
+                          className={`ai-excerpt-card ${isUncitedPassage(msg, c) ? 'is-uncited' : ''}`}
+                        >
                           <div className="ai-excerpt-header">
                             <button
                               className="ai-citation-chip"
@@ -384,13 +509,9 @@ function AiAssistantView({
                                 <FileText size={10} style={{ display: 'inline', marginRight: 3 }} />
                                 {c.locator}
                               </span>
-                              {c.rerankScore !== undefined && (
-                                <span
-                                  className="citation-rerank-tag"
-                                  title={`Cross-Encoder Re-Ranked relevance: ${Math.round(c.rerankScore * 100)}%`}
-                                >
-                                  <Zap size={9} aria-hidden="true" />
-                                  <span>{Math.round(c.rerankScore * 100)}%</span>
+                              {isUncitedPassage(msg, c) && (
+                                <span className="citation-rerank-tag" title="Sent to the model but not cited in the answer">
+                                  not cited
                                 </span>
                               )}
                               <ArrowUpRight size={12} aria-hidden="true" />
@@ -413,15 +534,15 @@ function AiAssistantView({
               </article>
             ))}
 
-            {isGenerating && (
+            {isGenerating && !streamingActive && (
               <div className="ai-message-row msg-assistant">
                 <div className="ai-message-bubble ai-generating-bubble">
                   <div className="ai-generating-content">
                     <Loader size={16} className="spin-icon" aria-hidden="true" />
                     <span>
                       {modelStatus === 'ready'
-                        ? 'Retrieving evidence passages & synthesizing on-device answer…'
-                        : 'Retrieving local passages and locating source excerpts…'}
+                        ? 'Finding passages and starting the on-device answer…'
+                        : 'Finding matching passages…'}
                     </span>
                   </div>
                   <button

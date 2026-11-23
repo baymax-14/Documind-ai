@@ -1,10 +1,11 @@
 import { MAX_TEXT_LENGTH } from '../types/document.js'
+import { chunkRanges, headingBefore } from './chunker.js'
 
 /**
  * Extract text from a plain-text file.
  *
- * Decodes as UTF-8. Splits into paragraph-based chunks
- * separated by blank lines, with character offsets.
+ * Decodes as UTF-8. Packs paragraphs into passages of about 900 characters
+ * (see chunker.js), each an exact slice of the source with its offset.
  *
  * @param {File} file
  * @returns {Promise<{ text: string, chunks: import('../types/document.js').DocChunk[] }>}
@@ -41,40 +42,17 @@ export async function extractTxt(file) {
     throw new Error(`${file.name} does not appear to be a valid text file.`)
   }
 
-  // Split into paragraph chunks by blank lines.
-  const paragraphs = raw.split(/\n\s*\n/)
-  const chunks = []
-  let offset = 0
-
-  for (let i = 0; i < paragraphs.length; i++) {
-    const text = paragraphs[i].trim()
-    if (text.length === 0) {
-      // Advance offset past the blank separator
-      offset = raw.indexOf(paragraphs[i], offset) + paragraphs[i].length
-      continue
+  // Pack paragraphs into retrieval-sized passages (exact slices of the source).
+  const chunks = chunkRanges(raw).map((r, i) => {
+    const heading = headingBefore(raw, r.start)
+    return {
+      index: i,
+      text: raw.slice(r.start, r.end),
+      locator: heading ? `Section ${i + 1} · ${heading}` : `Section ${i + 1}`,
+      offset: r.start,
+      ...(heading ? { heading } : {}),
     }
-
-    const actualOffset = raw.indexOf(paragraphs[i], offset)
-
-    chunks.push({
-      index: chunks.length,
-      text,
-      locator: `Section ${chunks.length + 1}`,
-      offset: actualOffset >= 0 ? actualOffset : offset,
-    })
-
-    offset = actualOffset >= 0 ? actualOffset + paragraphs[i].length : offset + paragraphs[i].length
-  }
-
-  // If no paragraph breaks, treat the whole content as one chunk
-  if (chunks.length === 0) {
-    chunks.push({
-      index: 0,
-      text: raw.trim(),
-      locator: 'Section 1',
-      offset: 0,
-    })
-  }
+  })
 
   return { text: raw, chunks }
 }

@@ -17,25 +17,13 @@ Third paragraph conclusion and next steps.`
     const result = await extractDocument(file)
 
     assert.equal(result.text, rawContent)
-    assert.equal(result.chunks.length, 3)
-
-    // Verify chunk 0
+    // Short paragraphs are packed into one retrieval-sized passage
+    assert.equal(result.chunks.length, 1)
     assert.equal(result.chunks[0].index, 0)
     assert.equal(result.chunks[0].locator, 'Section 1')
     assert.equal(result.chunks[0].offset, 0)
     assert.match(result.chunks[0].text, /First paragraph introduction/)
-
-    // Verify chunk 1
-    assert.equal(result.chunks[1].index, 1)
-    assert.equal(result.chunks[1].locator, 'Section 2')
-    assert.ok(result.chunks[1].offset > 0)
-    assert.match(result.chunks[1].text, /Second paragraph with specific findings/)
-
-    // Verify chunk 2
-    assert.equal(result.chunks[2].index, 2)
-    assert.equal(result.chunks[2].locator, 'Section 3')
-    assert.ok(result.chunks[2].offset > result.chunks[1].offset)
-    assert.match(result.chunks[2].text, /Third paragraph conclusion/)
+    assert.match(result.chunks[0].text, /Third paragraph conclusion/)
 
     // Verify offsets match exact raw string location
     for (const chunk of result.chunks) {

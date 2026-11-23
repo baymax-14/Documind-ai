@@ -263,8 +263,7 @@ export function searchDocuments(documents, rawQuery, options = {}) {
   // Sort by initial retrieval score first
   results.sort((a, b) => b.score - a.score)
 
-  // Stage 2: Cross-Encoder Neural Re-Ranking
-  // Evaluates query-passage cross-token attention and term proximity clustering
+  // Stage 2: keyword re-ranking by term coverage and proximity (see reranker.js)
   const finalResults =
     options?.enableReranker !== false && results.length > 0
       ? crossEncodeRerank(query, results)

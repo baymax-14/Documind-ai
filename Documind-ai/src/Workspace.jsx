@@ -45,6 +45,9 @@ import {
   checkWebGPUSupport,
   initializeOnDeviceEngine,
   generateAnswerWithFallback,
+  DEFAULT_MODEL_ID,
+  EVALUATED_MODELS,
+  useSemanticIndex,
   SEED_DOCS,
   StorageHardwareModal,
   createConnectionManager,
@@ -148,6 +151,24 @@ function App() {
   const [storageModalOpen, setStorageModalOpen] = useState(false)
   const [workflowModal, setWorkflowModal] = useState(null) // { doc, tab: 'summary' | 'extract' } | null
   const engineRef = useRef(null)
+  const [selectedModelId, setSelectedModelId] = useState(() => {
+    try {
+      const saved = localStorage.getItem('documind_model_id')
+      return EVALUATED_MODELS.some((m) => m.id === saved) ? saved : DEFAULT_MODEL_ID
+    } catch {
+      return DEFAULT_MODEL_ID
+    }
+  })
+  const [activeModelName, setActiveModelName] = useState('')
+
+  function handleSelectModel(id) {
+    setSelectedModelId(id)
+    try {
+      localStorage.setItem('documind_model_id', id)
+    } catch {
+      // Preference just won't be remembered.
+    }
+  }
   const modelAbortRef = useRef(null)
 
   // Phase 10: Backend Connection, Sync & Conversation Persistence State
@@ -229,7 +250,9 @@ function App() {
     })
   }, [])
 
-  async function handleStartModelDownload() {
+  async function handleStartModelDownload(modelId = selectedModelId) {
+    // Answers are only as good as the passages found, so turn on meaning search too.
+    if (semantic.status === 'off') semantic.enable()
     setModelStatus('downloading')
     setModelError('')
     setModelProgress({ progress: 0.05, text: 'Starting download…' })
@@ -237,12 +260,14 @@ function App() {
 
     try {
       const engine = await initializeOnDeviceEngine({
+        modelId,
         onProgress: (p) => setModelProgress(p),
         signal: modelAbortRef.current.signal,
       })
       engineRef.current = engine
+      setActiveModelName(engine.modelName || '')
       setModelStatus('ready')
-      setNotice('On-device model ready for inference.')
+      setNotice(`${engine.modelName || 'On-device model'} is ready.`)
     } catch (err) {
       if (err.name === 'AbortError') {
         setModelStatus('not_configured')
@@ -270,6 +295,7 @@ function App() {
       await engineRef.current.unload()
     }
     engineRef.current = null
+    setActiveModelName('')
     setModelStatus('not_configured')
     setNotice('Model unloaded from GPU memory. Reverted to Evidence Preview.')
   }
@@ -298,6 +324,9 @@ function App() {
     seedDocs: SEED_DOCS,
     onNotice: setNotice,
   })
+
+  // Meaning-based passage search (in-browser embeddings, opt-in)
+  const semantic = useSemanticIndex(libraryDocs)
 
   const storedCount = libraryDocs.filter((d) => d.storedInBrowser).length
   const demoCount = libraryDocs.filter((d) => d.sample).length
@@ -425,20 +454,25 @@ function App() {
   }
 
   // Milestone 4: Trigger AI question with explicit per-query consent
-  function handleInitiateAiQuestion(question) {
-    const retrieval = retrieveEvidenceChunks(libraryDocs, question, 3)
+  async function handleInitiateAiQuestion(question) {
+    const queryVector = await semantic.embedQuery(question)
+    const retrieval = retrieveEvidenceChunks(libraryDocs, question, 5, {
+      queryVector,
+      vectorsFor: semantic.vectorsFor,
+    })
 
     // Open the Excerpt Consent dialog so user can inspect and approve candidate chunks
     setPendingConsent({
       question,
       chunks: retrieval.chunks,
+      retrieval: retrieval.method,
     })
   }
 
   // Execute AI generation once consent is approved
   async function handleApproveConsentAndGenerate() {
     if (!pendingConsent) return
-    const { question, chunks } = pendingConsent
+    const { question, chunks, retrieval } = pendingConsent
     setPendingConsent(null)
 
     const convId = activeConversationId || safeId()
@@ -485,7 +519,7 @@ function App() {
                 chunkId: c.chunk_id,
                 boundingBox: c.bounding_box || null,
                 rerankScore: c.rerank_score,
-                rerankMethod: c.rerank_method || 'cross-encoder',
+                rerankMethod: c.rerank_method || 'backend',
               })),
               hasEvidence: Boolean(backendRes.evidence_count > 0),
               isRealModel: true,
@@ -501,20 +535,45 @@ function App() {
 
       // Local Fallback (on-device model or deterministic evidence preview)
       if (!assistantMsg) {
+        const streamId = safeId()
+        let streamStarted = false
         const response = await generateAnswerWithFallback({
           question,
           retrievedChunks: chunks,
           engine: engineRef.current,
           signal: abortControllerRef.current.signal,
+          // Show the answer as the model writes it.
+          onToken: (_delta, soFar) => {
+            const draft = {
+              id: streamId,
+              sender: 'assistant',
+              text: soFar,
+              streaming: true,
+              isRealModel: true,
+              retrieval,
+              modelName: engineRef.current?.modelName,
+              timestamp: Date.now(),
+            }
+            if (!streamStarted) {
+              streamStarted = true
+              setAiMessages([...updatedWithUser, draft])
+            } else {
+              setAiMessages((prev) => prev.map((m) => (m.id === streamId ? draft : m)))
+            }
+          },
         })
 
         assistantMsg = {
-          id: safeId(),
+          id: streamId,
           sender: 'assistant',
           text: response.answer,
           citations: response.citations,
+          citedIds: response.citedIds,
+          uncited: response.uncited,
           hasEvidence: response.hasEvidence,
           isRealModel: response.isRealModel,
+          modelName: response.modelName,
+          retrieval,
           timestamp: Date.now(),
         }
       }
@@ -538,7 +597,12 @@ function App() {
         .then(() => listConversations().then((r) => setConvCount(r.length)).catch(() => {}))
         .catch(() => {})
     } catch (err) {
-      if (err.name !== 'AbortError') {
+      if (err.name === 'AbortError') {
+        // Keep whatever the model wrote before it was stopped, marked as partial.
+        setAiMessages((prev) => prev.map((m) => (
+          m.streaming ? { ...m, streaming: false, uncited: false, text: `${m.text} [stopped]` } : m
+        )))
+      } else {
         const errorMsg = {
           id: safeId(),
           sender: 'assistant',
@@ -1133,6 +1197,11 @@ function App() {
                   onCancelModelDownload={handleCancelModelDownload}
                   onUnloadModel={handleUnloadModel}
                   onUseEvidencePreview={() => setModelStatus('not_configured')}
+                  models={EVALUATED_MODELS}
+                  selectedModelId={selectedModelId}
+                  onSelectModel={handleSelectModel}
+                  activeModelName={activeModelName}
+                  semantic={semantic}
                 />
               </Suspense>
             )}
@@ -1353,6 +1422,7 @@ function App() {
             key="excerpt-consent"
             question={pendingConsent.question}
             chunks={pendingConsent.chunks}
+            retrieval={pendingConsent.retrieval}
             onApprove={handleApproveConsentAndGenerate}
             onCancel={() => setPendingConsent(null)}
           />

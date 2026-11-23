@@ -4,6 +4,11 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // The search-model worker imports transformers.js on first use; pre-bundling it
+  // stops the dev server from reloading the page mid-session when that happens.
+  optimizeDeps: {
+    include: ['@huggingface/transformers'],
+  },
   build: {
     chunkSizeWarningLimit: 600,
     rollupOptions: {
