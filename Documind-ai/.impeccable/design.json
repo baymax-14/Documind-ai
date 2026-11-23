@@ -1,98 +1,389 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T09:54:45Z",
+  "generatedAt": "2026-11-23T13:39:21Z",
   "title": "Design System: DocuMind AI",
   "extensions": {
     "colorMeta": {
       "ink": {
         "role": "neutral",
-        "displayName": "Pitch Black",
-        "canonical": "#000000",
+        "displayName": "Press Black",
+        "canonical": "#0b0b0b",
         "tonalRamp": [
-          "#000000",
-          "#171713",
-          "#25251F"
-        ]
+          "#0b0b0b",
+          "#1e1e1c",
+          "#33332f",
+          "#55554f"
+        ],
+        "cssVar": "--ink"
       },
-      "cream": {
+      "paper": {
         "role": "neutral",
-        "displayName": "Warm Cream",
-        "canonical": "#FFFDF5",
+        "displayName": "Instrument Grey",
+        "canonical": "#f1f1ef",
         "tonalRamp": [
-          "#FFFDF5",
-          "#F8F4E9",
-          "#F1EBDC"
-        ]
+          "#dcdcd8",
+          "#e7e7e4",
+          "#f1f1ef",
+          "#f8f8f7"
+        ],
+        "cssVar": "--paper"
       },
-      "white": {
+      "surface": {
         "role": "neutral",
-        "displayName": "Paper White",
-        "canonical": "#FFFFFF",
+        "displayName": "Sheet White",
+        "canonical": "#ffffff",
         "tonalRamp": [
-          "#FFFFFF",
-          "#F7F7F4",
-          "#ECECE7"
-        ]
+          "#f1f1ef",
+          "#f8f8f7",
+          "#ffffff"
+        ],
+        "cssVar": "--surface (and --file-pdf)"
       },
-      "mint": {
+      "muted": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "#55554f",
+        "tonalRamp": [
+          "#33332f",
+          "#55554f",
+          "#7a7a73",
+          "#a3a39d"
+        ],
+        "cssVar": "--muted"
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "rgba(11, 11, 11, 0.14)",
+        "tonalRamp": [
+          "rgba(11, 11, 11, 0.14)"
+        ],
+        "cssVar": "--line"
+      },
+      "red": {
         "role": "primary",
-        "displayName": "Soft Mint",
-        "canonical": "#88D498",
+        "displayName": "Signal Red",
+        "canonical": "#d3110f",
         "tonalRamp": [
-          "#E8F7EB",
-          "#88D498",
-          "#26733B"
-        ]
+          "#3d0504",
+          "#6a0908",
+          "#9a0d0b",
+          "#d3110f",
+          "#e9524f",
+          "#f39592",
+          "#fbe2e1",
+          "#fef3f3"
+        ],
+        "cssVar": "--red"
       },
-      "sky": {
-        "role": "secondary",
-        "displayName": "Sky Blue",
-        "canonical": "#74B9FF",
-        "tonalRamp": [
-          "#E9F4FF",
-          "#74B9FF",
-          "#14568E"
-        ]
-      },
-      "butter": {
-        "role": "tertiary",
-        "displayName": "Butter Yellow",
-        "canonical": "#FFD23F",
-        "tonalRamp": [
-          "#FFF4C9",
-          "#FFD23F",
-          "#6D5200"
-        ]
-      },
-      "mint-tint": {
+      "red-tint": {
         "role": "surface",
-        "displayName": "Mint Tint",
-        "canonical": "#D8F0DC",
+        "displayName": "Red Tint",
+        "canonical": "#fbe2e1",
         "tonalRamp": [
-          "#E8F7EB",
-          "#D8F0DC",
-          "#C4E5CA"
-        ]
+          "#f6c4c2",
+          "#fbe2e1",
+          "#fef3f3"
+        ],
+        "cssVar": "--red-tint"
       },
-      "sky-tint": {
-        "role": "surface",
-        "displayName": "Sky Tint",
-        "canonical": "#D4EAFF",
+      "on-red": {
+        "role": "neutral",
+        "displayName": "On Red",
+        "canonical": "#ffffff",
         "tonalRamp": [
-          "#E9F4FF",
-          "#D4EAFF",
-          "#C0DFFF"
-        ]
+          "#ffffff"
+        ],
+        "note": "Literal #fff label on red fills in both themes."
       },
-      "butter-tint": {
-        "role": "surface",
-        "displayName": "Butter Tint",
-        "canonical": "#FFE99A",
+      "grey-strong": {
+        "role": "neutral",
+        "displayName": "State Grey Strong",
+        "canonical": "#dcdcd7",
         "tonalRamp": [
-          "#FFF4C9",
-          "#FFE99A",
-          "#F5DB79"
-        ]
+          "#0b0b0b",
+          "#2c2c2a",
+          "#55554f",
+          "#a3a39d",
+          "#dcdcd7",
+          "#e6e6e2",
+          "#f1f1ef",
+          "#ffffff"
+        ],
+        "cssVar": "--mint"
+      },
+      "grey-mid": {
+        "role": "neutral",
+        "displayName": "State Grey Mid",
+        "canonical": "#e6e6e2",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#2c2c2a",
+          "#55554f",
+          "#a3a39d",
+          "#dcdcd7",
+          "#e6e6e2",
+          "#f1f1ef",
+          "#ffffff"
+        ],
+        "cssVar": "--sky"
+      },
+      "grey-soft": {
+        "role": "neutral",
+        "displayName": "State Grey Soft",
+        "canonical": "#e9e9e5",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#2c2c2a",
+          "#55554f",
+          "#a3a39d",
+          "#dcdcd7",
+          "#e6e6e2",
+          "#f1f1ef",
+          "#ffffff"
+        ],
+        "cssVar": "--butter"
+      },
+      "grey-tint": {
+        "role": "neutral",
+        "displayName": "State Grey Tint",
+        "canonical": "#ebebe8",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#2c2c2a",
+          "#55554f",
+          "#a3a39d",
+          "#dcdcd7",
+          "#e6e6e2",
+          "#f1f1ef",
+          "#ffffff"
+        ],
+        "cssVar": "--mint-tint"
+      },
+      "grey-faint": {
+        "role": "neutral",
+        "displayName": "State Grey Faint",
+        "canonical": "#f4f4f2",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#2c2c2a",
+          "#55554f",
+          "#a3a39d",
+          "#dcdcd7",
+          "#e6e6e2",
+          "#f1f1ef",
+          "#ffffff"
+        ],
+        "cssVar": "--sky-tint, --butter-tint"
+      },
+      "dark-ink": {
+        "role": "neutral",
+        "displayName": "Night Ink",
+        "canonical": "#f1f1ef",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#161616",
+          "#1b1b1a",
+          "#1f1f1e",
+          "#242422",
+          "#2c2c2a",
+          "#a3a39d",
+          "#f1f1ef"
+        ],
+        "theme": "dark",
+        "cssVar": "--ink"
+      },
+      "dark-paper": {
+        "role": "neutral",
+        "displayName": "Night Ground",
+        "canonical": "#0b0b0b",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#161616",
+          "#1b1b1a",
+          "#1f1f1e",
+          "#242422",
+          "#2c2c2a",
+          "#a3a39d",
+          "#f1f1ef"
+        ],
+        "theme": "dark",
+        "cssVar": "--paper"
+      },
+      "dark-surface": {
+        "role": "neutral",
+        "displayName": "Night Panel",
+        "canonical": "#161616",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#161616",
+          "#1b1b1a",
+          "#1f1f1e",
+          "#242422",
+          "#2c2c2a",
+          "#a3a39d",
+          "#f1f1ef"
+        ],
+        "theme": "dark",
+        "cssVar": "--surface (and --file-pdf)"
+      },
+      "dark-muted": {
+        "role": "neutral",
+        "displayName": "Night Graphite",
+        "canonical": "#a3a39d",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#161616",
+          "#1b1b1a",
+          "#1f1f1e",
+          "#242422",
+          "#2c2c2a",
+          "#a3a39d",
+          "#f1f1ef"
+        ],
+        "theme": "dark",
+        "cssVar": "--muted"
+      },
+      "dark-grey-strong": {
+        "role": "neutral",
+        "displayName": "Night Grey Strong",
+        "canonical": "#2c2c2a",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#161616",
+          "#1b1b1a",
+          "#1f1f1e",
+          "#242422",
+          "#2c2c2a",
+          "#a3a39d",
+          "#f1f1ef"
+        ],
+        "theme": "dark",
+        "cssVar": "--mint"
+      },
+      "dark-grey-mid": {
+        "role": "neutral",
+        "displayName": "Night Grey Mid",
+        "canonical": "#242422",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#161616",
+          "#1b1b1a",
+          "#1f1f1e",
+          "#242422",
+          "#2c2c2a",
+          "#a3a39d",
+          "#f1f1ef"
+        ],
+        "theme": "dark",
+        "cssVar": "--sky"
+      },
+      "dark-grey-soft": {
+        "role": "neutral",
+        "displayName": "Night Grey Soft",
+        "canonical": "#262624",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#161616",
+          "#1b1b1a",
+          "#1f1f1e",
+          "#242422",
+          "#2c2c2a",
+          "#a3a39d",
+          "#f1f1ef"
+        ],
+        "theme": "dark",
+        "cssVar": "--butter"
+      },
+      "dark-grey-tint": {
+        "role": "neutral",
+        "displayName": "Night Grey Tint",
+        "canonical": "#1f1f1e",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#161616",
+          "#1b1b1a",
+          "#1f1f1e",
+          "#242422",
+          "#2c2c2a",
+          "#a3a39d",
+          "#f1f1ef"
+        ],
+        "theme": "dark",
+        "cssVar": "--mint-tint"
+      },
+      "dark-grey-faint": {
+        "role": "neutral",
+        "displayName": "Night Grey Faint",
+        "canonical": "#1b1b1a",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#161616",
+          "#1b1b1a",
+          "#1f1f1e",
+          "#242422",
+          "#2c2c2a",
+          "#a3a39d",
+          "#f1f1ef"
+        ],
+        "theme": "dark",
+        "cssVar": "--sky-tint"
+      },
+      "dark-grey-faint-alt": {
+        "role": "neutral",
+        "displayName": "Night Grey Faint Alt",
+        "canonical": "#1d1d1c",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#161616",
+          "#1b1b1a",
+          "#1f1f1e",
+          "#242422",
+          "#2c2c2a",
+          "#a3a39d",
+          "#f1f1ef"
+        ],
+        "theme": "dark",
+        "cssVar": "--butter-tint"
+      },
+      "dark-line": {
+        "role": "neutral",
+        "displayName": "Night Hairline",
+        "canonical": "rgba(241, 241, 239, 0.16)",
+        "tonalRamp": [
+          "rgba(241, 241, 239, 0.16)"
+        ],
+        "theme": "dark",
+        "cssVar": "--line"
+      },
+      "dark-red": {
+        "role": "primary",
+        "displayName": "Night Signal Red",
+        "canonical": "#ff3b30",
+        "tonalRamp": [
+          "#4a0a06",
+          "#8a140c",
+          "#c71f14",
+          "#ff3b30",
+          "#ff6a61",
+          "#ff9b95",
+          "#ffcdca",
+          "#fff0ef"
+        ],
+        "theme": "dark",
+        "cssVar": "--red"
+      },
+      "dark-red-tint": {
+        "role": "surface",
+        "displayName": "Night Red Tint",
+        "canonical": "#3a1513",
+        "tonalRamp": [
+          "#2a0f0e",
+          "#3a1513",
+          "#4d1c19"
+        ],
+        "theme": "dark",
+        "cssVar": "--red-tint"
       },
       "front-red": {
         "role": "primary",
@@ -199,12 +490,36 @@
     },
     "typographyMeta": {
       "display": {
-        "displayName": "Workspace Display",
-        "purpose": "Compact page titles in the application shell."
+        "displayName": "Page Title",
+        "purpose": "The workspace page h1 only; Anton uppercase, clamp(1.75rem, 2.6vw, 2.25rem)."
+      },
+      "headline": {
+        "displayName": "Panel Heading",
+        "purpose": "Panel and section headings, 19-20px mono."
+      },
+      "title": {
+        "displayName": "Card Title",
+        "purpose": "Card titles, reader and evidence headings, 15-17px mono."
       },
       "body": {
         "displayName": "Interface Text",
-        "purpose": "Document names, explanatory copy, and controls."
+        "purpose": "Subtitles, explanatory copy, search input text."
+      },
+      "label": {
+        "displayName": "Control Label",
+        "purpose": "Buttons and navigation; uppercase on buttons."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Metadata, timestamps, notes."
+      },
+      "micro": {
+        "displayName": "Micro",
+        "purpose": "Badges, locator tags, counts."
+      },
+      "read": {
+        "displayName": "Reading Serif",
+        "purpose": "Reader chunk text, chat answer bubbles, and quoted excerpts only; width axis reset."
       },
       "front-display": {
         "displayName": "Poster Display",
@@ -244,19 +559,9 @@
     },
     "shadows": [
       {
-        "name": "panel-hard",
-        "value": "3px 3px 0 #000000",
-        "purpose": "Structural offset for selected metric panels."
-      },
-      {
-        "name": "action-hard",
-        "value": "4px 4px 0 #000000",
-        "purpose": "Depth cue for the primary action and active navigation."
-      },
-      {
-        "name": "action-pressed",
-        "value": "0 0 0 #000000",
-        "purpose": "Shadow collapses when an action is pressed."
+        "name": "none",
+        "value": "none",
+        "purpose": "The workspace casts no block shadows (--shadow-hard: none). Depth is drawn with 1px frames, hairlines, and the ink bar."
       },
       {
         "name": "front-none",
@@ -267,9 +572,14 @@
     ],
     "motion": [
       {
-        "name": "mechanical-snap",
-        "value": "120ms ease",
-        "purpose": "Short transform and shadow feedback on buttons."
+        "name": "control-ease",
+        "value": "140ms cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Button fill change, 1px up-left hover nudge, and 1px press drop."
+      },
+      {
+        "name": "state-fade",
+        "value": "160ms ease",
+        "purpose": "Nav row, drop zone, and frame colour changes."
       },
       {
         "name": "reduced-motion",
@@ -303,8 +613,16 @@
     ],
     "breakpoints": [
       {
+        "name": "phone-small",
+        "value": "420px"
+      },
+      {
         "name": "phone",
         "value": "480px"
+      },
+      {
+        "name": "phone-rows",
+        "value": "640px"
       },
       {
         "name": "mobile-shell",
@@ -342,19 +660,19 @@
     "surfaces": [
       {
         "route": "/workspace",
-        "system": "workspace",
-        "northStar": "The Paper Workbench",
+        "system": "instrument-sheet",
+        "northStar": "The Instrument Sheet",
         "tokenPrefix": "",
-        "source": "workspace stylesheets and components",
-        "note": "Pastel neobrutalist system; governs the workspace and all application surfaces until the user decides otherwise."
+        "source": "src/styles.css (:root, .dark, and the 'Instrument sheet for the workspace' block), src/Workspace.jsx",
+        "note": "Workspace adaptation of the Instrument Sheet: mono interface, Anton page title, Source Serif 4 reading text, ink bars for the current place, red for primary/selected/live/focus/failure."
       },
       {
         "route": "/",
-        "system": "front-page",
+        "system": "instrument-sheet",
         "northStar": "The Instrument Sheet",
         "tokenPrefix": "front-",
         "source": "src/landing.css (scoped under .landing), src/LandingPage.jsx",
-        "note": "Cyber-brutalist signal-red system; governs the marketing front page only."
+        "note": "Front-page expression of the same system at poster density."
       }
     ]
   },
@@ -363,17 +681,65 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Main action for adding documents.",
-      "html": "<button class=\"ds-primary\">Add documents</button>",
-      "css": ".ds-primary { min-height: 46px; padding: 12px 16px; border: 2px solid #000; border-radius: 4px; background: #88D498; color: #000; font: 700 14px/1.4 'DM Sans', sans-serif; box-shadow: 4px 4px 0 #000; cursor: pointer; } .ds-primary:active { transform: translate(4px, 4px); box-shadow: 0 0 0 #000; } .ds-primary:focus-visible { outline: 3px solid #74B9FF; outline-offset: 3px; }"
+      "description": "Ink-filled main action (add documents, ask, return to answer); turns red on hover.",
+      "html": "<button class=\"ds-ws-primary\">Add documents</button>",
+      "css": ".ds-ws-primary { min-height: 46px; padding: 0 16px; border: 1px solid var(--ink, #0b0b0b); border-radius: 0; background: var(--ink, #0b0b0b); color: var(--paper, #f1f1ef); font-family: 'Martian Mono', ui-monospace, monospace; font-variation-settings: 'wdth' 87.5; font-size: 14px; font-weight: 700; line-height: 1.25; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; transition: transform 140ms cubic-bezier(0.23,1,0.32,1), background-color 140ms ease; } .ds-ws-primary:hover { border-color: var(--red, #d3110f); background: var(--red, #d3110f); color: #fff; transform: translate(-1px,-1px); } .ds-ws-primary:active { transform: translateY(1px); } .ds-ws-primary:focus-visible { outline: 2px solid var(--red, #d3110f); outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "White framed action for secondary choices.",
+      "html": "<button class=\"ds-ws-secondary\">Browse files</button>",
+      "css": ".ds-ws-secondary { min-height: 46px; padding: 0 16px; border: 1px solid var(--ink, #0b0b0b); border-radius: 0; background: var(--surface, #fff); color: var(--ink, #0b0b0b); font-family: 'Martian Mono', ui-monospace, monospace; font-variation-settings: 'wdth' 87.5; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; transition: transform 140ms cubic-bezier(0.23,1,0.32,1); } .ds-ws-secondary:hover { transform: translate(-1px,-1px); } .ds-ws-secondary:active { transform: translateY(1px); } .ds-ws-secondary:focus-visible { outline: 2px solid var(--red, #d3110f); outline-offset: 2px; }"
     },
     {
       "name": "Search Input",
       "kind": "input",
       "refersTo": "input-search",
-      "description": "Filename search in the document library.",
-      "html": "<input class=\"ds-search\" aria-label=\"Search documents by file name\" placeholder=\"Search by file name\" />",
-      "css": ".ds-search { width: 100%; min-height: 42px; padding: 8px 10px; border: 2px solid #000; background: #fff; color: #000; font: 400 16px/1.5 'DM Sans', sans-serif; } .ds-search:focus-visible { outline: 3px solid #74B9FF; outline-offset: 3px; }"
+      "description": "Framed library search field.",
+      "html": "<label class=\"ds-ws-search\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m20 20-3.5-3.5\"/></svg><input aria-label=\"Search documents by file name\" placeholder=\"Search by file name\" /></label>",
+      "css": ".ds-ws-search { display: flex; align-items: center; gap: 8px; width: 440px; height: 44px; padding: 0 8px; border: 1px solid var(--ink, #0b0b0b); background: var(--surface, #fff); color: var(--ink, #0b0b0b); } .ds-ws-search input { flex: 1; height: 100%; border: 0; outline: 0; background: transparent; color: inherit; font-family: 'Martian Mono', ui-monospace, monospace; font-variation-settings: 'wdth' 87.5; font-size: 16px; } .ds-ws-search:focus-within { outline: 2px solid var(--red, #d3110f); outline-offset: 2px; }"
+    },
+    {
+      "name": "Rail Navigation",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Sidebar rail; the active item is a solid ink bar.",
+      "html": "<nav class=\"ds-ws-nav\"><a class=\"is-active\" href=\"#\">Documents <span>4</span></a><a href=\"#\">Search</a><a href=\"#\">Ask</a></nav>",
+      "css": ".ds-ws-nav { display: grid; gap: 4px; width: 216px; padding: 16px; border-right: 1px solid var(--ink, #0b0b0b); background: var(--paper, #f1f1ef); font-family: 'Martian Mono', ui-monospace, monospace; font-variation-settings: 'wdth' 87.5; } .ds-ws-nav a { display: flex; align-items: center; min-height: 42px; padding: 0 8px; border: 1px solid transparent; color: var(--ink, #0b0b0b); font-size: 14px; font-weight: 600; text-decoration: none; transition: background-color 160ms ease; } .ds-ws-nav a:hover { background: var(--sky, #e6e6e2); } .ds-ws-nav a.is-active { border-color: var(--ink, #0b0b0b); background: var(--ink, #0b0b0b); color: var(--paper, #f1f1ef); } .ds-ws-nav a span { margin-left: auto; padding: 0 8px; border: 1px solid currentColor; } .ds-ws-nav a:focus-visible { outline: 2px solid var(--red, #d3110f); outline-offset: 2px; }"
+    },
+    {
+      "name": "Mode Tabs",
+      "kind": "chip",
+      "refersTo": "tab",
+      "description": "Search mode tabs; the active tab is the ink bar.",
+      "html": "<div class=\"ds-ws-tabs\"><button class=\"is-active\">Keyword</button><button>Semantic</button></div>",
+      "css": ".ds-ws-tabs { display: flex; gap: 6px; } .ds-ws-tabs button { padding: 6px 12px; border: 1px solid var(--ink, #0b0b0b); border-radius: 0; background: var(--surface, #fff); color: var(--ink, #0b0b0b); font-family: 'Martian Mono', ui-monospace, monospace; font-variation-settings: 'wdth' 87.5; font-size: 13px; font-weight: 700; line-height: 1.2; cursor: pointer; transition: background-color 150ms ease; } .ds-ws-tabs button.is-active { background: var(--ink, #0b0b0b); color: var(--paper, #f1f1ef); } .ds-ws-tabs button:focus-visible { outline: 2px solid var(--red, #d3110f); outline-offset: 2px; }"
+    },
+    {
+      "name": "Document Card",
+      "kind": "card",
+      "refersTo": "document-card",
+      "description": "Ink-framed library row; the frame turns red on hover with no movement.",
+      "html": "<article class=\"ds-ws-card\"><span class=\"ds-ws-file\">PDF</span><div><strong>annual-report.pdf</strong><small>Sample, 12 pages</small></div></article>",
+      "css": ".ds-ws-card { display: flex; align-items: center; gap: 16px; min-height: 68px; padding: 12px 16px; border: 1px solid var(--ink, #0b0b0b); background: var(--surface, #fff); color: var(--ink, #0b0b0b); font-family: 'Martian Mono', ui-monospace, monospace; font-variation-settings: 'wdth' 87.5; transition: border-color 160ms ease; } .ds-ws-card:hover { border-color: var(--red, #d3110f); } .ds-ws-file { display: grid; place-items: center; width: 42px; min-height: 39px; border: 1px solid var(--ink, #0b0b0b); font-size: 11px; font-weight: 700; } .ds-ws-card strong { display: block; font-size: 15px; } .ds-ws-card small { color: var(--muted, #55554f); font-size: 12px; font-weight: 600; }"
+    },
+    {
+      "name": "Upload Zone",
+      "kind": "custom",
+      "refersTo": "drop-zone",
+      "description": "White panel framed by a 1px red dashed line; red tint on hover.",
+      "html": "<div class=\"ds-ws-drop\"><strong>Drop PDF, DOCX or TXT files</strong><span>Files stay in this browser.</span></div>",
+      "css": ".ds-ws-drop { display: flex; flex-direction: column; justify-content: center; gap: 6px; min-height: 176px; padding: 24px; border: 1px dashed var(--red, #d3110f); background: var(--surface, #fff); color: var(--ink, #0b0b0b); font-family: 'Martian Mono', ui-monospace, monospace; font-variation-settings: 'wdth' 87.5; transition: background-color 160ms ease; } .ds-ws-drop:hover { background: var(--red-tint, #fbe2e1); } .ds-ws-drop strong { font-size: 17px; } .ds-ws-drop span { color: var(--muted, #55554f); font-size: 12px; }"
+    },
+    {
+      "name": "Reader Chunk",
+      "kind": "custom",
+      "refersTo": "reader-chunk-highlight",
+      "description": "Reading passage in Source Serif 4; the highlighted chunk is a 1px red frame on the red tint.",
+      "html": "<div class=\"ds-ws-chunk\"><span>p. 4</span><p>The notice period for either party is ninety days from written notice.</p></div><div class=\"ds-ws-chunk is-hit\"><span>p. 5</span><p>Revenue grew 14 percent year over year.</p></div>",
+      "css": ".ds-ws-chunk { margin-bottom: 8px; padding: 12px 16px; border: 1px solid var(--line, rgba(11,11,11,0.14)); background: var(--surface, #fff); color: var(--ink, #0b0b0b); } .ds-ws-chunk span { font-family: 'Martian Mono', ui-monospace, monospace; font-variation-settings: 'wdth' 87.5; font-size: 11px; font-weight: 700; } .ds-ws-chunk p { margin: 6px 0 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 1.0625rem; line-height: 1.65; } .ds-ws-chunk.is-hit { border-color: var(--red, #d3110f); background: var(--red-tint, #fbe2e1); }"
     },
     {
       "name": "Front Primary Button",
@@ -438,34 +804,58 @@
     }
   ],
   "narrative": {
-    "northStar": "The Paper Workbench",
-    "overview": "A warm reading surface meets the explicit geometry of a working desk. Black strokes and compact controls make actions easy to find; mint, sky, and butter mark action and state without suggesting unfinished AI behavior is live. The dashboard stays compact and practical, while document content remains calm to scan.",
+    "northStar": "The Instrument Sheet",
+    "overview": "The workspace is the same printed instrument sheet as the front page, set down as a working tool. A light grey ground holds white panels framed in 1px black; corners are square; nothing casts a shadow. The interface speaks in narrow Martian Mono, the page title alone in uppercase Anton, and everything a person reads at length (document passages, answers, quoted excerpts) in Source Serif 4.\n\nLayouts stay familiar and calm: a fixed rail, a capped content column, hairline-ruled rows. Signal red is reserved for the few things that matter at any moment: the primary action under the pointer, the current selection, progress and live work, and keyboard focus. Where something is merely current (the active nav item, the selected document, the active tab), it is a solid ink bar, not a colour. Dark mode is the same sheet inverted: near-black ground, charcoal panels, off-white ink, a brighter red.",
     "keyCharacteristics": [
-      "Cream canvas and black structure",
-      "Three pastel accents",
-      "Square geometry and tactile offset shadows",
-      "Readable interface typography",
-      "Honest sample and prototype labels"
+      "Instrument grey ground, white panels, near-black ink, one signal red.",
+      "1px strokes everywhere; square corners; no block shadows.",
+      "Martian Mono (width 87.5) for the interface, Anton for the page title only, Source Serif 4 for reading.",
+      "The current place is a solid ink bar; red marks primary, selected, live, and focus.",
+      "Former pastel state fills are neutral greys; the only tint is pale red.",
+      "Dark mode is the same system inverted, not a second palette."
     ],
     "rules": [
       {
-        "name": "The Honest Surface Rule",
-        "body": "Label samples and distinguish local page-session behavior from server capabilities.",
-        "section": "components"
+        "name": "The Red Means Now Rule",
+        "body": "Red marks only what is primary, selected, live, focused, or failing. It is never a fill for a notice, banner, or reading panel; a notice is a framed white panel with ink text.",
+        "section": "colors"
       },
       {
-        "name": "The Three Pastels Rule",
-        "body": "Use mint, sky, and butter; do not add gradients, glow, or glass.",
+        "name": "The Ink Bar Rule",
+        "body": "The current place (active nav item, selected document pill, active tab) is a solid ink bar with paper-coloured text. Never a pastel, never a red fill.",
         "section": "colors"
+      },
+      {
+        "name": "The Honest Surface Rule",
+        "body": "Sample files are marked as samples; items added by the user are labeled local; planned AI and server capabilities are described as unavailable.",
+        "section": "colors"
+      },
+      {
+        "name": "The Three Roles Rule",
+        "body": "Martian Mono for the interface, Anton for the page title only, Source Serif 4 for reading text only. No fourth family; Anton never appears below the h1, and the serif never sets a control.",
+        "section": "typography"
+      },
+      {
+        "name": "The Line-Not-Shadow Rule",
+        "body": "Lift is drawn, never cast. Use a frame, a hairline, or inversion; never a block shadow, blur, or glow.",
+        "section": "elevation"
       }
     ],
     "dos": [
-      "Do use the exact user-specified color values.",
-      "Do keep controls keyboard accessible and respect reduced motion."
+      "Do keep red for primary, selected, live, focus, and failure, and the ink bar for the current place.",
+      "Do draw every edge as a 1px stroke and keep corners square.",
+      "Do set reading text (document chunks, answers, excerpts) in Source Serif 4 and everything else in Martian Mono at width 87.5.",
+      "Do keep Anton to the page h1.",
+      "Do mark all sample data and prototype-only behavior, and keep unimplemented AI and server capabilities labeled as planned.",
+      "Do provide visible keyboard focus and a reduced-motion path."
     ],
     "donts": [
-      "Don't imply prototype files are uploaded, persisted, parsed, or analyzed.",
-      "Don't use gradients, glow, or glass effects."
+      "Don't use red as a fill for notices, banners, or reading panels.",
+      "Don't use block shadows, hard offset shadows, blur, glow, gradients, or rounded corners.",
+      "Don't bring back mint, sky, or butter hues, or add a second accent.",
+      "Don't lift cards or pills on hover; change the frame instead.",
+      "Don't imply a file is uploaded, persisted, parsed, or analyzed when it remains in page memory.",
+      "Don't use low-contrast grey for running text."
     ],
     "surfaces": {
       "front-page": {
@@ -512,9 +902,15 @@
           "Don't use block shadows, hard offset shadows, blur, glow, or rounded corners on the front page.",
           "Don't add a second accent color or carry mint, sky, or butter onto the front page.",
           "Don't invent stats, user counts, customer names, or logos.",
-          "Don't place section numbers above a heading as an eyebrow or kicker.",
-          "Don't carry front-page tokens into the workspace until the user decides to move the workspace to this system."
+          "Don't place section numbers above a heading as an eyebrow or kicker."
         ]
+      }
+    },
+    "retired": {
+      "paper-workbench": {
+        "status": "Retired 2026-11-23; history only, do not use.",
+        "northStar": "The Paper Workbench",
+        "summary": "Pastel neobrutalist workspace system: cream #FFFDF5, black #000000, mint #88D498, sky #74B9FF, butter #FFD23F and tints; Space Grotesk with DM Sans; 2px strokes and hard 3-4px offset shadows. Superseded by the Instrument Sheet on /workspace."
       }
     }
   }

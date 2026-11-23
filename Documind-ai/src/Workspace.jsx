@@ -828,10 +828,9 @@ function App() {
 
           <section className="welcome-row">
             <div>
-              <p className="greeting">{greeting}, Anand</p>
               <h1>Your document workspace</h1>
               <p className="subtitle">
-                Search passages, inspect cited locators, and preview grounded evidence excerpts from your documents.
+                <span className="greeting">{greeting}, Anand.</span> Search passages, inspect cited locators, and preview grounded evidence excerpts from your documents.
               </p>
             </div>
           </section>
