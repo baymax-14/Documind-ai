@@ -269,7 +269,9 @@ export default function ComparisonView({
 
           {/* Custom Dimension Input */}
           <form className="custom-topic-form" onSubmit={handleAddCustomDimension}>
+            <label className="sr-only" htmlFor="custom-topic-input">Custom topic to compare</label>
             <input
+              id="custom-topic-input"
               type="text"
               placeholder="Add custom topic to compare (e.g., pricing, scalability, safety)..."
               value={customDimension}
