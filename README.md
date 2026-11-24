@@ -26,7 +26,7 @@
   <img src="https://img.shields.io/badge/Redis-7.0-DC382D?style=flat-square&logo=redis&logoColor=white" alt="Redis 7" />
   <img src="https://img.shields.io/badge/WebGPU-Qwen_2.5-0052FF?style=flat-square" alt="WebGPU" />
   <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker" />
-  <img src="https://img.shields.io/badge/Tests-136%20Passing-059669?style=flat-square" alt="136 Passing Tests" />
+  <img src="https://img.shields.io/badge/Tests-142%20Passing-059669?style=flat-square" alt="142 Passing Tests" />
   <img src="https://img.shields.io/badge/License-MIT-black?style=flat-square" alt="License" />
 </p>
 
@@ -45,7 +45,10 @@ The platform can operate **100% locally on-device** (via WebGPU, WebLLM, and cli
 ### 1. Dual-Mode Grounded AI Assistant
 - **On-Device Model, Your Choice**: Runs a quantized LLM through WebLLM on WebGPU inside the browser. Qwen 2.5 1.5B (~1 GB) is the default; Qwen 2.5 3B (~1.8 GB) gives the best answers, and Qwen 2.5 0.5B and SmolLM2 360M are lighter options. The 16-bit build is used automatically on GPUs that support it. Weights download once into the browser cache.
 - **Streamed, Checked Answers**: Answers appear as they are generated. Every `[n]` citation is checked against the passages actually given to the model; citations to passages that do not exist are removed, and an answer with no valid citation is flagged.
-- **Evidence Preview Fallback**: Without a model (no WebGPU, or not set up), DocuMind shows the retrieved passages themselves with their sources, with no model download.
+- **Passages-Only Mode**: Without a model (no WebGPU, or not set up), DocuMind answers with the matching passages themselves, each with its source, and no model download.
+- **Question First**: The Evidence Assistant opens on the question box. One short strip states how answers are produced (*passages only* or *written by a model on your GPU*) and how passages are found (*keywords* or *keywords and meaning*); the model picker opens from it only when asked. An empty result explains why and offers meaning search.
+- **Asks Before Anything Leaves**: Searches and the on-device model run without interruption. Only when a DocuMind server is connected does a question wait for an inline confirmation, with the option to answer in the browser instead.
+- **Copy With Sources**: Copying a written answer includes every cited passage with its document and page, so the `[n]` markers still point somewhere once pasted.
 - **Hallucination Prevention**: Zero synthetic claims. Answers are drawn strictly from retrieved document chunks or explicitly report no matching evidence.
 
 ### 2. High-Performance Hybrid Retrieval & Neural Re-Ranking
@@ -55,10 +58,12 @@ The platform can operate **100% locally on-device** (via WebGPU, WebLLM, and cli
 - **Multi-Tenant Isolation**: Rigorous tenant and document isolation (`owner_id` + `document_ids` filters) prevents cross-tenant citation forgery or IDOR leaks.
 - **Resilient Cold-Start Handling**: Built-in non-blocking reconnect backoffs absorb container lag and maintain high availability.
 
-### 3. Visual Document Grounding & Page-by-Page Inspection
-- **Interactive Page-by-Page Viewer**: Inspect PDF, DOCX, and TXT files with thumbnail sidebars, zoom controls (50% to 200%), and page navigation.
-- **Visual Bounding Box Citations**: Every cited passage is anchored to proportional visual bounding box coordinates on the preview canvas.
-- **Split-Pane Document Reader**: Full-featured drawer with section jumper navigation, text filtering, and one-click jump-to-source.
+### 3. Reading and Verifying Sources
+- **Read**: The whole document as one flowing text with page markers. Opening a citation lands on the cited passage, framed in red and labelled with why it is marked (*Cited in the answer*, *Search match*, *Compared passage*, *Extracted from here*). Search words are underlined, and the document opens whole; *Show only those passages* filters to the passages containing every search word.
+- **Page View**: The text extracted from each page, one page at a time, with thumbnails and zoom. Highlight boxes use the real positions of the text on the PDF page. It is labelled as extracted text, not the original page layout.
+- **Readable Passages**: Markdown headings and pipe tables inside documents are shown as headings and tables, and search snippets are cut on word boundaries.
+- **Keyboard and Screen Readers**: Every dialog takes focus when it opens, keeps Tab inside, closes only the top layer on Esc, and returns focus to whatever opened it. Copying a citation and switching views use real, named buttons.
+- **Phones**: Below 760px the reader is full screen and text first; on touch screens every control is at least 44px.
 
 ### 4. Figure & Table Values
 - **Visual Figure & Chart Detection**: Automatic detection of charts, plots, and architecture diagrams within document pages.
@@ -70,6 +75,7 @@ The platform can operate **100% locally on-device** (via WebGPU, WebLLM, and cli
 
 ### 6. Cross-Document Comparative Matrix
 - **Side-by-Side Analysis**: Compare multiple documents simultaneously across analytical dimensions (e.g., Governance, Performance, Security, Cost).
+- **Facts, Not Verdicts**: Each topic states which documents have a passage on it and the words those passages share; it never claims the documents agree. The passages sit side by side for the reader to judge, and the results scroll into view and take focus when ready.
 - **Custom Topic Querying**: Enter targeted queries to extract comparative evidence across all staged files.
 
 ### 7. Local-First Privacy & Persistent Chat History
@@ -141,14 +147,17 @@ DocuMind AI combines a local-first browser runtime with an enterprise hybrid ret
 
 ### 1. Frontend & Client-Side Core
 - **Framework & Tooling**: [React 19](https://react.dev/), [Vite 6](https://vitejs.dev/) with native ES modules and fast HMR, [React Router 7](https://reactrouter.com/) for single-page routing.
-- **State & Data Management**: [Zustand 5](https://github.com/pmndrs/zustand) for reactive lightweight UI state, [TanStack React Query 5](https://tanstack.com/query) for asynchronous lifecycle caching.
-- **File Ingestion**: [React Dropzone](https://react-dropzone.js.org/) for drag-and-drop validation, size partitioning, and multi-file staging.
+- **State**: React state and custom hooks (`useDocumentImport`, `useSemanticIndex`, `useOverlay`); persistence in IndexedDB. Zustand, TanStack React Query and React Dropzone are listed in `package.json` but not used yet.
+- **File Ingestion**: Native drag-and-drop and file input with type and size validation (`validate.js`), then a staging queue before files are saved.
 
 ### 2. Styling, Motion & Design System
 - **Design Language**: Custom **"The Instrument Sheet"** cyber-brutalist design system: grey ground `#f1f1ef`, ink `#0b0b0b`, one signal red `#d3110f`, 1px structural frames and hairline grids, square corners and no box shadows. Tokens and rules live in [`Documind-ai/DESIGN.md`](Documind-ai/DESIGN.md).
 - **Typography**: [Anton](https://fonts.google.com/specimen/Anton) (display), [Martian Mono](https://fonts.google.com/specimen/Martian+Mono) (interface) and [Source Serif 4](https://fonts.google.com/specimen/Source+Serif+4) (reading text), loaded from Google Fonts.
 - **CSS Architecture**: [Tailwind CSS v4](https://tailwindcss.com/) with native modern CSS variables, `tabular-nums` alignment, and full Dark Mode (`.dark` / `color-scheme: dark`) synchronization across the entire viewport.
-- **Animation & Motion**: [GSAP 3](https://gsap.com/) (`@gsap/react`) for the front page's one entrance sequence (headline rise, a scan line landing on the cited passage, ledger stamps pressing in), plus short CSS transitions for workspace states. Everything rests under `prefers-reduced-motion`.
+- **Animation & Motion**: [GSAP 3](https://gsap.com/) (`@gsap/react`), set up once in `src/gsap.js` with only the plugins in use (ScrambleText, ScrollTo).
+  - *Front page*: the entrance sequence (headline rise, a scan line landing on the cited passage, ledger stamps pressing in); readouts that decode as the real browser checks return; and a grounding trace, where a red rule draws under the source passage and the `[1]` citation stamps onto the answer.
+  - *Workspace*: the reader opening, the cited passage settling in when a citation opens it, new answers' passages arriving as a short list, and Compare scrolling to its results. Routine states use short CSS transitions.
+  - With `prefers-reduced-motion`, nothing moves: values and states simply appear.
 - **Iconography**: [Lucide React](https://lucide.dev/) stroke-based accessible iconography.
 
 ### 3. On-Device AI & Hardware Acceleration
@@ -167,7 +176,7 @@ DocuMind AI combines a local-first browser runtime with an enterprise hybrid ret
 
 ### 5. Algorithmic Intelligence & Grounding
 - **Lexical Retrieval**: In-memory BM25 Okapi with custom tokenization, lowercasing, punctuation stripping, and stop-word filtering (`k1=1.2`, `b=0.75`).
-- **Dense Vector Search**: Qdrant HNSW vector indexing with cosine distance metric.
+- **Dense Vector Search**: Qdrant HNSW vector indexing with cosine distance metric. Backend vectors use a stable content hash (BLAKE2b), so they mean the same thing after every restart. Each stored point records its embedding version; search ignores other versions, and on startup the backend re-embeds any stale points from the text kept in their payload.
 - **Reciprocal Rank Fusion (RRF)**: Merges sparse lexical rankings with dense vector embeddings using constant reciprocal scoring ($k=60$).
 - **Hybrid Retrieval in the Browser**: Keyword scoring plus embedding similarity, fused with Reciprocal Rank Fusion; a passage found only by meaning must clear a similarity floor, so unrelated questions still get no evidence.
 - **Visual Grounding Engine**: Proportional coordinate normalization algorithms mapping text chunk offsets to visual bounding boxes across page thumbnails and split-pane reader views.
@@ -189,7 +198,7 @@ DocuMind AI combines a local-first browser runtime with an enterprise hybrid ret
 
 ### 8. DevOps, Testing & Quality Assurance
 - **Containerization**: [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) defining multi-container orchestration across services.
-- **Frontend Test Suite**: Native Node.js Test Runner (`node:test`, `node:assert/strict`) executing **136 automated unit and integration tests across 26 test suites** with zero third-party testing dependencies.
+- **Frontend Test Suite**: Native Node.js Test Runner (`node:test`, `node:assert/strict`) executing **142 automated unit and integration tests across 28 test suites** with zero third-party testing dependencies.
 - **Backend Test Suite**: [pytest 8](https://docs.pytest.org/), `pytest-asyncio`, and `pytest-cov` for backend API and retrieval tests.
 - **Code Quality**: [ESLint 9](https://eslint.org/) flat configuration enforcing clean code (0 errors, 0 warnings enforced).
 
@@ -296,7 +305,7 @@ DocuMind AI enforces a rigorous automated test suite covering security defenses,
 ```bash
 cd Documind-ai
 
-# Run all unit and integration tests (136 tests across 26 suites)
+# Run all unit and integration tests (142 tests across 28 suites)
 npm test
 
 # Run ESLint check (0 errors, 0 warnings enforced)
@@ -330,7 +339,7 @@ Documind-ai/
 │   │   ├── Workspace.jsx      # Research workspace & assistant interface
 │   │   ├── styles.css         # Workspace styles (Instrument Sheet, light and dark)
 │   │   └── landing.css        # Front page styles (Instrument Sheet)
-│   ├── tests/                 # Frontend node:test suite (136 tests across 26 suites)
+│   ├── tests/                 # Frontend node:test suite (142 tests across 28 suites)
 │   └── package.json           # Frontend dependencies & scripts
 ├── docker-compose.yml         # Multi-container orchestration (PostgreSQL, Redis, Qdrant, Backend)
 └── README.md                  # Project documentation

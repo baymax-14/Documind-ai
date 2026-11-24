@@ -7,6 +7,18 @@ const FOCUSABLE =
 const stack = []
 
 /**
+ * Where the most recently closed overlay sent focus back to. When one dialog
+ * opens another and closes itself in the same step (Storage → Token details),
+ * the button that opened the second dialog is gone, so the second dialog
+ * inherits the first one's return target instead of losing focus to the page.
+ */
+let lastClosed = null
+
+function isFocusable(el) {
+  return Boolean(el && el !== document.body && el.isConnected && typeof el.focus === 'function')
+}
+
+/**
  * Shared behaviour for every dialog in the workspace:
  * - moves focus into the dialog when it opens (its container by default, so a
  *   screen reader announces the dialog's name first);
@@ -29,7 +41,10 @@ export function useOverlay({ active, containerRef, onClose, initialFocusRef }) {
 
     const token = {}
     stack.push(token)
-    const returnTo = document.activeElement
+    let returnTo = document.activeElement
+    if (!isFocusable(returnTo) && lastClosed && Date.now() - lastClosed.at < 1000) {
+      returnTo = lastClosed.returnTo
+    }
 
     // Focus after paint so the dialog's content exists
     const focusTimer = setTimeout(() => {
@@ -81,11 +96,10 @@ export function useOverlay({ active, containerRef, onClose, initialFocusRef }) {
       document.removeEventListener('keydown', handleKeyDown, true)
       const i = stack.indexOf(token)
       if (i !== -1) stack.splice(i, 1)
+      lastClosed = { returnTo, at: Date.now() }
       // Return focus once the dialog has left the page
       setTimeout(() => {
-        if (returnTo && returnTo.isConnected && typeof returnTo.focus === 'function') {
-          returnTo.focus({ preventScroll: true })
-        }
+        if (isFocusable(returnTo)) returnTo.focus({ preventScroll: true })
       }, 0)
     }
     // containerRef and initialFocusRef are stable refs

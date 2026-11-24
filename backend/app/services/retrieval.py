@@ -41,6 +41,10 @@ class EmbeddingService:
     """
 
     DIMENSIONS = 384
+    # Bump whenever embed_text changes how it maps text to vectors. Stored points
+    # carry this in their payload; search ignores other versions and
+    # reembed_stale_vectors() brings them up to date.
+    VERSION = "blake2b-signed-1"
 
     def embed_text(self, text: str) -> List[float]:
         """Embeds text into a normalized 384-dimensional vector."""
@@ -318,12 +322,65 @@ class RetrievalService:
                                 "section": section,
                                 "offsets": offsets,
                                 "bounding_box": bounding_box,
+                                "embedding_version": EmbeddingService.VERSION,
                             },
                         )
                     ],
                 )
             except Exception as exc:
                 logger.warning("retrieval_service.qdrant_upsert_failed", error=str(exc))
+
+    def reembed_stale_vectors(self, batch_size: int = 256) -> int:
+        """Re-embeds stored Qdrant points whose vectors came from an older scheme.
+
+        Points written before EmbeddingService.VERSION existed (or with another
+        version) are re-embedded from the chunk text kept in their payload and
+        rewritten with the current version. Safe to run repeatedly; returns the
+        number of points updated.
+        """
+        q_client = self._get_qdrant_client()
+        if not q_client:
+            return 0
+        from qdrant_client.http import models as qmodels
+
+        stale = qmodels.Filter(
+            must_not=[
+                qmodels.FieldCondition(
+                    key="embedding_version",
+                    match=qmodels.MatchValue(value=EmbeddingService.VERSION),
+                )
+            ]
+        )
+        updated = 0
+        while True:
+            # Re-read from the start each time: updated points drop out of the filter
+            points, _next = q_client.scroll(
+                collection_name=settings.QDRANT_COLLECTION,
+                scroll_filter=stale,
+                limit=batch_size,
+                with_payload=True,
+                with_vectors=False,
+            )
+            if not points:
+                break
+            refreshed = []
+            for pt in points:
+                payload = dict(pt.payload or {})
+                payload["embedding_version"] = EmbeddingService.VERSION
+                refreshed.append(
+                    qmodels.PointStruct(
+                        id=pt.id,
+                        vector=self.embedding_service.embed_text(str(payload.get("text", ""))),
+                        payload=payload,
+                    )
+                )
+            q_client.upsert(collection_name=settings.QDRANT_COLLECTION, points=refreshed)
+            updated += len(refreshed)
+            if len(points) < batch_size:
+                break
+        if updated:
+            logger.info("retrieval_service.reembedded_stale_vectors", count=updated, version=EmbeddingService.VERSION)
+        return updated
 
     def delete_document_index(self, document_id: uuid.UUID) -> None:
         """Purges document chunks from vector and BM25 indexes."""
@@ -380,7 +437,12 @@ class RetrievalService:
                     qmodels.FieldCondition(
                         key="owner_id",
                         match=qmodels.MatchValue(value=str(owner_id)),
-                    )
+                    ),
+                    # Vectors made by an older embedding scheme would score as noise
+                    qmodels.FieldCondition(
+                        key="embedding_version",
+                        match=qmodels.MatchValue(value=EmbeddingService.VERSION),
+                    ),
                 ]
                 if document_ids:
                     must_conditions.append(

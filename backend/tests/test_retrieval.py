@@ -102,3 +102,39 @@ def test_retrieval_service_tenant_isolation():
     assert len(results_user_a) > 0
     assert results_user_a[0].chunk_id == chunk_a
     assert results_user_a[0].document_name == "UserA_Private.pdf"
+
+
+def test_reembed_stale_vectors_updates_old_points():
+    """Points stored by an older embedding scheme are re-embedded from their text."""
+    from types import SimpleNamespace
+
+    class FakeQdrant:
+        def __init__(self, points):
+            self.points = {p.id: p for p in points}
+
+        def scroll(self, collection_name, scroll_filter, limit, with_payload, with_vectors):
+            stale = [
+                p for p in self.points.values()
+                if (p.payload or {}).get("embedding_version") != EmbeddingService.VERSION
+            ]
+            return stale[:limit], None
+
+        def upsert(self, collection_name, points):
+            for p in points:
+                self.points[p.id] = SimpleNamespace(id=p.id, payload=p.payload, vector=p.vector)
+
+    old = SimpleNamespace(id="a", payload={"text": "quarterly revenue growth"}, vector=[0.0])
+    current = SimpleNamespace(
+        id="b", payload={"text": "privacy", "embedding_version": EmbeddingService.VERSION}, vector=[1.0]
+    )
+    fake = FakeQdrant([old, current])
+
+    service = RetrievalService()
+    service._qdrant_client = fake
+
+    assert service.reembed_stale_vectors(batch_size=1) == 1
+    refreshed = fake.points["a"]
+    assert refreshed.payload["embedding_version"] == EmbeddingService.VERSION
+    assert refreshed.vector == service.embedding_service.embed_text("quarterly revenue growth")
+    # running again finds nothing left to do
+    assert service.reembed_stale_vectors() == 0

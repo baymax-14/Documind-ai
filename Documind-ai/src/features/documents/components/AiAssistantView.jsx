@@ -67,6 +67,8 @@ function AnswerSetupStrip({
   semantic,
 }) {
   const [pickerOpen, setPickerOpen] = useState(false)
+  // Setting up a model also switches on meaning search when it is off (Workspace)
+  const alsoMeaningSearch = semantic?.status === 'off'
   const pct = Math.round((modelProgress?.progress || 0) * 100)
 
   function startSetup() {
@@ -193,6 +195,7 @@ function AnswerSetupStrip({
         <div className="ai-model-picker-panel" id="ai-model-picker">
           <p className="ai-picker-intro">
             A model reads the matching passages and writes a short answer that cites them. It downloads once and then runs offline; your documents and questions stay in this browser.
+            {alsoMeaningSearch && ` Setting it up also turns on meaning search, a further ${EMBEDDING_SIZE_DISPLAY} download, so the model gets passages worded differently from your question.`}
           </p>
           <fieldset className="ai-model-picker">
             <legend className="sr-only">Choose a model</legend>
@@ -219,7 +222,7 @@ function AnswerSetupStrip({
           </fieldset>
           <div className="ai-picker-actions">
             <button type="button" className="primary-button ai-setup-btn" onClick={startSetup}>
-              Download {selectedModel?.name || 'model'} ({selectedModel?.sizeDisplay || ''})
+              Download {selectedModel?.name || 'model'} ({selectedModel?.sizeDisplay || ''}{alsoMeaningSearch ? ` + ${EMBEDDING_SIZE_DISPLAY}` : ''})
             </button>
             <button type="button" className="ai-strip-btn" onClick={() => setPickerOpen(false)}>
               Not now
