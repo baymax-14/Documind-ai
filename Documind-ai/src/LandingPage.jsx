@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { useGSAP } from '@gsap/react'
-import { gsap } from 'gsap'
 import { Link } from 'react-router-dom'
 import {
   ArrowRight,
@@ -16,9 +14,8 @@ import {
   Sparkles,
 } from 'lucide-react'
 import Brand from './Brand.jsx'
+import { gsap, useGSAP, prefersReducedMotion, EASE_PRESS } from './gsap.js'
 import './landing.css'
-
-gsap.registerPlugin(useGSAP)
 
 const demoFiles = [
   { type: 'PDF', name: 'Q3 Market Research.pdf', tone: 'butter', pages: '14 pages', words: '4,280 words' },
@@ -174,10 +171,6 @@ const TABS = [
   { id: 'assistant', label: 'AI Assistant', icon: <Sparkles size={14} aria-hidden="true" />, extra: <small>WebGPU</small> },
 ]
 
-function prefersReducedMotion() {
-  return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-}
-
 // Real checks on the visitor's own browser: nothing here is invented or sent anywhere.
 function formatGigabytes(bytes) {
   if (!Number.isFinite(bytes) || bytes <= 0) return null
@@ -241,6 +234,29 @@ function gpuLabel(checks) {
   return 'Checking WebGPU'
 }
 
+/**
+ * One readout value. When a real check comes back, the value decodes in like an
+ * instrument reading. The span is keyed on the value, so React owns each new
+ * value and GSAP only ever writes into a span that is about to show it anyway.
+ */
+function ReadoutValue({ value, className }) {
+  const ref = useRef(null)
+  const isPending = value === 'Checking'
+  useGSAP(() => {
+    if (isPending || !ref.current || prefersReducedMotion()) return
+    gsap.to(ref.current, {
+      duration: Math.min(0.9, 0.25 + value.length * 0.02),
+      scrambleText: { text: value, chars: 'ABCDEF0123456789/_.', speed: 0.6, revealDelay: 0.1 },
+      ease: 'none',
+    })
+  }, { dependencies: [value] })
+  return (
+    <dd className={className}>
+      <span key={value} ref={ref}>{value}</span>
+    </dd>
+  )
+}
+
 function PageScan({ checks }) {
   const done = checks.gpu && checks.storage && checks.model
   const gpuText = checks.gpu === null ? 'Checking' : checks.gpu === 'ready' ? `Ready${checks.gpuName ? `, ${checks.gpuName}` : ''}` : 'Not available: search mode'
@@ -272,9 +288,9 @@ function PageScan({ checks }) {
       </figure>
 
       <dl className="scan-readout" aria-label="Checks on this browser">
-        <div><dt>WebGPU</dt><dd className={checks.gpu === 'ready' ? 'is-ok' : undefined}>{gpuText}</dd></div>
-        <div><dt>Storage</dt><dd>{storageText}</dd></div>
-        <div><dt>Model</dt><dd className={checks.model === 'cached' ? 'is-ok' : undefined}>{modelText}</dd></div>
+        <div><dt>WebGPU</dt><ReadoutValue className={checks.gpu === 'ready' ? 'is-ok' : undefined} value={gpuText} /></div>
+        <div><dt>Storage</dt><ReadoutValue value={storageText} /></div>
+        <div><dt>Model</dt><ReadoutValue className={checks.model === 'cached' ? 'is-ok' : undefined} value={modelText} /></div>
       </dl>
     </div>
   )
@@ -590,6 +606,31 @@ function ProofLedger() {
 
 function GroundingPlayground({ checks }) {
   const [selectedPrompt, setSelectedPrompt] = useState(PLAYGROUND_PROMPTS[0])
+  const splitRef = useRef(null)
+  const firstRender = useRef(true)
+
+  // Grounding trace: when a new question is picked, its passage and answer come in,
+  // a red rule traces under the source passage, and the [1] citation stamps down on
+  // the answer, showing that the answer is tied to that passage and nothing else.
+  useGSAP(() => {
+    if (firstRender.current) {
+      firstRender.current = false
+      return
+    }
+    const root = splitRef.current
+    if (!root) return
+    const content = root.querySelectorAll('.panel-content')
+    const trace = root.querySelector('.source-trace')
+    const cite = root.querySelector('.answer-citation-card')
+    if (prefersReducedMotion()) {
+      gsap.from(content, { opacity: 0, duration: 0.15, clearProps: 'opacity' })
+      return
+    }
+    gsap.timeline()
+      .from(content, { opacity: 0, duration: 0.18, ease: 'power1.out', clearProps: 'opacity' })
+      .from(trace, { scaleX: 0, transformOrigin: 'left center', duration: 0.45, ease: 'power2.out', clearProps: 'transform' }, 0.1)
+      .from(cite, { scale: 1.3, opacity: 0, duration: 0.25, ease: EASE_PRESS, clearProps: 'transform,opacity' }, 0.45)
+  }, { dependencies: [selectedPrompt.id], scope: splitRef })
 
   // Arrow keys, Home and End move between the question tabs and focus the new one.
   function onTabKey(event) {
@@ -635,7 +676,7 @@ function GroundingPlayground({ checks }) {
           ))}
         </div>
 
-        <div className="playground-display-split" role="tabpanel" id="prompt-panel" aria-labelledby={`prompt-tab-${selectedPrompt.id}`} tabIndex={0}>
+        <div className="playground-display-split" ref={splitRef} role="tabpanel" id="prompt-panel" aria-labelledby={`prompt-tab-${selectedPrompt.id}`} tabIndex={0}>
           <div className="playground-panel source-panel">
             <div className="panel-header">
               <span className="panel-stamp">Source</span>
@@ -647,6 +688,7 @@ function GroundingPlayground({ checks }) {
               <blockquote className="source-excerpt">
                 "{selectedPrompt.excerpt}"
               </blockquote>
+              <span className="source-trace" aria-hidden="true" />
             </div>
             <div className="panel-footer">
               <CheckCircle2 size={14} aria-hidden="true" />

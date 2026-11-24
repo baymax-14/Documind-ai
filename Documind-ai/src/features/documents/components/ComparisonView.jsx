@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   ArrowRight,
   BookOpen,
@@ -25,6 +25,7 @@ import {
   exportComparisonToMarkdown,
 } from '../services/export.js'
 import ReadableText from './ReadableText.jsx'
+import { gsap, useGSAP, prefersReducedMotion } from '../../../gsap.js'
 
 /**
  * Status styling map for comparison synthesis badges.
@@ -60,6 +61,28 @@ export default function ComparisonView({
   const [customDimension, setCustomDimension] = useState('')
   const [activeCustomTopic, setActiveCustomTopic] = useState('')
   const [comparisonResult, setComparisonResult] = useState(null)
+  const resultsHeadingRef = useRef(null)
+
+  // Results render below the setup controls, often off-screen: bring them into
+  // view and move focus to their heading so keyboard and screen-reader users
+  // land on them too.
+  useGSAP(() => {
+    const heading = resultsHeadingRef.current
+    if (!comparisonResult || !heading) return
+    const done = () => heading.focus({ preventScroll: true })
+    if (prefersReducedMotion()) {
+      heading.scrollIntoView({ block: 'start' })
+      done()
+      return
+    }
+    gsap.to(window, {
+      scrollTo: { y: heading, offsetY: 24, autoKill: true },
+      duration: 0.5,
+      ease: 'power2.inOut',
+      onComplete: done,
+      onInterrupt: done,
+    })
+  }, { dependencies: [comparisonResult] })
   const [isComparing, setIsComparing] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -309,7 +332,7 @@ export default function ComparisonView({
       {comparisonResult && comparisonResult.success && (
         <div className="comparison-results" aria-live="polite">
           <div className="results-header">
-            <h3>Comparison Matrix</h3>
+            <h3 ref={resultsHeadingRef} tabIndex={-1}>Comparison Matrix</h3>
             <span className="matrix-meta-pill">
               {comparisonResult.dimensions.length} Dimensions Evaluated Across {comparisonResult.documents.length} Sources
             </span>

@@ -131,9 +131,9 @@ function synthesizeDimension(entries) {
   const who = entries.length === 2 ? 'Both documents have' : `All ${entries.length} documents have`
   return {
     status: 'covered',
-    summary: sharedTerms.length > 0
+    summary: sharedTerms.length >= 2
       ? `${who} a passage on this topic. Words they both use: ${sharedTerms.slice(0, 6).join(', ')}.`
-      : `${who} a passage on this topic, with no words in common. Read them side by side below.`,
+      : `${who} a passage on this topic, with few words in common. Read them side by side below.`,
     sharedTerms: sharedTerms.slice(0, 6),
   }
 }

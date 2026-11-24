@@ -20,6 +20,7 @@ import {
 
 import { EMBEDDING_SIZE_DISPLAY } from '../services/embeddings.js'
 import ReadableText from './ReadableText.jsx'
+import { gsap, useGSAP, prefersReducedMotion } from '../../../gsap.js'
 
 const SUGGESTED_PROMPTS = [
   'What were the key drivers behind Q3 market growth?',
@@ -354,6 +355,31 @@ function AiAssistantView({
   const [input, setInput] = useState('')
   const [copiedIndex, setCopiedIndex] = useState(null)
   const chatEndRef = useRef(null)
+  const feedRef = useRef(null)
+  // Answers already on screen when the panel opened (from history) never animate
+  const seenAnswers = useRef(new Set(messages.map((m) => m.id)))
+  const latestAnswer = [...messages].reverse().find((m) => m.sender === 'assistant' && !m.streaming)
+
+  // A new answer arrives: its passages come in as a short list, in rank order,
+  // so the eye reads them top to bottom. Kept under 300ms in total.
+  useGSAP(() => {
+    const id = latestAnswer?.id
+    if (!id || seenAnswers.current.has(id)) return
+    seenAnswers.current.add(id)
+    const row = feedRef.current?.querySelector(`[data-msg-id="${CSS.escape(String(id))}"]`)
+    if (!row) return
+    const parts = row.querySelectorAll('.ai-passage-count, .ai-no-passages, .ai-excerpt-card')
+    if (!parts.length) return
+    const still = prefersReducedMotion()
+    gsap.from(parts, {
+      opacity: 0,
+      y: still ? 0 : 6,
+      duration: 0.2,
+      stagger: Math.min(0.04, 0.12 / parts.length),
+      ease: 'power2.out',
+      clearProps: 'opacity,transform',
+    })
+  }, { dependencies: [latestAnswer?.id], scope: feedRef })
   const inputRef = useRef(null)
 
   // Keep the newest message in view inside the feed
@@ -492,6 +518,7 @@ function AiAssistantView({
       ) : (
         <div
           className="ai-feed-container"
+          ref={feedRef}
           tabIndex={0}
           aria-live="polite"
           aria-busy={isGenerating}
@@ -501,6 +528,7 @@ function AiAssistantView({
             {messages.map((msg, idx) => (
               <article
                 key={msg.id || idx}
+                data-msg-id={msg.id}
                 className={`ai-message-row ${msg.sender === 'user' ? 'msg-user' : 'msg-assistant'}`}
               >
                 <div className="ai-message-bubble">

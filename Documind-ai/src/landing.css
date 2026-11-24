@@ -755,3 +755,11 @@
   .is-streaming .tok, .is-streaming .tok-cite, .is-streaming .preview-citations-list,
   .is-streaming .preview-cite-chip, .preview-tour-status i, .preview-search-bar.is-typing::after { animation: none; }
 }
+
+/* grounding trace: the red rule under the source passage marks it as the one the answer cites */
+.source-trace {
+  display: block;
+  height: 2px;
+  margin-top: -1px;
+  background: var(--red);
+}

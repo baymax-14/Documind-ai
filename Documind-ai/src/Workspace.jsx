@@ -732,7 +732,7 @@ function App() {
             type="button"
             onClick={() => setSearchMode('ai')}
           >
-            <Sparkles size={17} /> Evidence Assistant <span className="nav-count">{aiMessages.length || 'New'}</span>
+            <Sparkles size={17} /> Evidence Assistant <span className="nav-count" title={aiMessages.length ? `${aiMessages.length} messages in this conversation` : undefined}>{aiMessages.length || 'New'}{aiMessages.length > 0 && <span className="sr-only"> messages</span>}</span>
           </button>
           <button
             className={`nav-link ${searchMode === 'compare' ? 'active' : ''}`}
@@ -1183,8 +1183,9 @@ function App() {
             {searchMode === 'ai' && (
               <Suspense
                 fallback={
-                  <div className="ai-chat-section" style={{ minHeight: 280, display: 'grid', placeItems: 'center' }}>
-                    <Loader size={20} className="spin-icon" />
+                  <div className="ai-chat-section panel-loading" role="status">
+                    <Loader size={18} className="spin-icon" aria-hidden="true" />
+                    <span>Loading the assistant…</span>
                   </div>
                 }
               >
@@ -1224,8 +1225,9 @@ function App() {
             {searchMode === 'compare' && (
               <Suspense
                 fallback={
-                  <div className="comparison-view" style={{ minHeight: 280, display: 'grid', placeItems: 'center' }}>
-                    <Loader size={20} className="spin-icon" />
+                  <div className="comparison-view panel-loading" role="status">
+                    <Loader size={18} className="spin-icon" aria-hidden="true" />
+                    <span>Loading Compare…</span>
                   </div>
                 }
               >
@@ -1259,6 +1261,7 @@ function App() {
                   <kbd>Ctrl / ⌘ K</kbd>
                 </label>
 
+                {searchMode === 'files' && (
                 <div className="toolbar-actions">
                   <label className="filter-select">
                     <span>Type</span>
@@ -1277,7 +1280,7 @@ function App() {
                   <button
                     className="filter-button sort-button"
                     onClick={() => setAscending(!ascending)}
-                    aria-label={`Sort ${ascending ? 'by most recently added' : 'by file name'}`}
+                    aria-label={`Sort order: ${ascending ? 'by name' : 'most recent first'}. Change sort order`}
                   >
                     {ascending ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
                     <span>{ascending ? 'Name' : 'Recent'}</span>
@@ -1302,6 +1305,7 @@ function App() {
                     </button>
                   </div>
                 </div>
+                )}
               </div>
             )}
 
@@ -1313,6 +1317,7 @@ function App() {
                 totalMatches={contentSearchResults.totalMatches}
                 onInspect={handleInspectPassage}
                 onClear={() => setQuery('')}
+                onTryQuery={(q) => setEvidenceQuery(q)}
               />
             ) : null}
 
@@ -1345,8 +1350,7 @@ function App() {
                         <button
                           className="doc-inspect-btn"
                           onClick={() => handleOpenReader(doc, 'text')}
-                          title={`Read continuous text of ${doc.name}`}
-                          aria-label={`Read continuous text of ${doc.name}`}
+                          aria-label={`Read ${doc.name}`}
                         >
                           <BookOpen size={13} aria-hidden="true" />
                           <span>Read</span>
@@ -1354,11 +1358,10 @@ function App() {
                         <button
                           className="doc-inspect-btn doc-pages-btn"
                           onClick={() => handleOpenReader(doc, 'visual')}
-                          title={`View ${doc.name} page by page with citations`}
-                          aria-label={`View ${doc.name} page by page with citations`}
+                          aria-label={`Page view of ${doc.name}`}
                         >
                           <Eye size={13} aria-hidden="true" />
-                          <span>Pages</span>
+                          <span>Page view</span>
                         </button>
                         <button
                           className="doc-inspect-btn"

@@ -305,16 +305,6 @@ input:focus-visible {
   gap: 12px;
 }
 
-.environment-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 8px;
-  border: 1px solid var(--ink);
-  background: var(--butter);
-  font-size: 13px;
-  font-weight: 600;
-}
-
 .icon-button {
   display: grid;
   place-items: center;
@@ -724,7 +714,7 @@ h1 {
 }
 
 .view-toggle button.selected svg {
-  color: var(--ink-on-pastel);
+  color: inherit;
   stroke: currentColor;
 }
 
@@ -801,10 +791,6 @@ h1 {
 
 .sample-status {
   background: var(--butter);
-}
-
-.session-status {
-  background: var(--mint);
 }
 
 .document-grid {
@@ -1013,12 +999,6 @@ button:disabled {
 }
 
 /* Document status badges */
-.doc-status-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: nowrap;
-}
 
 .status-selected {
   background: var(--paper);
@@ -1051,26 +1031,6 @@ button:disabled {
 }
 
 .dark .card-failed {
-  border-color: var(--red-text);
-}
-
-.subtitle-error {
-  color: var(--red-text);
-}
-
-.dark .subtitle-error {
-  color: var(--red);
-}
-
-.count-label-warn {
-  background: var(--red-tint);
-  color: var(--red-text);
-  border-color: var(--red-text);
-}
-
-.dark .count-label-warn {
-  background: var(--red-tint);
-  color: var(--red);
   border-color: var(--red-text);
 }
 
@@ -2603,19 +2563,16 @@ button:disabled {
 }
 
 .dark .search-box input::placeholder,
-.dark .search-box kbd,
-.dark .nav-disabled {
+.dark .search-box kbd {
   color: var(--muted);
 }
 
 .dark .sample-status,
-.dark .session-status,
 .dark .file-pdf,
 .dark .file-docx,
 .dark .file-doc,
 .dark .file-txt,
 .dark .workspace-icon,
-.dark .environment-tag,
 .dark .prototype-strip,
 .dark .prototype-strip strong,
 .dark .prototype-strip p,
@@ -2636,9 +2593,7 @@ button:disabled {
 .dark .view-toggle button.selected svg,
 .dark .tag-pdf,
 .dark .tag-docx,
-.dark .tag-txt,
-.dark .doc-engine-badge,
-.dark .sample-doc-pill {
+.dark .tag-txt {
   color: var(--ink-on-pastel);
 }
 
@@ -2893,10 +2848,6 @@ button:disabled {
     padding-inline: 16px;
   }
 
-  .environment-tag {
-    font-size: 12px;
-  }
-
   .subtitle {
     max-width: 34ch;
     font-size: 15px;
@@ -3090,10 +3041,6 @@ button:disabled {
   background: var(--butter);
 }
 
-.indicator-gray {
-  background: var(--muted);
-}
-
 .processing-badge {
   display: inline-flex;
   align-items: center;
@@ -3164,11 +3111,6 @@ button:disabled {
   box-shadow: none;
 }
 
-.doc-words-meta {
-  color: var(--muted);
-  font-size: 12px;
-}
-
 .drop-formats-row {
   display: flex;
   flex-wrap: wrap;
@@ -3213,16 +3155,6 @@ button:disabled {
   font-size: 11px;
   font-weight: 700;
   margin-left: auto;
-}
-
-.empty-library {
-  padding: 36px 20px;
-}
-
-.empty-seed-btn {
-  margin-top: 14px;
-  min-height: 42px;
-  font-size: 13px;
 }
 
 /* Storage & Hardware Diagnostics Modal */
@@ -3482,12 +3414,6 @@ button:disabled {
   color: var(--red);
 }
 
-.diag-unload-btn {
-  min-height: 32px;
-  padding: 0 10px;
-  font-size: 11px;
-}
-
 .diag-privacy-seal {
   display: flex;
   gap: 14px;
@@ -3497,37 +3423,9 @@ button:disabled {
   box-shadow: none;
 }
 
-.seal-badge {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  flex: none;
-  place-items: center;
-  border: 1px solid var(--ink);
-  background: var(--mint);
-  box-shadow: none;
-}
-
 .seal-text h4 {
   margin: 0 0 6px;
   font: 700 14px/1.2 var(--heading);
-}
-
-.seal-points {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--ink);
-}
-
-.seal-points li {
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
 .storage-modal-footer {
@@ -5144,20 +5042,6 @@ button:disabled {
   color: var(--ink);
 }
 
-.visual-bbox-overlay {
-  display: none;
-}
-
-.visual-bbox-overlay.bbox-highlighted {
-  display: block;
-  position: absolute;
-  border: 1px solid var(--ink);
-  background: var(--mint-tint);
-  box-shadow: none;
-  pointer-events: none;
-  border-radius: 0;
-}
-
 .page-card-footer {
   display: flex;
   justify-content: space-between;
@@ -6200,6 +6084,9 @@ button:disabled {
 .app .visual-figures-pill-btn.active,
 .app .vlm-chip-btn.active,
 .app .conv-history-item.active,
+.app .reader-toggle-btn.active,
+.app .reader-nav-item.active,
+.app .view-toggle button.selected,
 .dark .nav-link.active,
 .dark .search-mode-tab.active,
 .dark .search-mode-tab.active span,
@@ -6798,10 +6685,12 @@ button:disabled {
     .ai-clear-btn, .ai-strip-btn, .ai-copy-btn, .ai-citation-chip,
     .ai-prompt-chip, .chunk-copy-citation, .reader-action-btn,
     .reader-toggle-btn, .reader-close-btn, .reader-copy-passage,
-    .reader-clear-search, .search-mode-tab, .search-clear-btn,
-    .evidence-inspect-btn, .nav-link
+    .reader-clear-search, .search-mode-tab, .search-clear-btn, .nav-link, .visual-tool-btn, .visual-page-input
   ) {
     min-height: 44px;
+  }
+  .app :is(.visual-tool-btn, .visual-page-input) {
+    min-width: 44px;
   }
   .app :is(.ai-copy-btn, .doc-delete-btn, .reader-copy-passage, .reader-clear-search, .icon-button) {
     min-width: 44px;
@@ -6821,4 +6710,196 @@ button:disabled {
 /* short labels never break mid-label */
 .app :is(.reader-locator-badge, .reader-mark-tag, .chunk-locator-pill, .chunk-cited-tag, .citation-loc) {
   white-space: nowrap;
+}
+
+/* selected items inside the black bar keep the paper colour for icons and meta */
+.app :is(.reader-toggle-btn.active, .reader-nav-item.active, .view-toggle button.selected) :is(svg, span) {
+  color: inherit;
+}
+.app .reader-nav-item.active .reader-nav-locator,
+.app .reader-nav-item.active .reader-nav-snippet {
+  color: var(--paper);
+}
+
+/* matched search words: an ink underline in the signal red, not a pastel fill */
+.app :is(.reader-mark, .search-highlight) {
+  background: none;
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--red);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  padding: 0;
+}
+
+/* Read view: one flowing text with page markers, not a stack of cards */
+.app .reader-content {
+  gap: 0;
+}
+.app .reader-chunk {
+  max-width: 70ch;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.app .reader-chunk + .reader-chunk {
+  margin-top: 14px;
+}
+.app .reader-chunk.is-new-place:not(:first-child) {
+  margin-top: 26px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.app .reader-chunk-header {
+  justify-content: flex-start;
+  margin-bottom: 6px;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.app .reader-locator-badge {
+  background: var(--surface);
+  font-family: var(--body);
+}
+.app .reader-copy-passage {
+  margin-left: auto;
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+}
+.app .reader-copy-passage:hover,
+.app .reader-copy-passage:focus-visible {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+/* the marked passage (cited, matched, compared) is the one framed block */
+.app .reader-chunk.reader-chunk-highlight {
+  padding: 14px 16px;
+  border: 1px solid var(--red);
+  background: var(--red-tint);
+}
+.app .reader-chunk.reader-chunk-highlight + .reader-chunk,
+.app .reader-chunk + .reader-chunk.reader-chunk-highlight {
+  margin-top: 18px;
+}
+
+/* the reader's single exit */
+.app .reader-close-btn {
+  background: var(--surface);
+  color: var(--ink);
+}
+.app .reader-close-btn.reader-return-btn {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+.app .reader-close-btn.reader-return-btn:hover {
+  border-color: var(--red);
+  background: var(--red);
+  color: #fff;
+  transform: none;
+}
+.app .reader-close-btn.reader-return-btn kbd {
+  border-color: currentColor;
+  color: inherit;
+  background: transparent;
+}
+
+.app .reader-search-input input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------------------
+   Reading text roles (Three Roles Rule: the serif sets everything quoted from
+   a document; Martian Mono stays for the interface, labels and data)
+   - full:    the reader, answers and answer quotes, 1.0625rem / 1.65
+   - compact: lists of quoted passages (search excerpts, Compare cells,
+              summary points, extracted evidence), 1rem / 1.6, upright,
+              held to a readable measure
+   --------------------------------------------------------------------------- */
+.app :is(.evidence-snippet, .excerpt-quote, .takeaways-list li, .field-excerpt-quote) {
+  font-family: var(--read);
+  font-variation-settings: normal;
+  font-size: 1rem;
+  font-style: normal;
+  line-height: 1.6;
+  letter-spacing: 0;
+  max-width: 70ch;
+  color: var(--ink);
+}
+.app .ai-passage-count {
+  font-size: 1rem;
+}
+
+/* no lone last word in reading text or answer status lines */
+.app :is(.readable-paragraph, .evidence-snippet, .takeaways-list li, .field-excerpt-quote,
+  .ai-passage-count, .ai-no-passages p, .ai-picker-intro, .reader-title-text p) {
+  text-wrap: pretty;
+}
+
+/* ---------------------------------------------------------------------------
+   Polish, round 3
+   --------------------------------------------------------------------------- */
+
+/* loading placeholders say what is loading */
+.app .panel-loading {
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* an empty passage search shows where to start */
+.app .search-start {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.app .search-start p {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.app .search-start-examples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* how an answer was made: a quiet label line, not a row of buttons */
+.app .ai-engine-tag-row {
+  gap: 4px 14px;
+}
+.app .ai-engine-tag {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: 600 11px/1.3 var(--body);
+  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+}
+
+/* storage used is a neutral reading, so it is ink, not the live red */
+.app .diag-progress-fill {
+  background: var(--ink);
+}
+
+/* a primary action that cannot run yet reads as unavailable, in both themes */
+.app :is(.primary-button, .ai-send-btn):disabled {
+  border-color: var(--line);
+  background: transparent;
+  color: var(--muted);
+  opacity: 1;
 }

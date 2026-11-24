@@ -1,23 +1,26 @@
-import { gsap } from "gsap";
-import { useGSAP } from "@gsap/react";
+/**
+ * The one place GSAP is set up for the app. Import `gsap` and `useGSAP` from
+ * here, never from 'gsap' directly, so plugins are registered once and only the
+ * plugins actually used end up in the bundle.
+ *
+ * - ScrambleText: the front page's readouts decode as real browser checks return.
+ * - ScrollTo: Compare brings its results into view when they are ready.
+ */
+import { gsap } from 'gsap'
+import { useGSAP } from '@gsap/react'
+import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin'
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
 
-import { CustomEase } from "gsap/CustomEase";
-// CustomBounce requires CustomEase
-import { CustomBounce } from "gsap/CustomBounce";
-// CustomWiggle requires CustomEase
-import { CustomWiggle } from "gsap/CustomWiggle";
+gsap.registerPlugin(useGSAP, ScrambleTextPlugin, ScrollToPlugin)
 
-import { Draggable } from "gsap/Draggable";
-import { Flip } from "gsap/Flip";
-import { MotionPathHelper } from "gsap/MotionPathHelper";
-import { MotionPathPlugin } from "gsap/MotionPathPlugin";
-import { Physics2DPlugin } from "gsap/Physics2DPlugin";
-import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-// ScrollSmoother requires ScrollTrigger
-import { ScrollSmoother } from "gsap/ScrollSmoother";
-import { ScrollToPlugin } from "gsap/ScrollToPlugin";
-import { SplitText } from "gsap/SplitText";
-import { TextPlugin } from "gsap/TextPlugin";
+/** Confident arrival, the house ease for entrances (matches cubic-bezier(0.16, 1, 0.3, 1)). */
+export const EASE_ARRIVE = 'expo.out'
+/** The ledger-stamp press: fast in, hard stop. */
+export const EASE_PRESS = 'power3.in'
 
-gsap.registerPlugin(useGSAP, Draggable, Flip, MotionPathHelper, MotionPathPlugin, Physics2DPlugin, ScrambleTextPlugin, ScrollTrigger, ScrollSmoother, ScrollToPlugin, SplitText, TextPlugin, CustomEase, CustomBounce, CustomWiggle);
+/** True when the visitor asked for less motion; check at the moment of animating. */
+export function prefersReducedMotion() {
+  return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+export { gsap, useGSAP }

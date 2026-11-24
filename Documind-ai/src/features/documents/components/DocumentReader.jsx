@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-// ESLint's base unused-vars rule does not count JSX member tags as variable references.
-// eslint-disable-next-line no-unused-vars
-import { motion, useReducedMotion } from 'motion/react'
+import { gsap, useGSAP, prefersReducedMotion, EASE_ARRIVE, EASE_PRESS } from '../../../gsap.js'
 import {
   ArrowLeft,
   BookOpen,
@@ -72,7 +70,8 @@ function HighlightedText({ text, query }) {
  * @param {Object} props
  * @param {import('../types/document.js').DocRecord} props.doc - Document to inspect.
  * @param {number} [props.initialChunkIndex] - Chunk to scroll into view.
- * @param {string} [props.initialQuery] - Search query to highlight.
+ * @param {string} [props.initialQuery] - Search words to underline. The document opens
+ *   whole; the reader can then choose to show only the passages that contain them.
  * @param {() => void} props.onClose - Dismiss callback.
  * @param {boolean} [props.fromAssistant] - Whether opened from assistant citation.
  * @param {'text' | 'visual' | 'tables'} [props.initialViewMode='text'] - Initial view mode.
@@ -88,8 +87,9 @@ function DocumentReader({
   initialViewMode = 'text',
   markedChunk = null,
 }) {
-  const reduceMotion = useReducedMotion()
-  const [filterQuery, setFilterQuery] = useState(initialQuery)
+  const [filterQuery, setFilterQuery] = useState('')
+  // Words carried over from a search are underlined, never used to hide passages
+  const highlightQuery = filterQuery || initialQuery
   const [selectedChunk, setSelectedChunk] = useState(initialChunkIndex)
   const [copied, setCopied] = useState(false)
   const [viewMode, setViewMode] = useState(initialViewMode)
@@ -100,6 +100,42 @@ function DocumentReader({
   // Focus moves into the reader, Tab stays inside, Esc closes it, and focus
   // returns to the citation or button that opened it.
   useOverlay({ active: Boolean(doc), containerRef: readerRef, onClose })
+
+  // Opening: the backdrop fades and the sheet rises a few pixels into place.
+  useGSAP(() => {
+    const overlay = readerRef.current
+    if (!overlay) return
+    const sheet = overlay.querySelector('.reader-container')
+    const still = prefersReducedMotion()
+    gsap.from(overlay, { opacity: 0, duration: 0.2, ease: 'power1.out', clearProps: 'opacity' })
+    gsap.from(sheet, {
+      opacity: 0,
+      y: still ? 0 : 12,
+      duration: 0.24,
+      ease: EASE_ARRIVE,
+      clearProps: 'opacity,transform',
+    })
+  }, { scope: readerRef })
+
+  // Landing on the marked passage: once it has scrolled into view its red tint
+  // settles in and its label presses down, so the eye goes to the cited place.
+  useGSAP(() => {
+    if (!markedChunk || viewMode !== 'text') return
+    const block = chunkRefs.current.get(markedChunk.index)
+    if (!block) return
+    const tag = block.querySelector('.reader-mark-tag')
+    const tl = gsap.timeline({ delay: 0.35 })
+    tl.from(block, {
+      backgroundColor: 'rgba(0, 0, 0, 0)',
+      borderColor: 'rgba(0, 0, 0, 0)',
+      duration: 0.45,
+      ease: 'power2.out',
+      clearProps: 'backgroundColor,borderColor',
+    })
+    if (tag && !prefersReducedMotion()) {
+      tl.from(tag, { scale: 1.25, opacity: 0, duration: 0.22, ease: EASE_PRESS, clearProps: 'transform,opacity' }, 0.15)
+    }
+  }, { dependencies: [markedChunk?.index, viewMode], scope: readerRef })
 
   // Extract tables from document if any exist
   const docTables = useMemo(() => {
@@ -164,22 +200,14 @@ function DocumentReader({
   if (!doc) return null
 
   return (
-    <motion.div
+    <div
       className="reader-overlay"
       role="dialog"
       aria-modal="true"
       aria-label={`Extracted text reader: ${doc.name}`}
       ref={readerRef}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
     >
-      <motion.div
-        className="reader-container"
-        initial={{ opacity: 0, y: reduceMotion ? 0 : 12, scale: reduceMotion ? 1 : 0.99 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.24, ease: [0.23, 1, 0.32, 1] }}
-      >
+      <div className="reader-container">
         {/* Top bar */}
         <header className="reader-topbar">
           <div className="reader-title-area">
@@ -197,37 +225,26 @@ function DocumentReader({
           </div>
 
           <div className="reader-top-actions">
-            {fromAssistant && (
-              <button
-                className="reader-action-btn reader-return-btn"
-                onClick={onClose}
-                title="Return to Assistant conversation (Esc)"
-              >
-                <ArrowLeft size={14} aria-hidden="true" />
-                <span>Back to Assistant</span>
-              </button>
-            )}
-
             <div className="reader-view-toggle-bar">
-              <button
-                type="button"
-                className={`reader-toggle-btn ${viewMode === 'visual' ? 'active' : ''}`}
-                aria-pressed={viewMode === 'visual'}
-                onClick={() => setViewMode('visual')}
-                title="The extracted text of each page, with where each passage sits on it"
-              >
-                <Eye size={13} />
-                <span>Text by page</span>
-              </button>
               <button
                 type="button"
                 className={`reader-toggle-btn ${viewMode === 'text' ? 'active' : ''}`}
                 aria-pressed={viewMode === 'text'}
                 onClick={() => setViewMode('text')}
-                title="All passages as one continuous text"
+                title="The whole document as one text, with page markers"
               >
-                <FileText size={13} />
-                <span>Continuous text</span>
+                <FileText size={13} aria-hidden="true" />
+                <span>Read</span>
+              </button>
+              <button
+                type="button"
+                className={`reader-toggle-btn ${viewMode === 'visual' ? 'active' : ''}`}
+                aria-pressed={viewMode === 'visual'}
+                onClick={() => setViewMode('visual')}
+                title="One page at a time, showing the text extracted from that page"
+              >
+                <Eye size={13} aria-hidden="true" />
+                <span>Page view</span>
               </button>
               {docTables.length > 0 && (
                 <button
@@ -248,8 +265,8 @@ function DocumentReader({
               <input
                 value={filterQuery}
                 onChange={(e) => setFilterQuery(e.target.value)}
-                placeholder="Filter in document…"
-                aria-label="Filter passages in this document"
+                placeholder="Filter passages…"
+                aria-label="Show only passages containing these words"
               />
               {filterQuery && (
                 <button
@@ -272,12 +289,12 @@ function DocumentReader({
             </button>
 
             <button
-              className="reader-close-btn"
+              className={`reader-close-btn ${fromAssistant ? 'reader-return-btn' : ''}`}
               onClick={onClose}
-              aria-label="Close document reader (Esc)"
-              title="Close reader (Esc)"
+              aria-label={fromAssistant ? 'Back to the assistant (Esc)' : 'Close the reader (Esc)'}
             >
-              <X size={18} />
+              {fromAssistant ? <ArrowLeft size={16} aria-hidden="true" /> : <X size={18} aria-hidden="true" />}
+              <span>{fromAssistant ? 'Back to assistant' : 'Close'}</span>
               <kbd>Esc</kbd>
             </button>
           </div>
@@ -295,7 +312,7 @@ function DocumentReader({
               highlightChunkIndex={selectedChunk}
               markedChunkIndex={markedChunk?.index}
               markedLabel={markedChunk?.label}
-              renderText={(t) => <HighlightedText text={t} query={filterQuery} />}
+              renderText={(t) => <HighlightedText text={t} query={highlightQuery} />}
               onInspectPassage={(locator) => {
                 navigator.clipboard.writeText(locator)
                 setCopied(true)
@@ -309,7 +326,7 @@ function DocumentReader({
             <aside className="reader-rail" aria-label="Passages in this document">
               <div className="reader-rail-header">
                 <BookOpen size={14} aria-hidden="true" />
-                <span>Passages ({chunks.length})</span>
+                <span>Jump to ({chunks.length})</span>
               </div>
               <nav className="reader-nav-list">
                 {chunks.map((c) => (
@@ -320,7 +337,7 @@ function DocumentReader({
                   >
                     <span className="reader-nav-locator">{c.locator}</span>
                     <span className="reader-nav-snippet">
-                      {c.text.slice(0, 40)}…
+                      {c.text.replace(/[#|*]+|:?-{3,}:?/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40)}…
                     </span>
                   </button>
                 ))}
@@ -335,26 +352,39 @@ function DocumentReader({
                     Showing {displayedChunks.length} of {chunks.length} passages containing “{filterQuery.trim()}”
                   </span>
                   <button type="button" className="ai-strip-btn" onClick={() => setFilterQuery('')}>
-                    Show all passages
+                    Show the whole document
+                  </button>
+                </div>
+              )}
+              {!filterQuery.trim() && initialQuery.trim() && (
+                <div className="reader-filter-status" role="status">
+                  <span>Your search words “{initialQuery.trim()}” are underlined.</span>
+                  <button type="button" className="ai-strip-btn" onClick={() => setFilterQuery(initialQuery.trim())}>
+                    Show only those passages
                   </button>
                 </div>
               )}
               {displayedChunks.length > 0 ? (
-                displayedChunks.map((chunk) => (
+                displayedChunks.map((chunk, i) => {
+                  const isMarked = markedChunk && markedChunk.index === chunk.index
+                  const newPlace = i === 0 || displayedChunks[i - 1].locator !== chunk.locator
+                  return (
                   <article
                     key={chunk.index}
                     ref={(el) => {
                       if (el) chunkRefs.current.set(chunk.index, el)
                       else chunkRefs.current.delete(chunk.index)
                     }}
-                    className={`reader-chunk ${selectedChunk === chunk.index ? 'reader-chunk-highlight' : ''}`}
+                    className={`reader-chunk ${isMarked ? 'reader-chunk-highlight' : ''} ${newPlace ? 'is-new-place' : ''}`}
                     id={`chunk-${chunk.index}`}
                   >
                     <div className="reader-chunk-header">
-                      <span className="reader-locator-badge">
-                        <FileText size={12} aria-hidden="true" /> {chunk.locator}
-                      </span>
-                      {markedChunk && markedChunk.index === chunk.index && (
+                      {(newPlace || isMarked) && (
+                        <span className="reader-locator-badge">
+                          <FileText size={12} aria-hidden="true" /> {chunk.locator}
+                        </span>
+                      )}
+                      {isMarked && (
                         <span className="reader-mark-tag">{markedChunk.label}</span>
                       )}
                       <button
@@ -373,11 +403,12 @@ function DocumentReader({
                     <div className="reader-chunk-text">
                       <ReadableText
                         text={chunk.text}
-                        renderText={(t) => <HighlightedText text={t} query={filterQuery} />}
+                        renderText={(t) => <HighlightedText text={t} query={highlightQuery} />}
                       />
                     </div>
                   </article>
-                ))
+                  )
+                })
               ) : (
                 <div className="reader-empty">
                   <Search size={24} aria-hidden="true" />
@@ -390,8 +421,8 @@ function DocumentReader({
             </main>
           </div>
         )}
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   )
 }
 

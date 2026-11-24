@@ -18,8 +18,26 @@ import {
  * @param {(docId: string, chunkIndex: number) => void} props.onInspect - Callback to open Reader at passage.
  * @param {() => void} props.onClear - Clear search callback.
  */
-function SearchResultsView({ query, results, totalMatches, onInspect, onClear }) {
-  if (!query || query.trim().length < 2) return null
+const EXAMPLE_SEARCHES = ['retention', 'privacy', 'growth']
+
+function SearchResultsView({ query, results, totalMatches, onInspect, onClear, onTryQuery }) {
+  if (!query || query.trim().length < 2) {
+    return (
+      <section className="search-start" aria-label="Search passages">
+        <p>Type a word or phrase to find every passage that contains it, across all your documents.</p>
+        {onTryQuery && (
+          <div className="search-start-examples">
+            <span>Try</span>
+            {EXAMPLE_SEARCHES.map((q) => (
+              <button key={q} type="button" className="ai-strip-btn" onClick={() => onTryQuery(q)}>
+                {q}
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+    )
+  }
 
   return (
     <section className="search-results-section" aria-label="Evidence search results">
