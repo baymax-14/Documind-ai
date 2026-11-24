@@ -41,6 +41,7 @@ import ReadableText from './ReadableText.jsx'
  * @param {number} [props.highlightChunkIndex] - Passage to bring into view.
  * @param {number} [props.markedChunkIndex] - Passage to mark (only when there is a reason).
  * @param {string} [props.markedLabel] - Why it is marked, e.g. "Cited in the answer".
+ * @param {(text: string) => import('react').ReactNode} [props.renderText] - e.g. search highlighting.
  * @param {(locator: string) => void} [props.onInspectPassage]
  */
 export default function PageVisualPreview({
@@ -49,6 +50,7 @@ export default function PageVisualPreview({
   highlightChunkIndex,
   markedChunkIndex,
   markedLabel = 'Cited in the answer',
+  renderText,
   onInspectPassage,
 }) {
   const [currentPage, setCurrentPage] = useState(initialPage)
@@ -354,15 +356,21 @@ export default function PageVisualPreview({
                     <div
                       key={chunk.index}
                       className={`visual-chunk-block ${isCited ? 'chunk-cited' : ''}`}
-                      onClick={() => handleCopyCitation(chunk)}
-                      title={`Click to copy verified citation: ${chunk.locator}`}
                     >
-                      <div className="chunk-locator-pill">
-                        <span>{chunk.locator}</span>
+                      <div className="chunk-locator-row">
+                        <span className="chunk-locator-pill">{chunk.locator}</span>
                         {isCited && <span className="chunk-cited-tag">{markedLabel}</span>}
-                        <ExternalLink size={11} aria-hidden="true" />
+                        <button
+                          type="button"
+                          className="chunk-copy-citation"
+                          onClick={() => handleCopyCitation(chunk)}
+                          aria-label={`Copy citation, ${doc.name}, ${chunk.locator}`}
+                        >
+                          <Copy size={12} aria-hidden="true" />
+                          <span>Copy citation</span>
+                        </button>
                       </div>
-                      <ReadableText className="chunk-body-text" text={chunk.text} />
+                      <ReadableText className="chunk-body-text" text={chunk.text} renderText={renderText} />
                     </div>
                   )
                 })}
@@ -391,7 +399,7 @@ export default function PageVisualPreview({
 
               {/* Page Footer */}
               <div className="page-card-footer">
-                <span>DocuMind AI</span>
+                <span>Extracted text, not the original page layout</span>
                 <span>Page {activePage.pageNumber} / {pages.length}</span>
               </div>
             </div>

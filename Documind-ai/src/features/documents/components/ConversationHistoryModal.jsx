@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useOverlay } from '../hooks/useOverlay.js'
 import {
   Clock,
   MessageSquare,
@@ -47,12 +48,7 @@ export default function ConversationHistoryModal({
 
   const modalRef = useRef(null)
   const closeButtonRef = useRef(null)
-  const returnFocusRef = useRef(null)
-  const onCloseRef = useRef(onClose)
 
-  useEffect(() => {
-    onCloseRef.current = onClose
-  }, [onClose])
 
   useEffect(() => {
     if (!isOpen) return
@@ -63,49 +59,12 @@ export default function ConversationHistoryModal({
       .finally(() => setLoading(false))
   }, [isOpen])
 
-  useEffect(() => {
-    if (!isOpen) return undefined
-
-    returnFocusRef.current = document.activeElement
-    closeButtonRef.current?.focus()
-
-    function handleKeyDown(e) {
-      if (e.key === 'Escape') {
-        if (confirmClearOpen) {
-          setConfirmClearOpen(false)
-          return
-        }
-        onCloseRef.current()
-        return
-      }
-
-      if (e.key !== 'Tab') return
-      const focusable = modalRef.current?.querySelectorAll(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      )
-      if (!focusable?.length) {
-        e.preventDefault()
-        modalRef.current?.focus()
-        return
-      }
-
-      const first = focusable[0]
-      const last = focusable[focusable.length - 1]
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault()
-        last.focus()
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault()
-        first.focus()
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-      returnFocusRef.current?.focus?.()
-    }
-  }, [isOpen, confirmClearOpen])
+  // Esc first closes the "clear all" confirmation, then the dialog
+  useOverlay({
+    active: isOpen,
+    containerRef: modalRef,
+    onClose: () => (confirmClearOpen ? setConfirmClearOpen(false) : onClose()),
+  })
 
   async function handleDelete(id, e) {
     e.stopPropagation()

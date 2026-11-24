@@ -57,7 +57,6 @@ import {
   askBackendQuestion,
   uploadDocumentToBackend,
   ProcessingStatusBadge,
-  TokenGovernancePill,
   createTokenBudgetTracker,
 } from './features/documents/index.js'
 
@@ -449,7 +448,7 @@ function App() {
         index,
         label: searchMode === 'ai' ? 'Cited in the answer' : searchMode === 'compare' ? 'Compared passage' : 'Search match',
       })
-      setReaderViewMode('visual')
+      setReaderViewMode('text')
     }
   }
 
@@ -610,7 +609,7 @@ function App() {
       }
 
       // Phase 13: Record Token Governance Usage
-      if (tokenTrackerRef.current && assistantMsg?.text) {
+      if (tokenTrackerRef.current && assistantMsg?.text && (assistantMsg.isRealModel || assistantMsg.isBackendGrounded)) {
         tokenTrackerRef.current.recordUsage({
           promptText: question,
           evidenceText: (chunks || []).map((c) => c?.text || '').join('\n'),
@@ -870,49 +869,23 @@ function App() {
 
         <div className="page-inner" inert={mobileMenuOpen}>
           <div className="top-actions">
-            <button
-              className="hardware-status-pill"
-              onClick={() => connManagerRef.current?.checkNow()}
-              title={
-                connectionInfo.state === 'connected'
-                  ? `Backend connected: ${connectionInfo.backendInfo?.environment || 'online'}. Click to re-check.`
-                  : connectionInfo.state === 'checking'
-                  ? 'Checking backend connection...'
-                  : `Backend offline (${connectionInfo.error || 'local mode'}). Click to retry.`
-              }
-              aria-label="Backend connection status"
-            >
-              <Cloud size={14} aria-hidden="true" />
-              <span>
-                {connectionInfo.state === 'connected'
-                  ? 'Backend Connected'
-                  : connectionInfo.state === 'checking'
-                  ? 'Checking Backend…'
-                  : 'Local Only'}
-              </span>
-              <span
-                className={`status-indicator ${
-                  connectionInfo.state === 'connected'
-                    ? 'indicator-green'
-                    : connectionInfo.state === 'checking'
-                    ? 'indicator-yellow'
-                    : 'indicator-gray'
-                }`}
-              />
-            </button>
+            {connectionInfo.state === 'connected' && (
+              <button
+                className="hardware-status-pill"
+                onClick={() => setStorageModalOpen(true)}
+              >
+                <Cloud size={14} aria-hidden="true" />
+                <span>Server connected</span>
+                <span className="status-indicator indicator-green" />
+              </button>
+            )}
             <button
               className="hardware-status-pill"
               onClick={() => setStorageModalOpen(true)}
-              title="Storage used and whether this device can run the on-device model"
             >
               <Cpu size={14} aria-hidden="true" />
-              <span>{gpuInfo ? (gpuInfo.supported ? 'On-device AI available' : 'Passages only on this device') : 'Checking this device'}</span>
-              <span className={`status-indicator ${gpuInfo?.supported ? 'indicator-green' : 'indicator-yellow'}`} />
+              <span>Storage and device</span>
             </button>
-            <TokenGovernancePill
-              metrics={tokenMetrics}
-              onClick={() => setGovernanceModalOpen(true)}
-            />
             <button
               className="icon-button theme-button desktop-theme"
               aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -1144,19 +1117,19 @@ function App() {
                   </p>
                   <div className="confirm-modal-actions">
                     <button
+                      className="secondary-button"
+                      onClick={() => setConfirmClearOpen(false)}
+                    >
+                      Keep my documents
+                    </button>
+                    <button
                       className="primary-button confirm-danger-btn"
                       onClick={() => {
                         clearLibrary()
                         setConfirmClearOpen(false)
                       }}
                     >
-                      Yes, clear library
-                    </button>
-                    <button
-                      className="secondary-button"
-                      onClick={() => setConfirmClearOpen(false)}
-                    >
-                      Cancel
+                      Delete all saved documents
                     </button>
                   </div>
                 </div>
@@ -1449,10 +1422,10 @@ function App() {
 
           <footer className="page-footer">
             <span>
-              DocuMind AI · Stored in this browser's local database.
+              DocuMind AI · Documents are saved in this browser.
             </span>
             <span>
-              Local evidence search & grounded excerpt preview. Zero data transmitted to third-party endpoints.
+              Search and answers run in this browser.
             </span>
           </footer>
         </div>
@@ -1466,6 +1439,14 @@ function App() {
           docCount={libraryDocs.length}
           storedCount={storedCount}
           modelStatus={modelStatus}
+          activeModelName={activeModelName}
+          connectionInfo={connectionInfo}
+          onCheckConnection={() => connManagerRef.current?.checkNow()}
+          tokenMetrics={tokenMetrics}
+          onOpenTokenDetails={() => {
+            setStorageModalOpen(false)
+            setGovernanceModalOpen(true)
+          }}
           onClearLibrary={() => setConfirmClearOpen(true)}
         />
 

@@ -439,7 +439,6 @@ function AiAssistantView({
             onKeyDown={handleKeyDown}
             placeholder="Ask a question about your documents"
             aria-label="Ask a question about your documents"
-            disabled={isGenerating}
           />
         </div>
         <button
@@ -491,7 +490,13 @@ function AiAssistantView({
           </div>
         </div>
       ) : (
-        <div className="ai-feed-container" tabIndex={0} aria-live="polite" aria-label="Conversation">
+        <div
+          className="ai-feed-container"
+          tabIndex={0}
+          aria-live="polite"
+          aria-busy={isGenerating}
+          aria-label="Conversation"
+        >
           <div className="ai-messages-list">
             {messages.map((msg, idx) => (
               <article

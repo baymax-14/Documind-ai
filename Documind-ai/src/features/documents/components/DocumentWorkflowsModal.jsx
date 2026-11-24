@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useOverlay } from '../hooks/useOverlay.js'
 import {
   BookOpen,
   Check,
@@ -62,16 +63,8 @@ export default function DocumentWorkflowsModal({
     }
   }, [isOpen, initialTab, document])
 
-  // Close on Escape
-  useEffect(() => {
-    function handleKeyDown(e) {
-      if (e.key === 'Escape' && isOpen) {
-        onClose?.()
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
+  const cardRef = useRef(null)
+  useOverlay({ active: Boolean(isOpen), containerRef: cardRef, onClose })
 
   // Generate summary
   const summaryResult = useMemo(() => {
@@ -128,6 +121,7 @@ export default function DocumentWorkflowsModal({
     <div className="modal-backdrop" onClick={onClose} role="presentation">
       <div
         className="workflow-modal-card"
+        ref={cardRef}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

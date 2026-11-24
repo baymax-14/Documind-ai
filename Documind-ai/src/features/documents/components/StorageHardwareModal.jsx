@@ -1,5 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
+import { useOverlay } from '../hooks/useOverlay.js'
 import {
+  Cloud,
   Cpu,
   Database,
   HardDrive,
@@ -15,7 +17,8 @@ function formatBytes(bytes) {
 }
 
 /**
- * Storage & hardware diagnostics for the local prototype.
+ * Storage, device and connection details. Also home to the server status
+ * and token usage that used to sit in the page header.
  *
  * @param {Object} props
  * @param {boolean} props.isOpen
@@ -25,6 +28,11 @@ function formatBytes(bytes) {
  * @param {number} props.docCount
  * @param {number} props.storedCount
  * @param {string} props.modelStatus
+ * @param {string} [props.activeModelName]
+ * @param {{ state: string, error?: string, backendInfo?: Object }} [props.connectionInfo]
+ * @param {() => void} [props.onCheckConnection]
+ * @param {{ totalTokens: number, budget: number }} [props.tokenMetrics]
+ * @param {() => void} [props.onOpenTokenDetails]
  * @param {() => void} props.onClearLibrary
  */
 function StorageHardwareModal({
@@ -35,55 +43,17 @@ function StorageHardwareModal({
   docCount,
   storedCount,
   modelStatus,
+  activeModelName = '',
+  connectionInfo = { state: 'disconnected' },
+  onCheckConnection,
+  tokenMetrics = null,
+  onOpenTokenDetails,
   onClearLibrary,
 }) {
   const modalRef = useRef(null)
   const closeButtonRef = useRef(null)
-  const returnFocusRef = useRef(null)
-  const onCloseRef = useRef(onClose)
 
-  useEffect(() => {
-    onCloseRef.current = onClose
-  }, [onClose])
-
-  useEffect(() => {
-    if (!isOpen) return undefined
-
-    returnFocusRef.current = document.activeElement
-    closeButtonRef.current?.focus()
-
-    function handleKeyDown(e) {
-      if (e.key === 'Escape') {
-        onCloseRef.current()
-        return
-      }
-
-      if (e.key !== 'Tab') return
-      const focusable = modalRef.current?.querySelectorAll(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      )
-      if (!focusable?.length) {
-        e.preventDefault()
-        modalRef.current?.focus()
-        return
-      }
-
-      const first = focusable[0]
-      const last = focusable[focusable.length - 1]
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault()
-        last.focus()
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault()
-        first.focus()
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-      returnFocusRef.current?.focus?.()
-    }
-  }, [isOpen])
+  useOverlay({ active: isOpen, containerRef: modalRef, onClose })
 
   if (!isOpen) return null
 
@@ -109,8 +79,8 @@ function StorageHardwareModal({
               <Database size={18} aria-hidden="true" />
             </span>
             <div>
-              <h2 id="storage-modal-title">Storage &amp; Hardware</h2>
-              <p>Current browser storage and hardware capability</p>
+              <h2 id="storage-modal-title">Storage and device</h2>
+              <p>What this browser stores, what this device can run, and any server connection</p>
             </div>
           </div>
           <button
@@ -210,39 +180,88 @@ function StorageHardwareModal({
                   </span>
                 </div>
                 <div className="diag-spec-item">
-                  <span className="spec-label">AI model</span>
-                  <span className="spec-value">Not connected in this prototype</span>
-                </div>
-                <div className="diag-spec-item">
-                  <span className="spec-label">Model downloads</span>
-                  <span className="spec-value">Not connected</span>
-                </div>
-                <div className="diag-spec-item">
-                  <span className="spec-label">AI runtime status</span>
-                  <span className="spec-value status-highlight">
+                  <span className="spec-label">On-device model</span>
+                  <span className={`spec-value ${modelStatus === 'error' ? 'status-highlight' : ''}`}>
                     {modelStatus === 'ready'
-                      ? 'Demo engine active; no model inference'
+                      ? `${activeModelName || 'Model'} loaded and writing answers`
                       : modelStatus === 'downloading'
-                      ? 'Demo setup progress; no model download'
-                      : 'Evidence preview; no model loaded'}
+                      ? 'Downloading…'
+                      : modelStatus === 'error'
+                      ? 'Setup failed; showing passages only'
+                      : gpuInfo && !gpuInfo.supported
+                      ? 'Not available on this device; showing passages only'
+                      : 'None loaded; showing passages only'}
+                  </span>
+                </div>
+                <div className="diag-spec-item">
+                  <span className="spec-label">Faster 16-bit models</span>
+                  <span className="spec-value">
+                    {gpuInfo?.supported ? (gpuInfo.info?.shaderF16 ? 'Supported' : 'Not supported; uses the 32-bit versions') : '—'}
                   </span>
                 </div>
               </div>
 
             </article>
+
+            {/* 3. Server connection and token usage */}
+            <article className="diag-card diag-connection">
+              <div className="diag-card-head">
+                <span className="diag-icon">
+                  <Cloud size={18} aria-hidden="true" />
+                </span>
+                <div>
+                  <h3>Server and usage</h3>
+                  <span className="diag-status-pill">
+                    {connectionInfo.state === 'connected'
+                      ? 'Server connected'
+                      : connectionInfo.state === 'checking'
+                      ? 'Checking…'
+                      : 'Working in this browser only'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="diag-specs-list">
+                <div className="diag-spec-item">
+                  <span className="spec-label">DocuMind server</span>
+                  <span className="spec-value">
+                    {connectionInfo.state === 'connected'
+                      ? `Connected${connectionInfo.backendInfo?.environment ? ` (${connectionInfo.backendInfo.environment})` : ''}. Questions ask before they are sent.`
+                      : 'None connected. Nothing is sent anywhere.'}
+                  </span>
+                </div>
+                <div className="diag-spec-item">
+                  <span className="spec-label">Tokens used this session</span>
+                  <span className="spec-value">
+                    {(tokenMetrics?.totalTokens || 0).toLocaleString()} of {(tokenMetrics?.budget || 100000).toLocaleString()} (counted only when a model writes an answer)
+                  </span>
+                </div>
+              </div>
+
+              <div className="diag-action-row">
+                <button type="button" className="secondary-button" onClick={onCheckConnection}>
+                  Check server again
+                </button>
+                {onOpenTokenDetails && (
+                  <button type="button" className="secondary-button" onClick={onOpenTokenDetails}>
+                    Token details
+                  </button>
+                )}
+              </div>
+            </article>
           </div>
 
           <div className="diag-privacy-seal">
             <div className="seal-text">
-              <h4>Prototype status</h4>
-              <p>This prototype uses browser storage. Server uploads, cloud processing, and real AI inference are not connected.</p>
+              <h4>What leaves this device</h4>
+              <p>Documents and questions stay in this browser unless you send a question to a connected server. Only model files are downloaded, and only when you turn them on.</p>
             </div>
           </div>
         </div>
 
         <footer className="storage-modal-footer">
           <span className="modal-footer-note">
-            DocuMind AI · Local Workbench v0.1.0
+            DocuMind AI 0.1.0
           </span>
           <button className="primary-button" onClick={onClose}>
             Done

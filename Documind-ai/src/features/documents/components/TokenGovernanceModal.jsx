@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useRef, useState } from 'react'
+import { useOverlay } from '../hooks/useOverlay.js'
 import {
   Check,
   Coins,
@@ -30,15 +31,8 @@ export default function TokenGovernanceModal({
 }) {
   const [copied, setCopied] = useState(false)
 
-  useEffect(() => {
-    function handleKeyDown(e) {
-      if (e.key === 'Escape' && isOpen) {
-        onClose?.()
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
+  const cardRef = useRef(null)
+  useOverlay({ active: Boolean(isOpen && tracker), containerRef: cardRef, onClose })
 
   if (!isOpen || !tracker) return null
 
@@ -65,6 +59,7 @@ export default function TokenGovernanceModal({
     <div className="modal-backdrop" onClick={onClose} role="presentation">
       <div
         className="governance-modal-card"
+        ref={cardRef}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

@@ -17,6 +17,7 @@ import { extractTablesFromText } from '../services/tableParser.js'
 import TableView from './TableView.jsx'
 import PageVisualPreview from './PageVisualPreview.jsx'
 import ReadableText from './ReadableText.jsx'
+import { useOverlay } from '../hooks/useOverlay.js'
 
 function formatSize(bytes) {
   if (!bytes) return '0 KB'
@@ -96,6 +97,10 @@ function DocumentReader({
   const readerRef = useRef(null)
   const chunkRefs = useRef(new Map())
 
+  // Focus moves into the reader, Tab stays inside, Esc closes it, and focus
+  // returns to the citation or button that opened it.
+  useOverlay({ active: Boolean(doc), containerRef: readerRef, onClose })
+
   // Extract tables from document if any exist
   const docTables = useMemo(() => {
     if (!doc) return []
@@ -138,17 +143,6 @@ function DocumentReader({
       return () => clearTimeout(timer)
     }
   }, [initialChunkIndex])
-
-  // Close on Escape key
-  useEffect(() => {
-    function handleKeyDown(event) {
-      if (event.key === 'Escape') {
-        onClose?.()
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onClose])
 
   // Copy full document text
   function handleCopy() {
@@ -218,25 +212,28 @@ function DocumentReader({
               <button
                 type="button"
                 className={`reader-toggle-btn ${viewMode === 'visual' ? 'active' : ''}`}
+                aria-pressed={viewMode === 'visual'}
                 onClick={() => setViewMode('visual')}
-                title="View document page by page with citation bounding boxes"
+                title="The extracted text of each page, with where each passage sits on it"
               >
                 <Eye size={13} />
-                <span>Page by Page</span>
+                <span>Text by page</span>
               </button>
               <button
                 type="button"
                 className={`reader-toggle-btn ${viewMode === 'text' ? 'active' : ''}`}
+                aria-pressed={viewMode === 'text'}
                 onClick={() => setViewMode('text')}
-                title="View continuous text passages"
+                title="All passages as one continuous text"
               >
                 <FileText size={13} />
-                <span>Continuous Text</span>
+                <span>Continuous text</span>
               </button>
               {docTables.length > 0 && (
                 <button
                   type="button"
                   className={`reader-toggle-btn ${viewMode === 'tables' ? 'active' : ''}`}
+                  aria-pressed={viewMode === 'tables'}
                   onClick={() => setViewMode('tables')}
                   title="View extracted tables"
                 >
@@ -298,6 +295,7 @@ function DocumentReader({
               highlightChunkIndex={selectedChunk}
               markedChunkIndex={markedChunk?.index}
               markedLabel={markedChunk?.label}
+              renderText={(t) => <HighlightedText text={t} query={filterQuery} />}
               onInspectPassage={(locator) => {
                 navigator.clipboard.writeText(locator)
                 setCopied(true)
@@ -366,9 +364,10 @@ function DocumentReader({
                           setCopied(true)
                           setTimeout(() => setCopied(false), 1500)
                         }}
-                        title="Copy this section text"
+                        aria-label={`Copy the text of ${chunk.locator}`}
+                        title="Copy this passage's text"
                       >
-                        <Copy size={12} />
+                        <Copy size={12} aria-hidden="true" />
                       </button>
                     </div>
                     <div className="reader-chunk-text">
