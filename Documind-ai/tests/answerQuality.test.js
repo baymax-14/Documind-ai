@@ -57,16 +57,26 @@ describe('Passage chunker', () => {
 describe('PDF page layout', () => {
   const item = (str, x, y, w, h = 10, hasEOL = false) => ({ str, transform: [h, 0, 0, h, x, y], width: w, height: h, hasEOL })
 
-  it('rebuilds lines, rejoins hyphenation and keeps paragraph breaks', () => {
+  it('rebuilds lines, rejoins soft-hyphenated words and keeps paragraph breaks', () => {
     const items = [
       item('Revenue grew', 50, 700, 60),
-      item('strongly in the enter-', 50, 688, 100),
+      item('strongly in the enter­', 50, 688, 100),
       item('prise segment.', 50, 676, 70),
       item('A new paragraph starts here.', 50, 640, 130),
     ]
     const { text, spans } = layoutPageText(items)
     assert.equal(text, 'Revenue grew strongly in the enterprise segment.\n\nA new paragraph starts here.')
     assert.equal(spans.length, 4)
+    // every recorded range still points at its own characters
+    for (const s of spans) assert.ok(s.end <= text.length && s.start < s.end)
+  })
+
+  it('keeps a visible hyphen at a line end, since it may belong to the word', () => {
+    const { text } = layoutPageText([
+      item('Sales grew 24% year-', 50, 700, 100),
+      item('over-year in Q3.', 50, 688, 80),
+    ])
+    assert.equal(text, 'Sales grew 24% year-over-year in Q3.')
   })
 
   it('maps a passage back to a bounding box in page percentages', () => {
@@ -212,5 +222,23 @@ describe('Reading text and snippets', async () => {
     const table = '| A | B |\n| :--- | :--- |\n| x | needle |'
     const t = extractSnippet(table, table.indexOf('needle'), 6)
     assert.ok(!t.full.includes(':---'))
+  })
+})
+
+describe('Review fixes', async () => {
+  const { passageContainsAllTerms } = await import('../src/features/documents/services/search.js')
+
+  it('never labels a passage with a heading that comes after its first line', () => {
+    const text = 'Alpha paragraph one.\n\nBeta Section Heading\n\nBeta body.'
+    assert.equal(headingBefore(text, 0), null)
+    assert.equal(headingBefore(text, text.indexOf('Beta Section')), 'Beta Section Heading')
+    assert.equal(headingBefore(text, text.indexOf('Beta body')), 'Beta Section Heading')
+  })
+
+  it('filters passages by all query words in any order, as search matches them', () => {
+    const passage = 'Customer surveys show 68% of enterprise research teams are constrained by data-retention policies.'
+    assert.equal(passageContainsAllTerms(passage, 'retention policies teams'), true)
+    assert.equal(passageContainsAllTerms(passage, 'retention policy'), true)
+    assert.equal(passageContainsAllTerms(passage, 'retention revenue'), false)
   })
 })

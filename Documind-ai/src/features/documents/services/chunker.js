@@ -175,7 +175,10 @@ export function chunkRanges(text, opts = {}) {
  * @returns {string | null}
  */
 export function headingBefore(text, offset) {
-  const before = text.slice(Math.max(0, offset - 4000), offset + 120)
+  // Look back from the passage, including only its own first line (a passage
+  // may begin with its heading), never further into it
+  const lineEnd = text.indexOf('\n', offset)
+  const before = text.slice(Math.max(0, offset - 4000), lineEnd === -1 ? text.length : lineEnd)
   const lines = before.split('\n').map((l) => l.trim()).filter(Boolean)
   for (let i = lines.length - 1; i >= 0; i--) {
     if (looksLikeHeading(lines[i])) return lines[i].replace(/^#{1,6}\s*/, '').slice(0, 60)

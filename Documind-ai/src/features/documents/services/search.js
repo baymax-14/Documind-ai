@@ -84,6 +84,37 @@ function matchesToken(chunkTokens, term) {
 }
 
 /**
+ * Whether a passage contains every meaningful word of a query, matched the same
+ * way passage search matches them (stop words ignored, word endings allowed to
+ * differ). Used by the reader's filter so "show only these passages" keeps the
+ * passages that search itself found.
+ *
+ * @param {string} text
+ * @param {string} query
+ * @returns {boolean}
+ */
+export function passageContainsAllTerms(text, query) {
+  const terms = tokenizeQuery(query, true)
+  if (terms.length === 0) return true
+  const passageTokens = new Set(tokenizeQuery(text))
+  return terms.every((term) => matchesToken(passageTokens, term) || sharesWordStem(passageTokens, term))
+}
+
+/**
+ * Looser stem check for the reader filter: two words match when they share all
+ * but their last two letters (at least four), so "policy" finds "policies" and
+ * "study" finds "studies" where the suffix rules above miss them.
+ */
+function sharesWordStem(tokens, term) {
+  if (term.length < 5) return false
+  const stem = term.slice(0, Math.max(4, term.length - 2))
+  for (const t of tokens) {
+    if (t.length >= stem.length && t.startsWith(stem) && Math.abs(t.length - term.length) <= 3) return true
+  }
+  return false
+}
+
+/**
  * @typedef {Object} SearchSnippet
  * @property {string} prefix
  * @property {string} match

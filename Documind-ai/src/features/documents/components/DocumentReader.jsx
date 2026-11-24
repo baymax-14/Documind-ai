@@ -12,6 +12,7 @@ import {
   X,
 } from 'lucide-react'
 import { extractTablesFromText } from '../services/tableParser.js'
+import { passageContainsAllTerms } from '../services/search.js'
 import TableView from './TableView.jsx'
 import PageVisualPreview from './PageVisualPreview.jsx'
 import ReadableText from './ReadableText.jsx'
@@ -159,11 +160,11 @@ function DocumentReader({
     return []
   }, [doc])
 
-  // Filter chunks if in-document search query is active
+  // Filter passages by the words typed (all of them, in any order), matched the
+  // way passage search matches them, so a search's passages survive the filter
   const displayedChunks = useMemo(() => {
     if (!filterQuery || !filterQuery.trim()) return chunks
-    const q = filterQuery.toLowerCase().trim()
-    return chunks.filter((c) => c.text.toLowerCase().includes(q))
+    return chunks.filter((c) => passageContainsAllTerms(c.text, filterQuery))
   }, [chunks, filterQuery])
 
   // Auto-scroll to target chunk on open
@@ -349,7 +350,7 @@ function DocumentReader({
               {filterQuery.trim() && displayedChunks.length > 0 && (
                 <div className="reader-filter-status" role="status">
                   <span>
-                    Showing {displayedChunks.length} of {chunks.length} passages containing “{filterQuery.trim()}”
+                    Showing {displayedChunks.length} of {chunks.length} passages containing all of “{filterQuery.trim()}”
                   </span>
                   <button type="button" className="ai-strip-btn" onClick={() => setFilterQuery('')}>
                     Show the whole document

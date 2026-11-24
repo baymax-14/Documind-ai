@@ -259,7 +259,7 @@ export default function DocumentWorkflowsModal({
                               className="inspect-source-link"
                               onClick={() => {
                                 onClose?.()
-                                onInspectPassage(document.id, sec.chunkIndex)
+                                onInspectPassage(document.id, sec.chunkIndex, 'Summarised from here')
                               }}
                               title="Jump to passage in Reader"
                             >
@@ -344,7 +344,7 @@ export default function DocumentWorkflowsModal({
                               className="inspect-source-link"
                               onClick={() => {
                                 onClose?.()
-                                onInspectPassage(document.id, field.chunkIndex)
+                                onInspectPassage(document.id, field.chunkIndex, 'Extracted from here')
                               }}
                               title="Jump to highlighted passage in Reader"
                             >
@@ -371,8 +371,10 @@ export default function DocumentWorkflowsModal({
             <div className="workflow-tab-content">
               <TableView
                 document={document}
-                onInspectCell={(locator) => {
-                  onInspectPassage?.(document.id, 0, locator)
+                onInspectCell={() => {
+                  // The table view does not know which passage holds the cell, so
+                  // open the document without marking a passage as its source
+                  onInspectPassage?.(document.id, 0, null)
                 }}
               />
             </div>

@@ -435,7 +435,14 @@ function App() {
     importFiles(files)
   }
 
-  function handleInspectPassage(docId, chunkIndex) {
+  /**
+   * Open a document in the reader at a passage.
+   * @param {string} docId
+   * @param {number} chunkIndex
+   * @param {string | null} [reason] - Label for the marked passage. Omitted: taken
+   *   from the current tab. null: open at the passage without marking it.
+   */
+  function handleInspectPassage(docId, chunkIndex, reason) {
     const doc = libraryDocs.find((d) => d.id === docId || d.backendId === docId || d.name === docId)
     if (doc) {
       const index = chunkIndex || 0
@@ -444,10 +451,10 @@ function App() {
       // Only a passage search carries its words into the reader as a highlight;
       // an assistant citation opens the document unfiltered.
       setReaderQuery(searchMode === 'evidence' ? evidenceQuery : '')
-      setReaderMark({
-        index,
-        label: searchMode === 'ai' ? 'Cited in the answer' : searchMode === 'compare' ? 'Compared passage' : 'Search match',
-      })
+      const label = reason !== undefined
+        ? reason
+        : searchMode === 'ai' ? 'Cited in the answer' : searchMode === 'compare' ? 'Compared passage' : 'Search match'
+      setReaderMark(label ? { index, label } : null)
       setReaderViewMode('text')
     }
   }

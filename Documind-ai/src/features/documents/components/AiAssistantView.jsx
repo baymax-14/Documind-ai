@@ -402,6 +402,20 @@ function AiAssistantView({
     }
   }
 
+  /**
+   * What the copy button puts on the clipboard: the answer, plus every passage it
+   * was given with its source, so the [n] markers still point somewhere once pasted.
+   * A passages-only answer's text already quotes its passages.
+   */
+  function textToCopy(msg) {
+    const sources = msg.citations || []
+    if (!sources.length || isPassageListAnswer(msg) || msg.hasEvidence === false) return msg.text
+    const list = sources
+      .map((c) => `[${c.id}] ${c.docName || c.document_name || 'Document'}, ${c.locator || 'source'}:\n"${(c.text || c.excerpt || '').trim()}"`)
+      .join('\n\n')
+    return `${msg.text}\n\nSources\n${list}`
+  }
+
   function handleCopy(text, index) {
     navigator.clipboard.writeText(text)
     setCopiedIndex(index)
@@ -539,7 +553,7 @@ function AiAssistantView({
                     {msg.sender === 'assistant' && (
                       <button
                         className="ai-copy-btn"
-                        onClick={() => handleCopy(msg.text, idx)}
+                        onClick={() => handleCopy(textToCopy(msg), idx)}
                         aria-label={copiedIndex === idx ? 'Copied' : 'Copy answer with its passages'}
                         title="Copy answer with its passages"
                       >

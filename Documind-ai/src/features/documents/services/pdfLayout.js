@@ -8,7 +8,8 @@
  * Rebuild readable text from pdf.js text items.
  *
  * Items on the same baseline are joined with a space when there is a visible
- * gap; a new line becomes a space (with end-of-line hyphens rejoined); a large
+ * gap; a new line becomes a space (a soft hyphen at a line end is dropped and the
+ * word rejoined; a visible hyphen is kept, since it may belong to the word); a large
  * vertical gap, a jump upward (new column) or a change to a larger font starts
  * a new paragraph. Each item's character range and position are recorded.
  *
@@ -50,8 +51,15 @@ export function layoutPageText(items) {
         const headingChange = h > 1.25 * median || prev.h > 1.25 * median
         if (drop > 1.8 * Math.max(median, prev.h) || drop < -median || headingChange) {
           text = text.replace(/\s+$/, '') + '\n\n'
-        } else if (/[a-z]-$/.test(text) && /^[a-z]/.test(it.str)) {
+        } else if (/­$/.test(text)) {
+          // A soft hyphen only marks where the line broke a word: drop it and rejoin
+          // (and keep the previous item's recorded range in step with the text).
           text = text.slice(0, -1)
+          const last = spans[spans.length - 1]
+          if (last && last.end > text.length) last.end = text.length
+        } else if (/[A-Za-z]-$/.test(text) && /^[a-z]/.test(it.str)) {
+          // A visible hyphen at a line end may belong to the word ("year-over-year"),
+          // so it stays; only the line break is removed.
         } else if (!/\s$/.test(text)) {
           text += ' '
         }
