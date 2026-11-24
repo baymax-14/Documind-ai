@@ -27,19 +27,17 @@ function SearchResultsView({ query, results, totalMatches, onInspect, onClear })
         <div className="search-results-title">
           <Search size={18} aria-hidden="true" />
           <h3>
-            Evidence matches for <span className="search-query-tag">"{query}"</span>
+            Passages matching <span className="search-query-tag">"{query}"</span>
           </h3>
           <span className="search-count-pill">{totalMatches} passage{totalMatches === 1 ? '' : 's'}</span>
-          <span className="neural-rerank-active-badge" title="Results re-ranked by how many query terms appear and how close together they are">
+          <span className="neural-rerank-active-badge">
             <Zap size={11} aria-hidden="true" />
-            <span>Term-proximity re-ranked</span>
+            <span>Closest matches first</span>
           </span>
         </div>
         <button
           className="search-clear-btn"
           onClick={onClear}
-          aria-label="Clear content search"
-          title="Clear search"
         >
           <X size={15} /> Clear search
         </button>
@@ -48,7 +46,7 @@ function SearchResultsView({ query, results, totalMatches, onInspect, onClear })
       <div className="search-evidence-note">
         <FileText size={14} aria-hidden="true" />
         <span>
-          Local full-text search across extracted document text. Click <strong>Inspect passage</strong> to jump directly to the cited source locator.
+          Searches the text of your documents in this browser. <strong>Inspect passage</strong> opens it in its document.
         </span>
       </div>
 
@@ -67,16 +65,6 @@ function SearchResultsView({ query, results, totalMatches, onInspect, onClear })
                       <span className="evidence-locator-tag">
                         {result.locator}
                       </span>
-                      {result.rerankScore !== undefined && (
-                        <span
-                          className="evidence-rerank-pill"
-                          title={`Re-rank score: ${Math.round(result.rerankScore * 100)}% · Initial Rank #${result.originalRank || 1}${result.rankDelta ? ` (Shift: ${result.rankDelta > 0 ? `+${result.rankDelta}` : result.rankDelta})` : ''}`}
-                        >
-                          <Zap size={10} aria-hidden="true" />
-                          <span>Re-Rank: {Math.round(result.rerankScore * 100)}%</span>
-                          {result.rankDelta > 0 && <span className="rerank-climb-badge">+{result.rankDelta}</span>}
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>

@@ -63,7 +63,6 @@ import {
 
 const DocumentReader = lazy(() => import('./features/documents/components/DocumentReader.jsx'))
 const AiAssistantView = lazy(() => import('./features/documents/components/AiAssistantView.jsx'))
-const ExcerptConsentModal = lazy(() => import('./features/documents/components/ExcerptConsentModal.jsx'))
 const ComparisonView = lazy(() => import('./features/documents/components/ComparisonView.jsx'))
 const DocumentWorkflowsModal = lazy(() => import('./features/documents/components/DocumentWorkflowsModal.jsx'))
 const ConversationHistoryModal = lazy(() => import('./features/documents/components/ConversationHistoryModal.jsx'))
@@ -121,8 +120,12 @@ function App() {
     }
   }, [dark])
 
-  const [query, setQuery] = useState('')
+  // Each tab keeps its own search text, so a passage search never filters the file list
+  const [fileQuery, setFileQuery] = useState('')
+  const [evidenceQuery, setEvidenceQuery] = useState('')
   const [searchMode, setSearchMode] = useState('files') // 'files' | 'evidence' | 'ai' | 'compare'
+  const query = searchMode === 'evidence' ? evidenceQuery : fileQuery
+  const setQuery = searchMode === 'evidence' ? setEvidenceQuery : setFileQuery
   const [view, setView] = useState('list')
   const [filter, setFilter] = useState('All files')
   const [ascending, setAscending] = useState(false)
@@ -135,6 +138,8 @@ function App() {
   const [readerDoc, setReaderDoc] = useState(null)
   const [readerChunkIndex, setReaderChunkIndex] = useState(0)
   const [readerQuery, setReaderQuery] = useState('')
+  // Which passage the reader marks, and why: { index, label } or null
+  const [readerMark, setReaderMark] = useState(null)
   const [readerViewMode, setReaderViewMode] = useState('text')
 
   // Milestone 4: AI Assistant & Excerpt Consent state
@@ -297,7 +302,7 @@ function App() {
     engineRef.current = null
     setActiveModelName('')
     setModelStatus('not_configured')
-    setNotice('Model unloaded from GPU memory. Reverted to Evidence Preview.')
+    setNotice('Model unloaded. Answers now show the matching passages only.')
   }
 
   const greeting = getGreeting()
@@ -329,6 +334,9 @@ function App() {
   const semantic = useSemanticIndex(libraryDocs)
 
   const storedCount = libraryDocs.filter((d) => d.storedInBrowser).length
+  // Once the reader has their own documents saved, the upload area shrinks to
+  // one line so asking and reading come first (it grows again while dragging).
+  const uploadCompact = storedCount > 0 && privacyAccepted && !dragging
   const demoCount = libraryDocs.filter((d) => d.sample).length
   const stagedReadyCount = stagedDocs.filter((d) => d.status === 'ready').length
   const stagedExtractingCount = stagedDocs.filter((d) => d.status === 'extracting').length
@@ -431,9 +439,16 @@ function App() {
   function handleInspectPassage(docId, chunkIndex) {
     const doc = libraryDocs.find((d) => d.id === docId || d.backendId === docId || d.name === docId)
     if (doc) {
+      const index = chunkIndex || 0
       setReaderDoc(doc)
-      setReaderChunkIndex(chunkIndex || 0)
-      setReaderQuery(query)
+      setReaderChunkIndex(index)
+      // Only a passage search carries its words into the reader as a highlight;
+      // an assistant citation opens the document unfiltered.
+      setReaderQuery(searchMode === 'evidence' ? evidenceQuery : '')
+      setReaderMark({
+        index,
+        label: searchMode === 'ai' ? 'Cited in the answer' : searchMode === 'compare' ? 'Compared passage' : 'Search match',
+      })
       setReaderViewMode('visual')
     }
   }
@@ -442,6 +457,7 @@ function App() {
     setReaderDoc(doc)
     setReaderChunkIndex(0)
     setReaderQuery('')
+    setReaderMark(null)
     setReaderViewMode(mode)
   }
 
@@ -461,19 +477,34 @@ function App() {
       vectorsFor: semantic.vectorsFor,
     })
 
-    // Open the Excerpt Consent dialog so user can inspect and approve candidate chunks
-    setPendingConsent({
-      question,
-      chunks: retrieval.chunks,
-      retrieval: retrieval.method,
-    })
+    const payload = { question, chunks: retrieval.chunks, retrieval: retrieval.method }
+
+    // Everything below runs in this browser (the on-device model included), and
+    // every passage used is listed under the answer, so it runs at once. Only a
+    // connected server receives the question, so that asks first, inline.
+    if (connectionInfo.state === 'connected') {
+      setPendingConsent(payload)
+    } else {
+      generateAnswer(payload)
+    }
   }
 
-  // Execute AI generation once consent is approved
-  async function handleApproveConsentAndGenerate() {
+  // Inline confirmation before a question goes to the connected server
+  function handleSendToServer() {
     if (!pendingConsent) return
-    const { question, chunks, retrieval } = pendingConsent
+    const payload = pendingConsent
     setPendingConsent(null)
+    generateAnswer(payload)
+  }
+
+  function handleAnswerLocally() {
+    if (!pendingConsent) return
+    const payload = pendingConsent
+    setPendingConsent(null)
+    generateAnswer({ ...payload, localOnly: true })
+  }
+
+  async function generateAnswer({ question, chunks, retrieval, localOnly = false }) {
 
     const convId = activeConversationId || safeId()
     if (!activeConversationId) setActiveConversationId(convId)
@@ -495,7 +526,7 @@ function App() {
       let assistantMsg = null
 
       // Hybrid Backend Intelligence: attempt server-grounded QA when connected
-      if (connectionInfo.state === 'connected') {
+      if (!localOnly && connectionInfo.state === 'connected') {
         try {
           const backendRes = await askBackendQuestion({
             question,
@@ -831,7 +862,7 @@ function App() {
               </a>
               <div className="mobile-menu-note">
                 <strong>Local-first storage</strong>
-                <span>Documents are stored in this browser's IndexedDB. Nothing leaves your device.</span>
+                <span>Documents are saved in this browser. Nothing leaves your device.</span>
               </div>
             </nav>
           )}
@@ -872,11 +903,10 @@ function App() {
             <button
               className="hardware-status-pill"
               onClick={() => setStorageModalOpen(true)}
-              title="Inspect local storage and WebGPU hardware status"
-              aria-label="Inspect local storage and WebGPU hardware status"
+              title="Storage used and whether this device can run the on-device model"
             >
               <Cpu size={14} aria-hidden="true" />
-              <span>{gpuInfo ? (gpuInfo.supported ? 'WebGPU Ready' : 'WebGPU Unavailable') : 'WebGPU Checking'} · IndexedDB</span>
+              <span>{gpuInfo ? (gpuInfo.supported ? 'On-device AI available' : 'Passages only on this device') : 'Checking this device'}</span>
               <span className={`status-indicator ${gpuInfo?.supported ? 'indicator-green' : 'indicator-yellow'}`} />
             </button>
             <TokenGovernancePill
@@ -896,7 +926,7 @@ function App() {
             <div>
               <h1>Your document workspace</h1>
               <p className="subtitle">
-                <span className="greeting">{greeting}, Anand.</span> Search passages, inspect cited locators, and preview grounded evidence excerpts from your documents.
+                <span className="greeting">{greeting}, Anand.</span> Ask questions, find passages and check each answer against the page it came from.
               </p>
             </div>
           </section>
@@ -905,7 +935,7 @@ function App() {
 
           {/* Upload Area */}
           <section
-            className="upload-panel"
+            className={`upload-panel ${uploadCompact ? 'is-compact' : ''}`}
             onDragEnter={(event) => {
               event.preventDefault()
               setDragging(true)
@@ -925,7 +955,11 @@ function App() {
                 <FilePlus2 size={24} aria-hidden="true" />
               </div>
               <div className="drop-copy">
-                <h2>Select documents to extract</h2>
+                <h2>{uploadCompact ? 'Add documents' : 'Select documents to extract'}</h2>
+                {uploadCompact ? (
+                  <p className="drop-compact-note">Drop files here: PDF, DOCX or TXT up to 25 MB, read in this browser.</p>
+                ) : (
+                <>
                 <p>
                   Drop files here or choose from your computer. Files are read in this browser and staged for your review.
                 </p>
@@ -938,6 +972,8 @@ function App() {
                     <Lock size={11} aria-hidden="true" /> 100% on-device
                   </span>
                 </div>
+                </>
+                )}
               </div>
               <button
                 className="secondary-button"
@@ -963,14 +999,16 @@ function App() {
                 }}
               />
             </div>
-            <div className="prototype-strip">
-              <span className="prototype-icon">
-                <Info size={17} aria-hidden="true" />
-              </span>
-              <p>
-                <strong>Stored in this browser</strong> Text extraction runs on-device. Saved documents are stored in IndexedDB on this device and persist across reloads. No file bytes or text are sent to any server.
-              </p>
-            </div>
+            {!uploadCompact && (
+              <div className="prototype-strip">
+                <span className="prototype-icon">
+                  <Info size={17} aria-hidden="true" />
+                </span>
+                <p>
+                  <strong>Stored in this browser</strong> Text is read on this device. Saved documents stay in this browser across visits and are never sent to a server.
+                </p>
+              </div>
+            )}
           </section>
 
           {/* Staging / Import Queue */}
@@ -1181,6 +1219,10 @@ function App() {
                   messages={aiMessages}
                   isGenerating={isAiGenerating}
                   onAskQuestion={handleInitiateAiQuestion}
+                  pendingServerQuestion={pendingConsent}
+                  onSendToServer={handleSendToServer}
+                  onAnswerLocally={handleAnswerLocally}
+                  onCancelServerQuestion={() => setPendingConsent(null)}
                   onCancelGeneration={handleCancelAiGeneration}
                   onClearChat={() => {
                     setAiMessages([])
@@ -1196,7 +1238,6 @@ function App() {
                   onStartModelDownload={handleStartModelDownload}
                   onCancelModelDownload={handleCancelModelDownload}
                   onUnloadModel={handleUnloadModel}
-                  onUseEvidencePreview={() => setModelStatus('not_configured')}
                   models={EVALUATED_MODELS}
                   selectedModelId={selectedModelId}
                   onSelectModel={handleSelectModel}
@@ -1416,18 +1457,6 @@ function App() {
           </footer>
         </div>
 
-        {/* Excerpt Consent Modal (Appears before sending chunks to AI) */}
-        {pendingConsent && (
-          <ExcerptConsentModal
-            key="excerpt-consent"
-            question={pendingConsent.question}
-            chunks={pendingConsent.chunks}
-            retrieval={pendingConsent.retrieval}
-            onApprove={handleApproveConsentAndGenerate}
-            onCancel={() => setPendingConsent(null)}
-          />
-        )}
-
         {/* Storage & WebGPU Hardware Diagnostics Modal */}
         <StorageHardwareModal
           isOpen={storageModalOpen}
@@ -1485,6 +1514,7 @@ function App() {
             doc={readerDoc}
             initialChunkIndex={readerChunkIndex}
             initialQuery={readerQuery}
+            markedChunk={readerMark}
             initialViewMode={readerViewMode}
             onClose={() => setReaderDoc(null)}
             fromAssistant={searchMode === 'ai'}

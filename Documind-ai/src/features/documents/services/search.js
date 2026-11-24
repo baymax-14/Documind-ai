@@ -106,6 +106,22 @@ function matchesToken(chunkTokens, term) {
  */
 
 /**
+ * Make a short excerpt read as text: drop markdown heading marks and table
+ * rules, show table cell borders as separators, and fold line breaks.
+ *
+ * @param {string} s
+ * @returns {string}
+ */
+function cleanSnippetText(s) {
+  return s
+    .replace(/\|\s*:?-{3,}:?\s*(?=\|)/g, '')
+    .replace(/(^|\n)\s*#{1,6}\s+/g, '$1')
+    .replace(/\s*\|\s*/g, ' · ')
+    .replace(/(?:\s*·\s*){2,}/g, ' · ')
+    .replace(/\s+/g, ' ')
+}
+
+/**
  * Extract a contextual snippet around a match position in text.
  *
  * @param {string} text       - Full chunk text.
@@ -115,12 +131,23 @@ function matchesToken(chunkTokens, term) {
  * @returns {SearchSnippet}
  */
 export function extractSnippet(text, matchStart, matchLen, radius = 60) {
-  const start = Math.max(0, matchStart - radius)
-  const end = Math.min(text.length, matchStart + matchLen + radius)
+  let start = Math.max(0, matchStart - radius)
+  let end = Math.min(text.length, matchStart + matchLen + radius)
 
-  const prefix = (start > 0 ? '…' : '') + text.slice(start, matchStart)
+  // Cut on word boundaries so a snippet never starts or ends mid-word
+  if (start > 0) {
+    const space = text.slice(start, matchStart).search(/\s/)
+    start = space === -1 ? matchStart : start + space + 1
+  }
+  if (end < text.length) {
+    const tail = text.slice(matchStart + matchLen, end)
+    const lastSpace = tail.search(/\s\S*$/)
+    end = lastSpace === -1 ? matchStart + matchLen : matchStart + matchLen + lastSpace
+  }
+
+  const prefix = (start > 0 ? '…' : '') + cleanSnippetText(text.slice(start, matchStart))
   const match = text.slice(matchStart, matchStart + matchLen)
-  const suffix = text.slice(matchStart + matchLen, end) + (end < text.length ? '…' : '')
+  const suffix = cleanSnippetText(text.slice(matchStart + matchLen, end)) + (end < text.length ? '…' : '')
 
   return {
     prefix,

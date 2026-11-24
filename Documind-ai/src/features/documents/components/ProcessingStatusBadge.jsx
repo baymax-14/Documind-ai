@@ -14,7 +14,7 @@ export default function ProcessingStatusBadge({ status, error, onRetry, classNam
     return (
       <span
         className={`processing-badge badge-local ${className}`}
-        title="Stored securely in browser IndexedDB. Not transmitted to server."
+        title="Saved in this browser only"
       >
         <HardDrive size={11} aria-hidden="true" />
         <span>Local</span>

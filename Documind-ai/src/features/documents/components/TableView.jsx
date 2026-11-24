@@ -152,7 +152,7 @@ export default function TableView({ document: doc, tables: propTables, onInspect
       {copiedCellLocator && (
         <div className="table-copied-toast" role="status">
           <Check size={14} />
-          <span>Coordinate copied: <strong>{copiedCellLocator}</strong></span>
+          <span>Copied: <strong>{copiedCellLocator}</strong></span>
         </div>
       )}
 
@@ -249,7 +249,7 @@ export default function TableView({ document: doc, tables: propTables, onInspect
             </div>
 
             <div className="table-footer-hint">
-              <span>💡 Click any cell to copy its verifiable coordinate locator to clipboard.</span>
+              <span>Click a cell to copy where it is: page, table, row and column.</span>
               <span className="table-dims-pill">{table.rowCount} rows × {table.colCount} cols</span>
             </div>
           </div>

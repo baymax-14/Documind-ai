@@ -85,11 +85,20 @@ export function findTopChunkForDoc(document, query) {
   return bestChunk
 }
 
+/** Terms that both passages use but that carry no topic on their own. */
+const GENERIC_TERMS = new Set([
+  'also', 'well', 'including', 'include', 'includes', 'within', 'across', 'based', 'new',
+  'one', 'two', 'three', 'per', 'via', 'may', 'must', 'will', 'shall', 'use', 'using',
+  'first', 'primary', 'document', 'documents', 'section', 'page',
+])
+
 /**
- * Synthesizes the relationship between document excerpts for a dimension.
+ * Describes what the passages for one dimension have in common, as facts only:
+ * which documents have a passage on it and which terms they share. It never
+ * judges whether the documents agree; the reader compares the passages.
  *
  * @param {Array<{ docName: string, hasEvidence: boolean, text: string }>} entries
- * @returns {{ status: 'consensus' | 'contrast' | 'partial' | 'uncovered', summary: string }}
+ * @returns {{ status: 'covered' | 'partial' | 'uncovered', summary: string, sharedTerms: string[] }}
  */
 function synthesizeDimension(entries) {
   const withEvidence = entries.filter((e) => e.hasEvidence)
@@ -97,39 +106,35 @@ function synthesizeDimension(entries) {
   if (withEvidence.length === 0) {
     return {
       status: 'uncovered',
-      summary: 'Neither document contains relevant evidence on this topic.',
+      summary: 'No passage on this topic was found in any of the documents.',
+      sharedTerms: [],
     }
   }
 
-  if (withEvidence.length === 1) {
+  if (withEvidence.length < entries.length) {
+    const names = withEvidence.map((e) => e.docName).join(', ')
     return {
       status: 'partial',
-      summary: `Only ${withEvidence[0].docName} addresses this topic directly.`,
+      summary: withEvidence.length === 1
+        ? `Only ${names} has a passage on this topic.`
+        : `Only ${names} have a passage on this topic.`,
+      sharedTerms: [],
     }
   }
 
-  // Check for common focal keywords across the retrieved texts
-  const tokenSets = withEvidence.map((e) => new Set(tokenizeQuery(e.text)))
-  let overlapCount = 0
+  // Terms every passage uses (content words only, in first-passage order)
+  const tokenSets = withEvidence.map((e) => new Set(tokenizeQuery(e.text, true)))
+  const sharedTerms = [...tokenSets[0]].filter(
+    (t) => t.length > 3 && !GENERIC_TERMS.has(t) && !/^\d+$/.test(t) && tokenSets.slice(1).every((set) => set.has(t)),
+  )
 
-  if (tokenSets.length >= 2) {
-    for (const token of tokenSets[0]) {
-      if (tokenSets.slice(1).every((set) => set.has(token))) {
-        overlapCount += 1
-      }
-    }
-  }
-
-  if (overlapCount >= 2) {
-    return {
-      status: 'consensus',
-      summary: `Both documents share aligned focal points on this topic (${withEvidence.map((e) => e.docName).join(' and ')}).`,
-    }
-  }
-
+  const who = entries.length === 2 ? 'Both documents have' : `All ${entries.length} documents have`
   return {
-    status: 'contrast',
-    summary: `Documents approach this topic from different perspectives or distinct scopes.`,
+    status: 'covered',
+    summary: sharedTerms.length > 0
+      ? `${who} a passage on this topic. Words they both use: ${sharedTerms.slice(0, 6).join(', ')}.`
+      : `${who} a passage on this topic, with no words in common. Read them side by side below.`,
+    sharedTerms: sharedTerms.slice(0, 6),
   }
 }
 

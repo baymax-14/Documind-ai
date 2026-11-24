@@ -24,25 +24,22 @@ import {
   downloadMarkdownFile,
   exportComparisonToMarkdown,
 } from '../services/export.js'
+import ReadableText from './ReadableText.jsx'
 
 /**
  * Status styling map for comparison synthesis badges.
  */
 const STATUS_META = {
-  consensus: {
-    label: 'Aligned Focal Points',
+  covered: {
+    label: 'In every document',
     className: 'badge-consensus',
   },
-  contrast: {
-    label: 'Different Angles',
-    className: 'badge-contrast',
-  },
   partial: {
-    label: 'Unique Evidence',
+    label: 'In some documents',
     className: 'badge-partial',
   },
   uncovered: {
-    label: 'No Evidence Located',
+    label: 'Not found',
     className: 'badge-uncovered',
   },
 }
@@ -159,7 +156,7 @@ export default function ComparisonView({
               <h2>Cross-Document Comparison</h2>
             </div>
             <p className="comparison-description">
-              Select 2 or more documents to contrast viewpoints, methodologies, and findings side-by-side with verified locators.
+              Choose 2 or more documents to read their passages on each topic side by side, each with its page.
             </p>
           </div>
 
@@ -320,7 +317,7 @@ export default function ComparisonView({
 
           <div className="dimensions-stack">
             {comparisonResult.dimensions.map((dim) => {
-              const statusMeta = STATUS_META[dim.synthesis.status] || STATUS_META.contrast
+              const statusMeta = STATUS_META[dim.synthesis.status] || STATUS_META.partial
 
               return (
                 <article key={dim.id} className="dimension-card">
@@ -332,7 +329,7 @@ export default function ComparisonView({
                       </span>
                     </div>
                     <p className="synthesis-text">
-                      <strong>Synthesis:</strong> {dim.synthesis.summary}
+                      {dim.synthesis.summary}
                     </p>
                   </header>
 
@@ -351,7 +348,7 @@ export default function ComparisonView({
 
                         {entry.hasEvidence ? (
                           <div className="excerpt-box">
-                            <p className="excerpt-quote">"{entry.text}"</p>
+                            <ReadableText className="excerpt-quote" text={entry.text} />
 
                             <div className="excerpt-footer">
                               <span className="locator-tag">{entry.locator}</span>

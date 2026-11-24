@@ -21,7 +21,7 @@ function PrivacyNotice({ onAccept }) {
           </li>
           <li>
             <Info size={15} aria-hidden="true" />
-            <span>Files are staged in memory until you choose <strong>Add to local library</strong> to save them in your browser's local IndexedDB.</span>
+            <span>Files wait in an import queue until you choose <strong>Add to local library</strong>, which saves them in this browser.</span>
           </li>
           <li>
             <Info size={15} aria-hidden="true" />
@@ -29,7 +29,7 @@ function PrivacyNotice({ onAccept }) {
           </li>
           <li>
             <Info size={15} aria-hidden="true" />
-            <span>Optional on-device AI uses local WebGPU hardware. Model weights are downloaded once and cached locally for offline synthesis; documents and prompts remain 100% on-device.</span>
+            <span>Written answers are optional and come from a model that runs on your graphics card. It downloads once and then works offline; your documents and questions stay on this device.</span>
           </li>
         </ul>
         <p className="privacy-note">

@@ -27,6 +27,7 @@ import {
   VLM_PROMPT_TEMPLATES,
 } from '../services/chartReasoning.js'
 import { copyToClipboard } from '../services/export.js'
+import ReadableText from './ReadableText.jsx'
 
 /**
  * Interactive Visual Page Preview & Bounding Box Grounding Component.
@@ -37,13 +38,17 @@ import { copyToClipboard } from '../services/export.js'
  * @param {Object} props
  * @param {import('../types/document.js').DocRecord} props.document
  * @param {number} [props.initialPage=1]
- * @param {number} [props.highlightChunkIndex]
+ * @param {number} [props.highlightChunkIndex] - Passage to bring into view.
+ * @param {number} [props.markedChunkIndex] - Passage to mark (only when there is a reason).
+ * @param {string} [props.markedLabel] - Why it is marked, e.g. "Cited in the answer".
  * @param {(locator: string) => void} [props.onInspectPassage]
  */
 export default function PageVisualPreview({
   document: doc,
   initialPage = 1,
   highlightChunkIndex,
+  markedChunkIndex,
+  markedLabel = 'Cited in the answer',
   onInspectPassage,
 }) {
   const [currentPage, setCurrentPage] = useState(initialPage)
@@ -293,8 +298,9 @@ export default function PageVisualPreview({
           <div className="thumbnail-list">
             {pages.map((p) => {
               const hasCitedChunk =
-                highlightChunkIndex !== undefined &&
-                p.chunks.some((c) => c.index === highlightChunkIndex)
+                markedChunkIndex !== undefined &&
+                markedChunkIndex !== null &&
+                p.chunks.some((c) => c.index === markedChunkIndex)
 
               return (
                 <button
@@ -340,8 +346,9 @@ export default function PageVisualPreview({
               <div className="page-card-surface">
                 {activePage.chunks.map((chunk) => {
                   const isCited =
-                    highlightChunkIndex !== undefined &&
-                    highlightChunkIndex === chunk.index
+                    markedChunkIndex !== undefined &&
+                    markedChunkIndex !== null &&
+                    markedChunkIndex === chunk.index
 
                   return (
                     <div
@@ -352,10 +359,10 @@ export default function PageVisualPreview({
                     >
                       <div className="chunk-locator-pill">
                         <span>{chunk.locator}</span>
-                        {isCited && <span className="chunk-cited-tag">Cited Evidence</span>}
+                        {isCited && <span className="chunk-cited-tag">{markedLabel}</span>}
                         <ExternalLink size={11} aria-hidden="true" />
                       </div>
-                      <p className="chunk-body-text">{chunk.text}</p>
+                      <ReadableText className="chunk-body-text" text={chunk.text} />
                     </div>
                   )
                 })}
@@ -384,7 +391,7 @@ export default function PageVisualPreview({
 
               {/* Page Footer */}
               <div className="page-card-footer">
-                <span>DocuMind AI Grounded Provenance Engine</span>
+                <span>DocuMind AI</span>
                 <span>Page {activePage.pageNumber} / {pages.length}</span>
               </div>
             </div>

@@ -85,4 +85,24 @@ describe('Cross-Document Comparison Service', () => {
     assert.equal(demo2Entry.hasEvidence, false)
     assert.equal(customDim.synthesis.status, 'partial')
   })
+
+  it('reports only facts per topic and never claims the documents agree', () => {
+    const result = compareDocuments({
+      documents: SEED_DOCS,
+      docIds: SEED_DOCS.slice(0, 2).map((d) => d.id),
+    })
+    assert.equal(result.success, true)
+    for (const dim of result.dimensions) {
+      assert.ok(['covered', 'partial', 'uncovered'].includes(dim.synthesis.status))
+      assert.doesNotMatch(dim.synthesis.summary, /align|agree|consensus|perspective/i)
+      if (dim.synthesis.status === 'covered') {
+        // Every shared word really appears in every passage
+        for (const term of dim.synthesis.sharedTerms) {
+          for (const entry of dim.entries) {
+            assert.match(entry.text.toLowerCase(), new RegExp(`\\b${term}\\b`))
+          }
+        }
+      }
+    }
+  })
 })

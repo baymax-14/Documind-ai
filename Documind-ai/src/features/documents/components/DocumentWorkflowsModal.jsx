@@ -145,10 +145,10 @@ export default function DocumentWorkflowsModal({
               </h2>
               <p className="workflow-modal-subtitle">
                 {activeTab === 'summary'
-                  ? 'Hierarchical section summary anchored to verifiable source passages.'
+                  ? 'A summary of each section, with the passage each point comes from.'
                   : activeTab === 'extract'
-                  ? 'Structured entity extraction with supporting excerpt citations.'
-                  : 'Cell-level coordinate matrix, locator extraction, and CSV/Markdown export.'}
+                  ? 'Key fields pulled from the document, each with the passage it was found in.'
+                  : 'Tables found in the document, with where each cell is. Export as CSV or Markdown.'}
               </p>
             </div>
           </div>

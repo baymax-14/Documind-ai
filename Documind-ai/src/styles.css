@@ -2390,7 +2390,6 @@ button:disabled {
 
 .ai-model-option.is-selected {
   border-color: var(--red);
-  box-shadow: inset 3px 0 0 var(--red);
 }
 
 .ai-model-option input {
@@ -6786,4 +6785,363 @@ button:disabled {
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Ask flow: the question comes first. One setup strip says how answers are
+   produced and how passages are found; the model picker opens from it.
+   --------------------------------------------------------------------------- */
+.app .ai-chat-header {
+  padding: 12px 18px;
+}
+.app .ai-chat-title h3 {
+  font: 700 15px/1.2 var(--heading);
+}
+
+.app .ai-chat-section {
+  container: ai-panel / inline-size;
+}
+.app .ai-setup-strip {
+  border-bottom: 1px solid var(--ink);
+  background: var(--surface);
+}
+.app .ai-strip-row {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 9px 18px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+.app .ai-strip-row + .ai-strip-row,
+.app .ai-model-picker-panel + .ai-strip-row,
+.app .ai-strip-progress + .ai-strip-row {
+  border-top: 1px solid var(--line);
+}
+.app .ai-strip-label {
+  font: 600 11px/1.3 var(--heading);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.app .ai-strip-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.app .ai-strip-value.is-error {
+  color: var(--red-text);
+}
+.app .ai-strip-value .ai-active-dot {
+  flex: none;
+  border: 0;
+}
+.app .ai-strip-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.app .ai-strip-btn {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--ink);
+  background: var(--surface);
+  color: var(--ink);
+  font: 600 11.5px/1.2 var(--body);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.app .ai-strip-btn:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+.app .ai-strip-btn[aria-expanded="true"] {
+  border-color: var(--red);
+  box-shadow: inset 0 -2px 0 var(--red);
+}
+.app .ai-strip-progress {
+  display: grid;
+  gap: 6px;
+  padding: 0 18px 12px calc(18px + 76px + 12px);
+}
+.app .ai-strip-progress .ai-download-step {
+  font-size: 11.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.app .ai-model-picker-panel {
+  display: grid;
+  gap: 12px;
+  padding: 4px 18px 16px calc(18px + 76px + 12px);
+}
+.app .ai-picker-intro {
+  margin: 0;
+  max-width: 68ch;
+  font: 15px/1.55 var(--read);
+  color: var(--ink);
+}
+.app .ai-model-picker {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.app .ai-model-option-tag {
+  border-color: var(--ink);
+  color: var(--ink);
+  font-size: 11px;
+}
+.app .ai-model-option.is-selected .ai-model-option-tag {
+  border-color: var(--red);
+  color: var(--red-text);
+}
+.app .ai-picker-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.app .ai-picker-actions .ai-setup-btn {
+  min-height: 40px;
+}
+
+/* the question bar sits directly under the strip */
+.app .ai-ask-bar {
+  border-top: 0;
+  border-bottom: 1px solid var(--ink);
+  background: var(--paper);
+}
+.app .ai-ask-bar textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+.app .ai-ask-bar .ai-send-btn {
+  align-self: stretch;
+  min-height: 46px;
+}
+
+.app .ai-chat-section > .ai-suggested-prompts {
+  margin: 0;
+  padding: 16px 18px 18px;
+  width: auto;
+}
+.app .ai-chat-section > .ai-suggested-prompts .ai-suggested-label {
+  text-align: left;
+}
+.app .ai-prompt-chip:hover {
+  transform: none;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* passages-only answers: the passages are the answer */
+.app .ai-passage-count {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.app .ai-no-passages {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  max-width: 62ch;
+}
+.app .ai-no-passages p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.app .ai-no-passages .ai-no-passages-title {
+  color: var(--ink);
+  font-weight: 600;
+}
+.app .ai-no-passages-btn {
+  margin-top: 4px;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.app .ai-stream-stop {
+  margin-top: 10px;
+}
+
+/* the upload area shrinks to one line once documents are saved */
+.app .upload-panel.is-compact {
+  grid-template-columns: 1fr;
+  margin-bottom: 24px;
+}
+.app .upload-panel.is-compact .drop-zone {
+  min-height: 0;
+  padding: 12px 16px;
+  gap: 12px;
+  flex-wrap: nowrap;
+}
+.app .upload-panel.is-compact .upload-mark {
+  width: 24px;
+  height: 24px;
+}
+.app .upload-panel.is-compact .drop-copy {
+  flex-basis: auto;
+}
+.app .upload-panel.is-compact .drop-copy h2 {
+  font-size: 15px;
+  line-height: 1.3;
+  max-width: none;
+}
+.app .upload-panel.is-compact .drop-compact-note {
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.app .upload-panel.is-compact .drop-zone .secondary-button {
+  width: auto;
+  margin: 0;
+  flex: none;
+}
+
+/* the panel adapts to its own width, so it also works beside the sidebar */
+@container ai-panel (max-width: 720px) {
+  .app .ai-strip-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 10px 16px;
+  }
+  .app .ai-strip-actions {
+    justify-content: flex-start;
+  }
+  .app .ai-strip-progress,
+  .app .ai-model-picker-panel {
+    padding: 0 16px 14px;
+  }
+  .app .ai-model-picker {
+    grid-template-columns: 1fr;
+  }
+  .app .ai-chat-input-bar.ai-ask-bar {
+    flex-direction: column;
+    padding: 12px 16px;
+  }
+  .app .ai-ask-bar .ai-send-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .app .ai-chat-section > .ai-suggested-prompts {
+    padding: 14px 16px 16px;
+  }
+  .app .ai-prompts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .app .upload-panel.is-compact .drop-zone {
+    flex-wrap: wrap;
+  }
+  .app .upload-panel.is-compact .drop-copy {
+    flex-basis: calc(100% - 40px);
+  }
+  .app .upload-panel.is-compact .drop-zone .secondary-button {
+    width: 100%;
+  }
+}
+
+/* inline confirmation before a question goes to a connected server */
+.app .ai-server-prompt {
+  display: grid;
+  gap: 8px;
+  padding: 14px 18px 16px;
+  border-bottom: 1px solid var(--ink);
+  background: var(--surface);
+  box-shadow: inset 0 2px 0 var(--red);
+}
+.app .ai-server-prompt-title {
+  margin: 0;
+  font: 700 13px/1.35 var(--heading);
+  color: var(--ink);
+}
+.app .ai-server-prompt-question {
+  margin: 0;
+  font: 16px/1.5 var(--read);
+  color: var(--ink);
+}
+.app .ai-server-prompt-note {
+  margin: 0;
+  max-width: 68ch;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.app .ai-server-prompt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* readable passage text: headings and tables from the source shown as such */
+.app .readable-text {
+  display: grid;
+  gap: 0.6em;
+  min-width: 0;
+}
+.app .readable-text > p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+.app .readable-heading {
+  font-weight: 600;
+}
+.app .readable-table-wrap {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.app .readable-table {
+  border-collapse: collapse;
+  min-width: 100%;
+  font: 12.5px/1.4 var(--body);
+  font-variant-numeric: tabular-nums;
+}
+.app .readable-table :is(th, td) {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+.app .readable-table th {
+  font-weight: 600;
+  color: var(--muted);
+  border-bottom-color: var(--ink);
+}
+
+/* the reader says when a search filter is hiding passages */
+.app .reader-filter-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  border: 1px solid var(--ink);
+  background: var(--surface);
+  font-size: 12.5px;
+  color: var(--ink);
+}
+
+/* why a passage is marked: cited in the answer, a search match, compared */
+.app .reader-mark-tag,
+.app .chunk-cited-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border: 1px solid var(--red);
+  color: var(--red-text);
+  font: 600 11px/1.3 var(--body);
+  text-transform: none;
+  letter-spacing: 0;
 }

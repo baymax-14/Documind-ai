@@ -50,7 +50,6 @@ export {
 export { default as PrivacyNotice } from './components/PrivacyNotice.jsx'
 export { default as DocumentReader } from './components/DocumentReader.jsx'
 export { default as SearchResultsView } from './components/SearchResultsView.jsx'
-export { default as ExcerptConsentModal } from './components/ExcerptConsentModal.jsx'
 export { default as AiAssistantView } from './components/AiAssistantView.jsx'
 export { default as StorageHardwareModal } from './components/StorageHardwareModal.jsx'
 export { default as ComparisonView } from './components/ComparisonView.jsx'

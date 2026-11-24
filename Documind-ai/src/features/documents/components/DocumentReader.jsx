@@ -16,6 +16,7 @@ import {
 import { extractTablesFromText } from '../services/tableParser.js'
 import TableView from './TableView.jsx'
 import PageVisualPreview from './PageVisualPreview.jsx'
+import ReadableText from './ReadableText.jsx'
 
 function formatSize(bytes) {
   if (!bytes) return '0 KB'
@@ -74,6 +75,8 @@ function HighlightedText({ text, query }) {
  * @param {() => void} props.onClose - Dismiss callback.
  * @param {boolean} [props.fromAssistant] - Whether opened from assistant citation.
  * @param {'text' | 'visual' | 'tables'} [props.initialViewMode='text'] - Initial view mode.
+ * @param {{ index: number, label: string } | null} [props.markedChunk] - Passage to mark, and why
+ *   (a citation, a search match). Nothing is marked when the document was simply opened.
  */
 function DocumentReader({
   doc,
@@ -82,6 +85,7 @@ function DocumentReader({
   onClose,
   fromAssistant = false,
   initialViewMode = 'text',
+  markedChunk = null,
 }) {
   const reduceMotion = useReducedMotion()
   const [filterQuery, setFilterQuery] = useState(initialQuery)
@@ -292,6 +296,8 @@ function DocumentReader({
             <PageVisualPreview
               document={doc}
               highlightChunkIndex={selectedChunk}
+              markedChunkIndex={markedChunk?.index}
+              markedLabel={markedChunk?.label}
               onInspectPassage={(locator) => {
                 navigator.clipboard.writeText(locator)
                 setCopied(true)
@@ -302,10 +308,10 @@ function DocumentReader({
         ) : (
           <div className="reader-body">
             {/* Section jumper rail */}
-            <aside className="reader-rail" aria-label="Section locator jumper">
+            <aside className="reader-rail" aria-label="Passages in this document">
               <div className="reader-rail-header">
                 <BookOpen size={14} aria-hidden="true" />
-                <span>Locators ({chunks.length})</span>
+                <span>Passages ({chunks.length})</span>
               </div>
               <nav className="reader-nav-list">
                 {chunks.map((c) => (
@@ -325,6 +331,16 @@ function DocumentReader({
 
             {/* Main Reading Surface */}
             <main className="reader-content" tabIndex={0}>
+              {filterQuery.trim() && displayedChunks.length > 0 && (
+                <div className="reader-filter-status" role="status">
+                  <span>
+                    Showing {displayedChunks.length} of {chunks.length} passages containing “{filterQuery.trim()}”
+                  </span>
+                  <button type="button" className="ai-strip-btn" onClick={() => setFilterQuery('')}>
+                    Show all passages
+                  </button>
+                </div>
+              )}
               {displayedChunks.length > 0 ? (
                 displayedChunks.map((chunk) => (
                   <article
@@ -340,6 +356,9 @@ function DocumentReader({
                       <span className="reader-locator-badge">
                         <FileText size={12} aria-hidden="true" /> {chunk.locator}
                       </span>
+                      {markedChunk && markedChunk.index === chunk.index && (
+                        <span className="reader-mark-tag">{markedChunk.label}</span>
+                      )}
                       <button
                         className="reader-copy-passage"
                         onClick={() => {
@@ -353,7 +372,10 @@ function DocumentReader({
                       </button>
                     </div>
                     <div className="reader-chunk-text">
-                      <HighlightedText text={chunk.text} query={filterQuery} />
+                      <ReadableText
+                        text={chunk.text}
+                        renderText={(t) => <HighlightedText text={t} query={filterQuery} />}
+                      />
                     </div>
                   </article>
                 ))

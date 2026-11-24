@@ -134,8 +134,8 @@ function StorageHardwareModal({
                   <HardDrive size={18} aria-hidden="true" />
                 </span>
                 <div>
-                  <h3>Browser IndexedDB Storage</h3>
-                  <span className="diag-status-pill pill-mint">Client-Side Persistence</span>
+                  <h3>Storage in this browser</h3>
+                  <span className="diag-status-pill pill-mint">On this device</span>
                 </div>
               </div>
 
@@ -160,7 +160,7 @@ function StorageHardwareModal({
               </div>
 
                 <p className="diag-desc">
-                Documents added to this prototype are stored in this browser's IndexedDB. This prototype has no connected upload or cloud-processing service.
+                Documents you save are kept in this browser's database (IndexedDB) on this device. They are not uploaded anywhere.
               </p>
 
               {storedCount > 0 && (

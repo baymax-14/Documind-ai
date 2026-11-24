@@ -187,3 +187,30 @@ describe('Hybrid keyword + meaning retrieval', () => {
     assert.equal(order[0], 'b')
   })
 })
+
+describe('Reading text and snippets', async () => {
+  const { parseReadableBlocks } = await import('../src/features/documents/services/readableBlocks.js')
+  const { extractSnippet } = await import('../src/features/documents/services/search.js')
+
+  it('turns markdown headings and pipe tables into blocks without losing text', () => {
+    const text = '### Segment Performance\n| Segment | Revenue |\n| :--- | :--- |\n| Enterprise | $12.4M |\n\nGrowth was **strong** this year.'
+    const blocks = parseReadableBlocks(text)
+    assert.deepEqual(blocks.map((b) => b.type), ['heading', 'table', 'paragraph'])
+    assert.equal(blocks[0].text, 'Segment Performance')
+    assert.equal(blocks[1].hasHeader, true)
+    assert.deepEqual(blocks[1].rows, [['Segment', 'Revenue'], ['Enterprise', '$12.4M']])
+    assert.equal(blocks[2].text, 'Growth was **strong** this year.')
+  })
+
+  it('cuts snippets on word boundaries and hides table rules', () => {
+    const text = 'The enterprise document management landscape experienced a 24% year-over-year expansion during Q3 and more'
+    const s = extractSnippet(text, text.indexOf('24%'), 3, 30)
+    // The snippet starts at the beginning of a whole word of the source
+    const firstWord = s.prefix.replace('…', '').split(' ')[0]
+    assert.ok(text.split(' ').includes(firstWord), `"${firstWord}" is not a whole word`)
+    assert.match(s.suffix, /\S…$/)
+    const table = '| A | B |\n| :--- | :--- |\n| x | needle |'
+    const t = extractSnippet(table, table.indexOf('needle'), 6)
+    assert.ok(!t.full.includes(':---'))
+  })
+})

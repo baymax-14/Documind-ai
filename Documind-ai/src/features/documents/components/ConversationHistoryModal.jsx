@@ -146,7 +146,7 @@ export default function ConversationHistoryModal({
             </span>
             <div>
               <h3 id="history-modal-title">Conversation History</h3>
-              <p>Persisted on-device in this browser's IndexedDB</p>
+              <p>Saved in this browser</p>
             </div>
           </div>
           <button

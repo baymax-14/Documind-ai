@@ -29,7 +29,7 @@ export function exportComparisonToMarkdown(comparisonResult) {
 
   for (const dim of comparisonResult.dimensions || []) {
     md += `## ${dim.label}\n\n`
-    md += `> **Synthesis (${dim.synthesis.status.toUpperCase()}):** ${dim.synthesis.summary}\n\n`
+    md += `> ${dim.synthesis.summary}\n\n`
 
     for (const entry of dim.entries || []) {
       if (entry.hasEvidence) {
