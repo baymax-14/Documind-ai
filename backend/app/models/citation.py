@@ -3,8 +3,7 @@
 import enum
 import uuid
 from typing import Optional
-from sqlalchemy import String, Float, Integer, ForeignKey, Enum as SQLEnum, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import String, Float, Integer, ForeignKey, Enum as SQLEnum, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base, TimestampMixin
 
@@ -20,13 +19,13 @@ class EvidenceReference(Base, TimestampMixin):
     __tablename__ = "evidence_references"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     message_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("messages.id", ondelete="CASCADE"), index=True, nullable=False
+        Uuid(as_uuid=True), ForeignKey("messages.id", ondelete="CASCADE"), index=True, nullable=False
     )
     chunk_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("document_chunks.id", ondelete="CASCADE"), index=True, nullable=False
+        Uuid(as_uuid=True), ForeignKey("document_chunks.id", ondelete="CASCADE"), index=True, nullable=False
     )
     rank: Mapped[int] = mapped_column(Integer, nullable=False)
     retrieval_score: Mapped[float] = mapped_column(Float, nullable=False)
@@ -43,16 +42,16 @@ class Citation(Base, TimestampMixin):
     __tablename__ = "citations"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     message_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("messages.id", ondelete="CASCADE"), index=True, nullable=False
+        Uuid(as_uuid=True), ForeignKey("messages.id", ondelete="CASCADE"), index=True, nullable=False
     )
     evidence_reference_id: Mapped[Optional[uuid.UUID]] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("evidence_references.id", ondelete="SET NULL"), nullable=True
+        Uuid(as_uuid=True), ForeignKey("evidence_references.id", ondelete="SET NULL"), nullable=True
     )
     document_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("documents.id", ondelete="CASCADE"), index=True, nullable=False
+        Uuid(as_uuid=True), ForeignKey("documents.id", ondelete="CASCADE"), index=True, nullable=False
     )
     page: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     source_locator: Mapped[str] = mapped_column(String(255), nullable=False)

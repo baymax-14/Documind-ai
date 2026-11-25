@@ -17,7 +17,7 @@ from app.models.chunk import DocumentChunk
 from app.models.document import Document
 from app.schemas.chat import ChatResponse, CitationSummary
 from app.schemas.citation import EvidenceObject
-from app.services.retrieval import get_retrieval_service
+from app.services.retrieval import get_retrieval_service, content_terms
 
 
 class GroundedChatAgent:
@@ -82,7 +82,6 @@ class GroundedChatAgent:
 
         # Resilient fallback: search database chunks directly if in-memory index was empty
         if not sufficient_evidence:
-            import re
             chunk_query = (
                 select(DocumentChunk, Document.filename)
                 .join(Document, DocumentChunk.document_id == Document.id)
@@ -96,11 +95,13 @@ class GroundedChatAgent:
 
             db_res = await db.execute(chunk_query)
             rows = db_res.all()
-            keywords = [w.lower() for w in re.findall(r"\w+", question) if len(w) > 2]
+            # Whole content words only: substring matching let "the" or "were"
+            # hit almost any passage and turned unrelated text into evidence.
+            keywords = {w for w in content_terms(question) if len(w) > 2}
             scored = []
             for chunk_obj, doc_name in rows:
-                text_lower = (chunk_obj.text or "").lower()
-                hits = sum(1 for kw in keywords if kw in text_lower)
+                chunk_words = set(content_terms(chunk_obj.text or ""))
+                hits = len(keywords & chunk_words)
                 if hits > 0:
                     score = min(1.0, hits * 0.25)
                     scored.append((score, chunk_obj, doc_name))

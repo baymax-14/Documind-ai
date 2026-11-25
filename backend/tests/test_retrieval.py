@@ -2,7 +2,7 @@
 
 import uuid
 import pytest
-from app.services.retrieval import RetrievalService, EmbeddingService, BM25Index
+from app.services.retrieval import RetrievalService, EmbeddingService, BM25Index, CrossEncoderReranker
 
 
 def test_embedding_service_dimensions():
@@ -138,3 +138,38 @@ def test_reembed_stale_vectors_updates_old_points():
     assert refreshed.vector == service.embedding_service.embed_text("quarterly revenue growth")
     # running again finds nothing left to do
     assert service.reembed_stale_vectors() == 0
+
+
+def test_unrelated_question_finds_no_evidence():
+    """Shared function words ("of", "in") must not make a passage evidence."""
+    service = RetrievalService()
+    owner = uuid.uuid4()
+    service.index_chunk(
+        chunk_id=uuid.uuid4(),
+        document_id=uuid.uuid4(),
+        owner_id=owner,
+        document_name="Physics_Notes.txt",
+        chunk_index=0,
+        text="Quantum entanglement is a physical phenomenon that occurs when a group of particles interact.",
+    )
+    results = service.hybrid_search(
+        query="What were the exact revenue figures of XYZ Corp in 1923?",
+        owner_id=owner,
+        top_k=5,
+    )
+    assert results == []
+
+    related = service.hybrid_search(query="How do particles interact?", owner_id=owner, top_k=5)
+    assert len(related) == 1
+
+
+def test_fallback_reranker_matches_whole_words():
+    reranker = CrossEncoderReranker()
+    reranker._model = None  # exercise the no-model fallback
+    unrelated, related = reranker.rerank(
+        "revenue in 1923",
+        ["Particles interact in a group.", "Revenue in 1923 rose sharply."],
+    )
+    # "in" is a stop word and "interact" must not count as a hit for it
+    assert unrelated == 0.0
+    assert related > 0.5

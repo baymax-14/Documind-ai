@@ -16,6 +16,25 @@ from app.core.config import settings
 from app.core.logging import logger
 from app.schemas.citation import EvidenceObject
 
+# Function words carry no topic. Left in, they match almost every passage
+# ("of", "the", "in"), so an unrelated passage would look like evidence.
+STOP_WORDS = frozenset("""
+a about above after again against all am an and any are as at be because been
+before being below between both but by can could did do does doing down during
+each few for from further had has have having he her here hers herself him
+himself his how i if in into is it its itself just me more most my myself no
+nor not now of off on once only or other our ours ourselves out over own same
+she should so some such than that the their theirs them themselves then there
+these they this those through to too under until up very was we were what when
+where which while who whom why will with would you your yours yourself
+yourselves
+""".split())
+
+
+def content_terms(text: str) -> List[str]:
+    """Lowercased word tokens without stop words; shared by embedding, BM25 and reranking."""
+    return [t for t in re.findall(r"\w+", text.lower()) if t not in STOP_WORDS]
+
 
 @dataclass
 class IndexedChunk:
@@ -44,12 +63,12 @@ class EmbeddingService:
     # Bump whenever embed_text changes how it maps text to vectors. Stored points
     # carry this in their payload; search ignores other versions and
     # reembed_stale_vectors() brings them up to date.
-    VERSION = "blake2b-signed-1"
+    VERSION = "blake2b-signed-2-stopwords"
 
     def embed_text(self, text: str) -> List[float]:
         """Embeds text into a normalized 384-dimensional vector."""
         vec = [0.0] * self.DIMENSIONS
-        tokens = re.findall(r"\w+", text.lower())
+        tokens = content_terms(text)
         if not tokens:
             return vec
 
@@ -141,7 +160,7 @@ class BM25Index:
         return scores
 
     def _tokenize(self, text: str) -> List[str]:
-        return re.findall(r"\w+", text.lower())
+        return content_terms(text)
 
 
 class CrossEncoderReranker:
@@ -172,28 +191,34 @@ class CrossEncoderReranker:
             except Exception as e:
                 logger.warning("cross_encoder.inference_fallback", error=str(e))
 
-        # Deterministic Cross-Token Attention & Proximity Fallback
-        q_tokens = re.findall(r"\w+", query.lower())
+        # Deterministic term-coverage & proximity fallback (no model).
+        # Matches whole content words only: substring matching let "in" hit
+        # "interact" and made unrelated passages look relevant.
+        q_tokens = list(dict.fromkeys(content_terms(query)))
         if not q_tokens:
             return [0.5] * len(passages)
 
         scores = []
         for p in passages:
-            p_tokens = re.findall(r"\w+", p.lower())
-            p_set = set(p_tokens)
+            p_tokens = content_terms(p)
             p_text = p.lower()
+            first_pos: Dict[str, int] = {}
+            for i, t in enumerate(p_tokens):
+                first_pos.setdefault(t, i)
 
-            # 1. Cross-Token Attention Density
-            matches = sum(1 for q in q_tokens if q in p_set)
-            coverage = matches / len(q_tokens)
+            # 1. Term coverage
+            positions = [first_pos[q] for q in q_tokens if q in first_pos]
+            if not positions:
+                # Shares no content word with the question: not evidence.
+                scores.append(0.0)
+                continue
+            coverage = len(positions) / len(q_tokens)
 
-            # 2. Positional Span Proximity
-            proximity = 0.3
-            positions = [p_text.find(q) for q in q_tokens if p_text.find(q) != -1]
+            # 2. Proximity of the matched words (in word positions)
             if len(positions) >= 2:
                 span = max(positions) - min(positions)
-                proximity = math.exp(-span / 150.0)
-            elif len(positions) == 1:
+                proximity = math.exp(-span / 25.0)
+            else:
                 proximity = 0.6
 
             # 3. Exact phrase match
@@ -542,6 +567,9 @@ class RetrievalService:
             raw_rrf = fused_scores[cid]
             norm_rrf = min(1.0, raw_rrf * 35.0)
             ce_score = rerank_scores[idx] if idx < len(rerank_scores) else norm_rrf
+            if ce_score <= 0.0:
+                # The fallback reranker found no shared content word.
+                continue
             blended_score = round(0.4 * norm_rrf + 0.6 * ce_score, 4)
             scored_pairs.append((cid, chunk, blended_score, ce_score))
 

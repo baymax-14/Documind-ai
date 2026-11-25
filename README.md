@@ -175,7 +175,7 @@ DocuMind AI combines a local-first browser runtime with an enterprise hybrid ret
   - `documind_conversations`: Persists timestamped chat sessions with auto-generated titles, message logs, and citation records.
 
 ### 5. Algorithmic Intelligence & Grounding
-- **Lexical Retrieval**: In-memory BM25 Okapi with custom tokenization, lowercasing, punctuation stripping, and stop-word filtering (`k1=1.2`, `b=0.75`).
+- **Lexical Retrieval**: In-memory BM25 Okapi with custom tokenization, lowercasing, punctuation stripping, and stop-word filtering (`k1=1.5`, `b=0.75`). The same stop-word list is used by the backend embedding and the no-model reranker, which match whole words only.
 - **Dense Vector Search**: Qdrant HNSW vector indexing with cosine distance metric. Backend vectors use a stable content hash (BLAKE2b), so they mean the same thing after every restart. Each stored point records its embedding version; search ignores other versions, and on startup the backend re-embeds any stale points from the text kept in their payload.
 - **Reciprocal Rank Fusion (RRF)**: Merges sparse lexical rankings with dense vector embeddings using constant reciprocal scoring ($k=60$).
 - **Hybrid Retrieval in the Browser**: Keyword scoring plus embedding similarity, fused with Reciprocal Rank Fusion; a passage found only by meaning must clear a similarity floor, so unrelated questions still get no evidence.
