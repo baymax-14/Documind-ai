@@ -165,7 +165,7 @@ export default function TokenGovernanceModal({
           {/* Section 3: Privacy & Zero Leakage Compliance */}
           <section className="governance-section">
             <div className="privacy-card">
-              <h4>🛡️ Zero Raw Document Text Guarantee</h4>
+              <h4><ShieldCheck size={15} aria-hidden="true" /> Zero Raw Document Text Guarantee</h4>
               <p>
                 All audit logs and telemetry omit raw document text, passage quotes, and user queries. Only token estimations, latencies, and coordinate locators are recorded.
               </p>

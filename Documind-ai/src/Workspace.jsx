@@ -720,7 +720,7 @@ function App() {
     <div className={dark ? 'app dark' : 'app'}>
       <aside className="sidebar" aria-label="Workspace navigation">
         <a className="brand" href="#dashboard" aria-label="DocuMind AI workspace">
-          <Brand className="brand-lockup" markClassName="brand-mark" wordmarkClassName="brand-name" />
+          <Brand className="brand-lockup" markClassName="brand-mark" wordmarkClassName="brand-name" markSize={26} />
         </a>
         <div className="workspace-switcher">
           <span className="workspace-icon" aria-hidden="true"><HardDrive size={15} /></span>
@@ -789,7 +789,7 @@ function App() {
       <main className="page" id="dashboard">
         <header ref={mobileTopbarRef} className="mobile-topbar" onKeyDown={keepFocusInMobileMenu}>
           <a className="brand" href="#dashboard" aria-label="DocuMind AI workspace">
-            <Brand className="brand-lockup" markClassName="brand-mark" wordmarkClassName="brand-name" />
+            <Brand className="brand-lockup" markClassName="brand-mark" wordmarkClassName="brand-name" markSize={26} />
           </a>
           <div className="mobile-header-actions">
             <button

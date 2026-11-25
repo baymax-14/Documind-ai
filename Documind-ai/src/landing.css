@@ -63,6 +63,10 @@
   letter-spacing: 0.04em;
 }
 
+/* Even line breaks: headings balance, running text never leaves one word alone */
+.landing :is(h1, h2, h3) { text-wrap: balance; }
+.landing :is(p, li, td, dd, figcaption) { text-wrap: pretty; }
+
 /* ---------------------------------------------------------------- header */
 .landing-header {
   position: fixed;
@@ -80,7 +84,7 @@
 .landing > main { padding-top: var(--header-h); }
 .landing-brand { display: inline-flex; align-items: center; text-decoration: none; }
 .landing-brand .brand-lockup { display: inline-flex; align-items: center; gap: 10px; }
-.landing-brand-mark { display: grid; width: 30px; height: 30px; place-items: center; color: var(--red); }
+.landing-brand-mark { display: grid; width: 30px; height: 30px; place-items: center; color: var(--ink); }
 .landing .landing-wordmark { font: 700 17px/1 var(--mono); font-variation-settings: 'wdth' 100; letter-spacing: -0.02em; text-transform: uppercase; }
 .landing-wordmark::after { content: '_'; color: var(--red); }
 .landing-wordmark .brand-ai { color: var(--ink); }
@@ -441,7 +445,7 @@
   color: #fff;
 }
 .preview-brand .brand-lockup { display: inline-flex; align-items: center; gap: 8px; }
-.preview-brand-mark { display: grid; width: 20px; height: 20px; place-items: center; color: var(--red); }
+.preview-brand-mark { display: grid; width: 20px; height: 20px; place-items: center; color: #fff; }
 .preview-brand-wordmark { font-size: 12px; font-weight: 700; text-transform: uppercase; }
 .preview-brand-wordmark .brand-ai { color: #fff; }
 .preview-local { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
@@ -678,7 +682,24 @@
   border-bottom: 1px solid var(--frame);
 }
 .footer-brand { width: fit-content; font-size: 15px; font-weight: 700; text-decoration: none; text-transform: uppercase; }
-.footer-brand::after { content: '_'; color: var(--red); }
+.footer-brand .brand-lockup { display: inline-flex; align-items: center; gap: 8px; }
+.footer-brand-mark { display: grid; place-items: center; color: var(--ink); }
+.footer-wordmark::after { content: '_'; color: var(--red); }
+
+/* Brand hover: the mark's red cited line slides further out of the page */
+.landing-brand svg, .footer-brand svg { overflow: visible; }
+.landing-brand svg rect:nth-of-type(2),
+.footer-brand svg rect:nth-of-type(2) {
+  transform-box: fill-box;
+  transform-origin: left center;
+  transition: transform 220ms var(--ease);
+}
+@media (hover: hover) {
+  .landing-brand:hover svg rect:nth-of-type(2),
+  .footer-brand:hover svg rect:nth-of-type(2) { transform: scaleX(1.14); }
+}
+.landing-brand:focus-visible svg rect:nth-of-type(2),
+.footer-brand:focus-visible svg rect:nth-of-type(2) { transform: scaleX(1.14); }
 .landing-footer p { margin: 0; color: var(--muted); font-size: 12px; text-align: center; }
 .landing-footer > a:last-child { display: inline-flex; justify-self: end; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; text-decoration: none; text-transform: uppercase; }
 .landing-footer > a:last-child:hover { color: var(--red); }
@@ -707,6 +728,7 @@
   .playground-display-split { grid-template-columns: 1fr; }
   .source-panel { border-right: 0; border-bottom: 1px solid var(--line); }
   .landing-cta { grid-template-columns: 1fr; }
+  .cta-actions { grid-column: 1; grid-row: auto; margin-inline-start: var(--mark); }
   .cta-actions { grid-column: 1; grid-row: auto; }
 }
 @media (max-width: 900px) {
@@ -743,6 +765,7 @@
   .cx-hero .numbered > .sec-label { grid-row: auto; width: fit-content; margin-bottom: 12px; }
   .cx-hero .numbered > :not(.sec-label) { grid-column: 1; }
   .landing-brand-mark { width: 24px; }
+  .landing-brand-mark svg { width: 24px; height: 24px; }
   .cx-hero h1 { font-size: clamp(48px, 15vw, 64px); }
   .hero-actions { flex-direction: column; align-items: stretch; gap: 8px; }
   .scan-page { padding: 20px 18px 24px; }
@@ -758,7 +781,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nav-cta, .button-primary, .ledger-stamp, .demo-steps li, .preview-rail-indicator, .status-bar__go { transition: none; }
+  .nav-cta, .button-primary, .ledger-stamp, .demo-steps li, .preview-rail-indicator, .status-bar__go,
+  .landing-brand svg rect, .footer-brand svg rect { transition: none; }
   .preview-tab-pane { animation: fade-only 160ms ease-out both; }
   .scan-dot, .preview-match-card, .preview-match-card mark, .is-streaming .preview-chat-bubble,
   .is-streaming .tok, .is-streaming .tok-cite, .is-streaming .preview-citations-list,

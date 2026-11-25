@@ -19,7 +19,6 @@ import {
 import {
   groupDocumentByPages,
   calculateZoomMetrics,
-  bboxToStyle,
 } from '../services/visualGrounding.js'
 import {
   detectPageVisualElements,
@@ -398,6 +397,9 @@ export default function PageVisualPreview({
                   </h3>
                 )}
                 {activePage.chunks.map((chunk) => {
+                  // A figure or table passage gets its values button on the passage itself;
+                  // the text view has no real page positions to draw a box at.
+                  const figure = visualFigures.find((f) => f.chunkIndex === chunk.index)
                   const isCited =
                     markedChunkIndex !== undefined &&
                     markedChunkIndex !== null &&
@@ -425,32 +427,26 @@ export default function PageVisualPreview({
                           <Copy size={12} aria-hidden="true" />
                           <span>Copy citation</span>
                         </button>
+                        {figure && (
+                          <button
+                            type="button"
+                            className={`chunk-copy-citation chunk-values-btn ${selectedChartForVLM?.id === figure.id ? 'active' : ''}`}
+                            onClick={() => {
+                              setSelectedChartForVLM(figure)
+                              handleTriggerVLM(figure, 'summarize')
+                            }}
+                            aria-pressed={selectedChartForVLM?.id === figure.id}
+                            aria-label={`Inspect the values in ${figure.title}`}
+                          >
+                            <BarChart2 size={12} aria-hidden="true" />
+                            <span>Inspect values</span>
+                          </button>
+                        )}
                       </div>
                       <ReadableText className="chunk-body-text" text={chunk.text} renderText={renderText} />
                     </div>
                   )
                 })}
-
-                {/* Figure and table passage overlays (positioned on the text view only) */}
-                {!original && visualFigures.map((fig) => (
-                  <div
-                    key={fig.id}
-                    className={`visual-chart-overlay ${selectedChartForVLM?.id === fig.id ? 'active' : ''}`}
-                    style={bboxToStyle(fig.bbox)}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setSelectedChartForVLM(fig)
-                      handleTriggerVLM(fig, 'summarize')
-                    }}
-                    title={`Inspect the values in ${fig.title}`}
-                  >
-                    <div className="visual-chart-tag">
-                      <BarChart2 size={12} aria-hidden="true" />
-                      <span>{fig.title}</span>
-                      <span className="vlm-chip">Values</span>
-                    </div>
-                  </div>
-                ))}
               </div>
 
               {/* Page Footer */}

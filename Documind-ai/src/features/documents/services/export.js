@@ -81,7 +81,7 @@ export function exportAiChatToMarkdown(messages = []) {
   const footnotes = []
 
   for (const msg of messages) {
-    const role = msg.sender === 'user' ? '👤 Question' : '🤖 DocuMind Assistant'
+    const role = msg.sender === 'user' ? 'Question' : 'DocuMind Assistant'
     md += `### ${role}\n\n`
 
     if (msg.sender === 'assistant' && msg.citations && msg.citations.length > 0) {

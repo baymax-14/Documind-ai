@@ -66,7 +66,7 @@ const LEDGER_ROWS = [
   {
     label: 'Who runs the model',
     them: 'The provider, on its own hardware',
-    us: 'Your GPU, with Qwen2.5 0.5B on WebGPU',
+    us: 'Your GPU, with Qwen 2.5 on WebGPU',
     stamp: 'GPU',
     href: '#proof-gpu',
     proof: 'see the on-device model',
@@ -82,7 +82,7 @@ const LEDGER_ROWS = [
   {
     label: 'Without internet',
     them: 'Stops working',
-    us: 'Keeps working once the 350 MB model is cached',
+    us: 'Keeps working once the model is cached',
     stamp: 'Offline',
     href: '#proof-offline',
     proof: 'read about the model download',
@@ -95,13 +95,13 @@ const PROOF_ROWS = [
     id: 'proof-local',
     stamp: 'Local',
     title: 'Files stay in this browser',
-    facts: ['Parsed by PDF.js and Mammoth in a web worker', 'Stored in IndexedDB until you delete them', 'Cleared from the workspace storage settings'],
+    facts: ['Read by PDF.js and Mammoth in this browser', 'Scanned pages read by on-device OCR when you ask', 'Stored in IndexedDB until you delete them'],
   },
   {
     id: 'proof-gpu',
     stamp: 'GPU',
     title: 'The model runs on your graphics card',
-    facts: ['Qwen2.5 0.5B through WebLLM on WebGPU', 'About 350 MB, downloaded once when you ask', 'SmolLM2 360M as a lighter choice, about 230 MB'],
+    facts: ['Qwen 2.5 1.5B through WebLLM on WebGPU', 'About 1 GB, downloaded once when you ask', 'Lighter choices from about 230 MB'],
   },
   {
     id: 'proof-cite',
@@ -407,7 +407,7 @@ function WorkspacePreview({ introDone, onStepChange, checks }) {
         <span className="sample-mark">Sample files</span>
         {tour === 'running' ? (
           <strong className="preview-tour-status" aria-live="polite">
-            <i aria-hidden="true" /> Walkthrough · {tourLabel}
+            <i aria-hidden="true" /> Walkthrough / {tourLabel}
           </strong>
         ) : tour === 'done' && !prefersReducedMotion() ? (
           <button type="button" className="preview-replay" onClick={(event) => { event.stopPropagation(); runTour() }} onPointerDown={(event) => event.stopPropagation()}>
@@ -420,7 +420,7 @@ function WorkspacePreview({ introDone, onStepChange, checks }) {
       <div className={`workspace-preview ${tour === 'running' ? 'is-touring' : ''}`} data-ui="workspace-preview" aria-label="Interactive preview of the DocuMind workspace">
         <div className="preview-topbar">
           <span className="preview-brand">
-            <Brand className="brand-lockup" markClassName="preview-brand-mark" wordmarkClassName="preview-brand-wordmark" />
+            <Brand className="brand-lockup" markClassName="preview-brand-mark" wordmarkClassName="preview-brand-wordmark" markSize={18} />
           </span>
           <div className="preview-top-tags">
             <span className="preview-local">
@@ -496,13 +496,13 @@ function WorkspacePreview({ introDone, onStepChange, checks }) {
                       <span className={`preview-filetype ${file.tone}`}>{file.type}</span>
                       <div className="preview-file-info">
                         <span className="preview-filename">{file.name}</span>
-                        <span className="preview-file-meta">{file.pages} · {file.words}</span>
+                        <span className="preview-file-meta">{file.pages} / {file.words}</span>
                       </div>
                       <span className="preview-file-demo">Indexed</span>
                     </li>
                   ))}
                 </ul>
-                <p className="preview-footnote">Parsed in this browser · Ready to search</p>
+                <p className="preview-footnote">Parsed in this browser / Ready to search</p>
               </div>
             )}
 
@@ -557,18 +557,18 @@ function WorkspacePreview({ introDone, onStepChange, checks }) {
                     <div className="preview-citations-list">
                       <div className="preview-cite-chip">
                         <span className="cite-idx">[1]</span>
-                        <span>Q3 Market Research.pdf · Page 4</span>
+                        <span>Q3 Market Research.pdf / Page 4</span>
                         <ArrowUpRight size={11} aria-hidden="true" />
                       </div>
                       <div className="preview-cite-chip">
                         <span className="cite-idx">[2]</span>
-                        <span>Customer Interviews.pdf · Page 11</span>
+                        <span>Customer Interviews.pdf / Page 11</span>
                         <ArrowUpRight size={11} aria-hidden="true" />
                       </div>
                     </div>
                   </div>
                 </div>
-                <p className="preview-footnote">Written on your GPU · Each claim links to its page</p>
+                <p className="preview-footnote">Written on your GPU / Each claim links to its page</p>
               </div>
             )}
           </div>
@@ -681,7 +681,7 @@ function GroundingPlayground({ checks }) {
             <div className="panel-header">
               <span className="panel-stamp">Source</span>
               <span className="panel-doc-meta">
-                <strong>{selectedPrompt.doc}</strong> · {selectedPrompt.locator}
+                <strong>{selectedPrompt.doc}</strong> / {selectedPrompt.locator}
               </span>
             </div>
             <div className="panel-content">
@@ -733,7 +733,7 @@ function PrivacyFAQ() {
     },
     {
       q: 'How does the model run without an API key?',
-      a: 'WebLLM runs the model on your graphics card through WebGPU. Its weights, about 350 MB, download once into the browser cache when you ask, and later answers work offline.',
+      a: 'WebLLM runs the model on your graphics card through WebGPU. Its weights, about 1 GB for the default model or from about 230 MB for a lighter one, download once into the browser cache when you ask, and later answers work offline.',
     },
     {
       q: 'What if my device does not support WebGPU?',
@@ -818,7 +818,7 @@ function LandingPage() {
       <a className="skip-link" href="#main-content">Skip to content</a>
       <header className="landing-header">
         <Link className="landing-brand" to="/" aria-label="DocuMind AI home">
-          <Brand className="brand-lockup" markClassName="landing-brand-mark" wordmarkClassName="landing-wordmark" />
+          <Brand className="brand-lockup" markClassName="landing-brand-mark" wordmarkClassName="landing-wordmark" markSize={28} />
         </Link>
         <nav className="landing-nav" aria-label="Main navigation">
           <a href="#ledger">Compare</a>
@@ -938,7 +938,9 @@ function LandingPage() {
           </section>
 
           <footer className="landing-footer">
-            <Link className="footer-brand" to="/">DocuMind AI</Link>
+            <Link className="footer-brand" to="/" aria-label="DocuMind AI home">
+              <Brand className="brand-lockup" markClassName="footer-brand-mark" wordmarkClassName="footer-wordmark" markSize={22}>DocuMind AI</Brand>
+            </Link>
             <p>Files are read and stored in your browser. Excerpts go to a remote model only if you allow it.</p>
             <a href="#features">See the facts <ArrowUpRight size={14} aria-hidden="true" /></a>
           </footer>

@@ -7,6 +7,7 @@ import {
   Search,
   Table2,
   ExternalLink,
+  X,
 } from 'lucide-react'
 import {
   extractTablesFromText,
@@ -136,7 +137,7 @@ export default function TableView({ document: doc, tables: propTables, onInspect
               onClick={() => setSearchQuery('')}
               aria-label="Clear table search"
             >
-              ✕
+              <X size={14} aria-hidden="true" />
             </button>
           )}
         </div>

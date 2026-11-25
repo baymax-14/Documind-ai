@@ -150,6 +150,7 @@ export function detectPageVisualElements(pageInfo) {
 
       elements.push({
         id: `fig-${pageNum}-${chunkIdx}`,
+        chunkIndex: chunk.index,
         title,
         chartType,
         bbox,

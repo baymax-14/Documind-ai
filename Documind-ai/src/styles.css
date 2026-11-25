@@ -4466,6 +4466,8 @@ button:disabled {
 }
 
 .table-search-clear {
+  display: inline-grid;
+  place-items: center;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -5423,6 +5425,9 @@ button:disabled {
 }
 
 .privacy-card h4 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0 0 4px;
   font-family: var(--heading);
   font-size: 13px;
@@ -5544,55 +5549,10 @@ button:disabled {
 }
 
 /* Visual Chart Overlays on Document Canvas */
-.visual-chart-overlay {
-  position: absolute;
-  border: 1px solid var(--red);
-  background: transparent;
-  border-radius: var(--radius);
-  pointer-events: auto;
-  cursor: pointer;
-  transition: all 150ms ease;
-  z-index: 5;
-}
 
-.visual-chart-overlay:hover {
-  background: var(--red-tint);
-  border-color: var(--red);
-  box-shadow: none;
-}
 
-.visual-chart-overlay.active {
-  border: 2px solid var(--red);
-  background: var(--red-tint);
-}
 
-.visual-chart-tag {
-  position: absolute;
-  top: -12px;
-  left: 8px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 2px 8px;
-  background: var(--red);
-  color: #ffffff;
-  font-family: var(--heading);
-  font-size: 11px;
-  font-weight: 700;
-  border: 1px solid var(--ink);
-  border-radius: 0;
-  box-shadow: none;
-  white-space: nowrap;
-}
 
-.vlm-chip {
-  background: var(--butter);
-  color: var(--ink-on-pastel);
-  padding: 0 4px;
-  border-radius: 0;
-  font-size: 11px;
-  font-weight: 800;
-}
 
 /* Multimodal VLM Chart Inspector Drawer */
 .vlm-inspector-drawer {
@@ -6582,6 +6542,13 @@ button:disabled {
   cursor: pointer;
 }
 .app .chunk-copy-citation:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+/* A second action in the row sits beside the first, not pushed apart */
+.app .chunk-copy-citation + .chunk-copy-citation { margin-left: 0; }
+/* The figure whose values are open is the current place: an ink bar */
+.app .chunk-values-btn.active {
   background: var(--ink);
   color: var(--paper);
 }
