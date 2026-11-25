@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import {
   AlertCircle,
   ArrowDown,
+  ArrowRight,
   ArrowUp,
   BookOpen,
   Check,
@@ -35,6 +36,7 @@ import {
   X,
 } from 'lucide-react'
 import Brand from './Brand.jsx'
+import { SAMPLE_PROMPTS } from './features/documents/data/samplePrompts.js'
 import {
   FILE_ACCEPT,
   useDocumentImport,
@@ -476,6 +478,16 @@ function App() {
   }
 
   // Milestone 4: Trigger AI question with explicit per-query consent
+  function askSampleQuestion(question) {
+    setSearchMode('ai')
+    handleInitiateAiQuestion(question)
+    // Bring the assistant into view once it has rendered
+    requestAnimationFrame(() => {
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      document.getElementById('documents')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+    })
+  }
+
   async function handleInitiateAiQuestion(question) {
     const queryVector = await semantic.embedQuery(question)
     const retrieval = retrieveEvidenceChunks(libraryDocs, question, 5, {
@@ -709,9 +721,9 @@ function App() {
           <Brand className="brand-lockup" markClassName="brand-mark" wordmarkClassName="brand-name" />
         </a>
         <div className="workspace-switcher">
-          <span className="workspace-icon">A</span>
+          <span className="workspace-icon" aria-hidden="true"><HardDrive size={15} /></span>
           <span>
-            <strong>Anand's workspace</strong>
+            <strong>Your workspace</strong>
             <small>Local browser library</small>
           </span>
         </div>
@@ -769,13 +781,6 @@ function App() {
               <span>~{(storageEstimate.usage / (1024 * 1024)).toFixed(1)} MB used locally</span>
             </div>
           )}
-          <div className="user-row">
-            <span className="avatar">AM</span>
-            <span>
-              <strong>Anand</strong>
-              <small>Workspace owner</small>
-            </span>
-          </div>
         </div>
       </aside>
 
@@ -906,10 +911,29 @@ function App() {
             <div>
               <h1>Your document workspace</h1>
               <p className="subtitle">
-                <span className="greeting">{greeting}, Anand.</span> Ask questions, find passages and check each answer against the page it came from.
+                <span className="greeting">{greeting}.</span> Ask questions, find passages and check each answer against the page it came from.
               </p>
             </div>
           </section>
+
+          {storedCount === 0 && demoCount > 0 && aiMessages.length === 0 && (
+            <section className="sample-start" aria-labelledby="sample-start-title">
+              <div className="sample-start-copy">
+                <h2 id="sample-start-title">Try it on the sample documents</h2>
+                <p>
+                  {demoCount} sample files are already loaded. Ask one of these to see a cited answer, or add your own files below.
+                </p>
+              </div>
+              <div className="sample-start-prompts">
+                {SAMPLE_PROMPTS.slice(0, 3).map((prompt) => (
+                  <button key={prompt} type="button" className="ai-prompt-chip" onClick={() => askSampleQuestion(prompt)}>
+                    <span>{prompt}</span>
+                    <ArrowRight size={13} aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
 
           {!privacyAccepted && <PrivacyNotice onAccept={acceptPrivacy} />}
 

@@ -35,6 +35,12 @@
         "value": "space grotesk",
         "createdAt": "2026-11-23T08:52:41.331Z",
         "reason": "user confirmed keeping the neobrutalist theme; Space Grotesk is the display face in DESIGN.md and the README's design system"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "martian mono variable",
+        "createdAt": "2026-11-25T18:40:01.141Z",
+        "reason": "Claude: same Martian Mono typeface from DESIGN.md, under the family name the self-hosted @fontsource-variable package registers"
       }
     ]
   }

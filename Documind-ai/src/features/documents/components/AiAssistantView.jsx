@@ -21,13 +21,9 @@ import {
 import { EMBEDDING_SIZE_DISPLAY } from '../services/embeddings.js'
 import ReadableText from './ReadableText.jsx'
 import { gsap, useGSAP, prefersReducedMotion } from '../../../gsap.js'
+import { SAMPLE_PROMPTS } from '../data/samplePrompts.js'
 
-const SUGGESTED_PROMPTS = [
-  'What were the key drivers behind Q3 market growth?',
-  'What are the brand typography and color rules?',
-  'What feedback did customer interviews reveal?',
-  'What is DocuMind\'s core product thesis and vision?',
-]
+const SUGGESTED_PROMPTS = SAMPLE_PROMPTS
 
 /** Passages the answer cites come first; the rest follow in rank order. */
 function orderCitations(msg) {

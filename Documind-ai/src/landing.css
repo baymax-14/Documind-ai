@@ -11,7 +11,7 @@
   --red: #d3110f;
   --red-tint: #fbe2e1;
   --display: 'Anton', 'Arial Narrow', sans-serif;
-  --mono: 'Martian Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --mono: 'Martian Mono Variable', 'Martian Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --header-h: 72px;
   --gut: clamp(20px, 4.4vw, 64px);
