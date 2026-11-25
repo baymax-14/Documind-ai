@@ -8,16 +8,17 @@ import { extractTxt } from './extractTxt.js'
  * initial bundle size.
  *
  * @param {File} file - A validated File object (PDF, DOCX, or TXT).
+ * @param {Object} [options] - PDF only: `{ ocr, onPage }`, see extractPdf.
  * @returns {Promise<{ text: string, chunks: import('../types/document.js').DocChunk[] }>}
  * @throws {Error} If the file cannot be read, parsed, or has no extractable text.
  */
-export async function extractDocument(file) {
+export async function extractDocument(file, options = {}) {
   const extension = file.name.split('.').pop()?.toLowerCase()
 
   switch (extension) {
     case 'pdf': {
       const { extractPdf } = await import('./extractPdf.js')
-      return extractPdf(file)
+      return extractPdf(file, options)
     }
     case 'docx': {
       const { extractDocx } = await import('./extractDocx.js')

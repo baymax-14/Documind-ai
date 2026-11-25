@@ -8,6 +8,7 @@ import {
   deleteDocument,
   clearAllDocuments,
   getStorageEstimate,
+  saveDocumentFile,
 } from '../services/storage.js'
 
 const PRIVACY_KEY = 'documind_privacy_accepted'
@@ -47,6 +48,19 @@ export function useDocumentImport({ seedDocs = [], onNotice }) {
 
   // In-memory mapping of docId -> File object (kept while in staging)
   const fileMapRef = useRef(new Map())
+
+  /**
+   * Save one ready document, keeping its original PDF so the reader can show
+   * the real pages. If the file cannot be kept, the text is still saved.
+   */
+  const persistDoc = useCallback(async (doc) => {
+    const file = fileMapRef.current.get(doc.id)
+    const isPdf = /\.pdf$/i.test(doc.name)
+    const hasOriginal = Boolean(isPdf && file && (await saveDocumentFile(doc.id, file)))
+    const record = { ...doc, hasOriginal }
+    const res = await saveDocument(record)
+    return { res, record }
+  }, [])
 
   // Refresh storage estimate
   const refreshStorageEstimate = useCallback(async () => {
@@ -106,12 +120,15 @@ export function useDocumentImport({ seedDocs = [], onNotice }) {
     )
 
     try {
-      const { text, chunks } = await extractDocument(file)
+      const { text, chunks, scannedPages = [], pageCount } = await extractDocument(file)
+      // A PDF with no text at all waits for OCR; one with some scanned pages
+      // can be saved as is, or have those pages read first.
+      const status = text.trim() ? 'ready' : 'needs-ocr'
 
       setStagedDocs((prev) =>
         prev.map((d) =>
           d.id === docId
-            ? { ...d, status: 'ready', text, chunks, extractedAt: Date.now() }
+            ? { ...d, status, text, chunks, scannedPages, pageCount, extractedAt: Date.now() }
             : d
         )
       )
@@ -125,6 +142,55 @@ export function useDocumentImport({ seedDocs = [], onNotice }) {
       )
     }
   }, [])
+
+  /**
+   * Read the scanned pages of a staged PDF with on-device text recognition.
+   * The OCR files (~7 MB) download from this site on first use.
+   */
+  const recognizeScanned = useCallback(async (docId) => {
+    const file = fileMapRef.current.get(docId)
+    if (!file) {
+      onNotice?.('The original file reference is no longer available. Please select it again.')
+      return
+    }
+    const update = (patch) =>
+      setStagedDocs((prev) => prev.map((d) => (d.id === docId ? { ...d, ...patch } : d)))
+
+    update({ status: 'recognizing', ocrProgress: { phase: 'setup', fraction: 0 } })
+    let reader = null
+    try {
+      const { createOcrReader } = await import('../services/ocr.js')
+      reader = await createOcrReader((fraction) => update({ ocrProgress: { phase: 'setup', fraction } }))
+      const { text, chunks, scannedPages = [], ocrPages = [], pageCount } = await extractDocument(file, {
+        ocr: reader,
+        onPage: ({ page, total, ocr }) => {
+          if (ocr) update({ ocrProgress: { phase: 'pages', page, total } })
+        },
+      })
+      update({
+        status: 'ready',
+        text,
+        chunks,
+        scannedPages,
+        ocrPages,
+        pageCount,
+        ocrProgress: null,
+        extractedAt: Date.now(),
+      })
+      onNotice?.(
+        `Read ${ocrPages.length} scanned page${ocrPages.length === 1 ? '' : 's'} of "${file.name}". ` +
+        'Recognised text can contain mistakes; check quotes against the page.'
+      )
+    } catch (err) {
+      update({
+        status: 'failed',
+        ocrProgress: null,
+        error: err.message || 'Text recognition failed.',
+      })
+    } finally {
+      reader?.terminate()
+    }
+  }, [onNotice])
 
   /**
    * Process a queue of files sequentially to prevent browser memory spikes.
@@ -215,7 +281,7 @@ export function useDocumentImport({ seedDocs = [], onNotice }) {
       return
     }
 
-    const res = await saveDocument(doc)
+    const { res, record } = await persistDoc(doc)
     if (!res.success) {
       onNotice?.(res.error || 'Failed to save document.')
       return
@@ -226,14 +292,14 @@ export function useDocumentImport({ seedDocs = [], onNotice }) {
     setStagedDocs((prev) => prev.filter((d) => d.id !== docId))
 
     const persistedRecord = {
-      ...doc,
+      ...record,
       storedInBrowser: true,
       persistedAt: Date.now(),
     }
     setLibraryDocs((prev) => [persistedRecord, ...prev])
     refreshStorageEstimate()
     onNotice?.(`"${doc.name}" saved to your local browser library.`)
-  }, [stagedDocs, onNotice, refreshStorageEstimate])
+  }, [stagedDocs, onNotice, refreshStorageEstimate, persistDoc])
 
   /**
    * Save all ready staged documents to the persistent local library.
@@ -249,11 +315,11 @@ export function useDocumentImport({ seedDocs = [], onNotice }) {
     const newlySaved = []
 
     for (const doc of readyDocs) {
-      const res = await saveDocument(doc)
+      const { res, record } = await persistDoc(doc)
       if (res.success) {
         fileMapRef.current.delete(doc.id)
         newlySaved.push({
-          ...doc,
+          ...record,
           storedInBrowser: true,
           persistedAt: Date.now(),
         })
@@ -271,7 +337,7 @@ export function useDocumentImport({ seedDocs = [], onNotice }) {
       refreshStorageEstimate()
       onNotice?.(`${savedCount} document${savedCount === 1 ? '' : 's'} saved to local browser library.`)
     }
-  }, [stagedDocs, onNotice, refreshStorageEstimate])
+  }, [stagedDocs, onNotice, refreshStorageEstimate, persistDoc])
 
   /**
    * Delete a single document from the persistent library.
@@ -321,6 +387,7 @@ export function useDocumentImport({ seedDocs = [], onNotice }) {
     acceptPrivacy,
     addFiles,
     retryExtraction,
+    recognizeScanned,
     dismissStaged,
     dismissAllStaged,
     saveStagedToLibrary,

@@ -6938,3 +6938,97 @@ button:disabled {
   color: var(--muted);
   opacity: 1;
 }
+
+/* Page view: the original PDF page, drawn from the saved file */
+.real-page {
+  position: relative;
+  border-bottom: 1px solid var(--ink);
+  background: #fff;
+  line-height: 0;
+}
+
+.real-page-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 160px;
+  background: #fff;
+}
+
+.real-page.is-ready .real-page-canvas {
+  min-height: 0;
+}
+
+.real-page-status {
+  position: absolute;
+  inset: 16px auto auto 16px;
+  padding: 4px 8px;
+  border: 1px solid var(--ink);
+  background: var(--surface);
+  color: var(--ink);
+  font: 600 11px/1.4 var(--body);
+}
+
+/* The marked passage, framed where its text sits on the page */
+.real-page-mark {
+  position: absolute;
+  margin: -4px;
+  padding: 4px;
+  box-sizing: content-box;
+  border: 2px solid var(--red);
+  background: color-mix(in srgb, var(--red) 8%, transparent);
+  pointer-events: none;
+}
+
+.real-page-mark-label {
+  position: absolute;
+  bottom: 100%;
+  left: -2px;
+  padding: 2px 6px;
+  background: var(--red);
+  color: #fff;
+  font: 600 10px/1.4 var(--body);
+  white-space: nowrap;
+}
+
+.page-card-surface.is-under-original {
+  padding-top: 20px;
+}
+
+.real-page-text-heading {
+  margin: 0;
+  color: var(--muted);
+  font: 600 11px/1.4 var(--body);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.thumbnail-sheet.is-real {
+  padding: 0;
+  aspect-ratio: auto;
+}
+
+.real-thumb-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 60px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .real-page-mark {
+    animation: real-page-mark-in 240ms ease-out;
+  }
+}
+
+@keyframes real-page-mark-in {
+  from { opacity: 0; transform: scale(1.03); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.chunk-ocr-tag {
+  padding: 1px 5px;
+  border: 1px dashed var(--ink);
+  color: var(--muted);
+  font: 600 10px/1.4 var(--body);
+}

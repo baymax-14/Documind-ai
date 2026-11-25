@@ -29,6 +29,7 @@ import {
   Moon,
   PlusCircle,
   RefreshCw,
+  ScanText,
   Search,
   Sparkles,
   Sun,
@@ -320,6 +321,7 @@ function App() {
     acceptPrivacy,
     addFiles: importFiles,
     retryExtraction,
+    recognizeScanned,
     dismissStaged,
     dismissAllStaged,
     saveStagedToLibrary,
@@ -1058,6 +1060,12 @@ function App() {
                         {formatSize(doc.size)}
                         {doc.status === 'extracting' && ' · Extracting text on-device…'}
                         {doc.status === 'ready' && ` · ${doc.chunks?.length || 0} sections extracted`}
+                        {doc.status === 'ready' && doc.ocrPages?.length > 0 && ` · ${doc.ocrPages.length} read by text recognition`}
+                        {doc.status === 'ready' && doc.scannedPages?.length > 0 && ` · ${doc.scannedPages.length} scanned page${doc.scannedPages.length === 1 ? '' : 's'} not read yet`}
+                        {doc.status === 'needs-ocr' && ` · Scanned PDF: ${doc.scannedPages?.length || 0} page${doc.scannedPages?.length === 1 ? '' : 's'} with no text layer`}
+                        {doc.status === 'recognizing' && (doc.ocrProgress?.phase === 'pages'
+                          ? ` · Reading scanned page ${doc.ocrProgress.page} of ${doc.ocrProgress.total}…`
+                          : ` · Preparing text recognition${doc.ocrProgress?.fraction ? ` (${Math.round(doc.ocrProgress.fraction * 100)}%)` : ''}…`)}
                         {doc.status === 'failed' && ` · ${doc.error || 'Extraction failed'}`}
                       </p>
                     </div>
@@ -1066,6 +1074,21 @@ function App() {
                       {doc.status === 'extracting' && (
                         <span className="staging-status-pill status-extracting">
                           <Loader size={13} className="spin-icon" aria-hidden="true" /> Reading…
+                        </span>
+                      )}
+                      {(doc.status === 'needs-ocr' || (doc.status === 'ready' && doc.scannedPages?.length > 0)) && (
+                        <button
+                          className={doc.status === 'needs-ocr' ? 'primary-button save-single-btn' : 'secondary-button'}
+                          onClick={() => recognizeScanned(doc.id)}
+                          aria-label={`Read the scanned pages of ${doc.name} with text recognition`}
+                          title="Recognises the text on scanned pages in this browser. Downloads about 7 MB from this site the first time."
+                        >
+                          <ScanText size={15} aria-hidden="true" /> Read scanned pages (~7 MB once)
+                        </button>
+                      )}
+                      {doc.status === 'recognizing' && (
+                        <span className="staging-status-pill status-extracting" role="status">
+                          <Loader size={13} className="spin-icon" aria-hidden="true" /> Recognising…
                         </span>
                       )}
                       {doc.status === 'ready' && (

@@ -1,14 +1,11 @@
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist'
+import { getDocument } from './pdfjs.js'
 import { MAX_TEXT_LENGTH } from '../types/document.js'
 import { chunkRanges } from './chunker.js'
 import { layoutPageText, boxForRange } from './pdfLayout.js'
+import { ocrLinesToItems } from './ocr.js'
 
-// Configure the PDF.js worker for Vite.
-// Use the minified worker from the build directory via a URL import.
-GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString()
+/** Canvas pixels per PDF unit when drawing a page for OCR (about 180 dpi). */
+const OCR_SCALE = 2.5
 
 /**
  * Maximum number of pages to extract. Safety limit to avoid
@@ -24,10 +21,15 @@ const MAX_PAGES = 2000
  * passages of about 900 characters. Every passage carries its page number and
  * a bounding box taken from the real positions of its text on the page.
  *
+ * Pages with no text layer (scanned pages) are listed in `scannedPages`. When
+ * an `ocr` reader is given, those pages are drawn and their text recognised
+ * instead, and are listed in `ocrPages`.
+ *
  * @param {File} file
- * @returns {Promise<{ text: string, chunks: import('../types/document.js').DocChunk[] }>}
+ * @param {{ ocr?: { recognize: (canvas: HTMLCanvasElement) => Promise<{ lines: any[], confidence: number|null }> }, onPage?: (info: { page: number, total: number, ocr: boolean }) => void }} [options]
+ * @returns {Promise<{ text: string, chunks: import('../types/document.js').DocChunk[], pageCount: number, scannedPages: number[], ocrPages: number[] }>}
  */
-export async function extractPdf(file) {
+export async function extractPdf(file, { ocr, onPage } = {}) {
   let buffer
 
   try {
@@ -64,6 +66,8 @@ export async function extractPdf(file) {
   const chunks = []
   const textParts = []
   let totalLength = 0
+  const scannedPages = []
+  const ocrPages = []
 
   for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
     let page
@@ -100,7 +104,26 @@ export async function extractPdf(file) {
     // Rebuild the page's reading text (lines, paragraphs, de-hyphenation) and
     // remember where each text item sits so passages get real page coordinates.
     const viewport = page.getViewport({ scale: 1 })
-    const { text: pageText, spans } = layoutPageText(content.items)
+    let { text: pageText, spans } = layoutPageText(content.items)
+    let recognised = false
+
+    if (pageText.trim().length === 0) {
+      if (ocr) {
+        onPage?.({ page: pageNum, total: pdf.numPages, ocr: true })
+        try {
+          const lines = await recognisePage(page, ocr)
+          ;({ text: pageText, spans } = layoutPageText(ocrLinesToItems(lines, OCR_SCALE, viewport.height)))
+          recognised = pageText.trim().length > 0
+          if (recognised) ocrPages.push(pageNum)
+        } catch (err) {
+          console.warn(`[DocuMind] Text recognition failed on page ${pageNum}:`, err)
+        }
+      } else {
+        scannedPages.push(pageNum)
+      }
+    } else {
+      onPage?.({ page: pageNum, total: pdf.numPages, ocr: false })
+    }
 
     if (pageText.trim().length > 0) {
       for (const r of chunkRanges(pageText)) {
@@ -111,6 +134,7 @@ export async function extractPdf(file) {
           page: pageNum,
           offset: totalLength + r.start,
           bbox: boxForRange(spans, r.start, r.end, viewport.width, viewport.height),
+          ...(recognised ? { ocr: true } : {}),
         })
       }
 
@@ -131,12 +155,30 @@ export async function extractPdf(file) {
 
   const text = textParts.join('\n')
 
-  if (text.trim().length === 0) {
+  // A fully scanned PDF is not an error: the import queue offers OCR for it.
+  if (text.trim().length === 0 && scannedPages.length === 0) {
     throw new Error(
-      `${file.name} contains no extractable text. ` +
-      `This may be a scanned PDF. OCR is not supported yet.`
+      ocr
+        ? `No text could be recognised in ${file.name}.`
+        : `${file.name} contains no extractable text.`
     )
   }
 
-  return { text, chunks }
+  return { text, chunks, pageCount: pdf.numPages, scannedPages, ocrPages }
+}
+
+/** Draw a page at OCR resolution and recognise its text. */
+async function recognisePage(page, ocr) {
+  const viewport = page.getViewport({ scale: OCR_SCALE })
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.floor(viewport.width)
+  canvas.height = Math.floor(viewport.height)
+  try {
+    await page.render({ canvas, viewport }).promise
+    const { lines } = await ocr.recognize(canvas)
+    return lines
+  } finally {
+    canvas.width = 0
+    canvas.height = 0
+  }
 }

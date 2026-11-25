@@ -1,8 +1,10 @@
 import { openDB } from 'idb'
 
 const DB_NAME = 'documind_db'
-const DB_VERSION = 1
+const DB_VERSION = 2
 const STORE_NAME = 'documents'
+// Original files (PDF bytes), kept apart so loading the library stays light
+const FILE_STORE = 'files'
 
 let dbPromise = null
 
@@ -22,6 +24,9 @@ export async function getDB() {
           const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' })
           store.createIndex('addedAt', 'addedAt')
           store.createIndex('type', 'type')
+        }
+        if (!db.objectStoreNames.contains(FILE_STORE)) {
+          db.createObjectStore(FILE_STORE, { keyPath: 'id' })
         }
       },
       blocked() {
@@ -119,7 +124,8 @@ export async function saveDocumentVectors(id, vectors) {
 export async function deleteDocument(id) {
   try {
     const db = await getDB()
-    await db.delete(STORE_NAME, id)
+    const tx = db.transaction([STORE_NAME, FILE_STORE], 'readwrite')
+    await Promise.all([tx.objectStore(STORE_NAME).delete(id), tx.objectStore(FILE_STORE).delete(id), tx.done])
     return true
   } catch (err) {
     console.error(`[DocuMind DB] Error deleting document ${id}:`, err)
@@ -135,11 +141,48 @@ export async function deleteDocument(id) {
 export async function clearAllDocuments() {
   try {
     const db = await getDB()
-    await db.clear(STORE_NAME)
+    const tx = db.transaction([STORE_NAME, FILE_STORE], 'readwrite')
+    await Promise.all([tx.objectStore(STORE_NAME).clear(), tx.objectStore(FILE_STORE).clear(), tx.done])
     return true
   } catch (err) {
     console.error('[DocuMind DB] Error clearing documents:', err)
     throw new Error('Could not clear browser storage.')
+  }
+}
+
+/**
+ * Keep the original file of a saved document, so the reader can show its
+ * real pages. Returns false (and keeps the document) if it cannot be stored.
+ *
+ * @param {string} id
+ * @param {Blob} blob
+ * @returns {Promise<boolean>}
+ */
+export async function saveDocumentFile(id, blob) {
+  try {
+    const db = await getDB()
+    await db.put(FILE_STORE, { id, blob, type: blob.type, size: blob.size })
+    return true
+  } catch (err) {
+    console.warn('[DocuMind DB] Could not keep the original file:', err)
+    return false
+  }
+}
+
+/**
+ * The original file of a saved document, or null when none was kept
+ * (sample documents, or documents saved before files were kept).
+ *
+ * @param {string} id
+ * @returns {Promise<Blob | null>}
+ */
+export async function getDocumentFile(id) {
+  try {
+    const db = await getDB()
+    const record = await db.get(FILE_STORE, id)
+    return record?.blob || null
+  } catch {
+    return null
   }
 }
 

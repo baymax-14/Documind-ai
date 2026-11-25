@@ -28,6 +28,7 @@ import {
 } from '../services/chartReasoning.js'
 import { copyToClipboard } from '../services/export.js'
 import ReadableText from './ReadableText.jsx'
+import RealPdfPage, { RealPdfThumb } from './RealPdfPage.jsx'
 
 /**
  * Interactive Visual Page Preview & Bounding Box Grounding Component.
@@ -63,11 +64,36 @@ export default function PageVisualPreview({
   const [activePromptType, setActivePromptType] = useState('summarize')
   const [copiedVlm, setCopiedVlm] = useState(false)
   const pageContainerRef = useRef(null)
+  // The saved original PDF, when one was kept: { pdf, render }
+  const [original, setOriginal] = useState(null)
 
-  // Group document into pages
+  useEffect(() => {
+    setOriginal(null)
+    if (!doc?.hasOriginal) return undefined
+    let cancelled = false
+    let close = null
+    import('../services/pdfRender.js').then(async (mod) => {
+      close = () => mod.closeStoredPdf(doc.id)
+      const pdf = await mod.openStoredPdf(doc.id)
+      if (!cancelled && pdf) setOriginal({ pdf, render: mod.renderPdfPage })
+    }).catch(() => {})
+    return () => {
+      cancelled = true
+      close?.()
+    }
+  }, [doc?.id, doc?.hasOriginal])
+
+  // Group document into pages; with the original, every page is listed,
+  // including pages that have no text (blank or not yet recognised)
   const pages = useMemo(() => {
-    return groupDocumentByPages(doc)
-  }, [doc])
+    const grouped = groupDocumentByPages(doc)
+    const total = original?.pdf?.numPages
+    if (!total) return grouped
+    const byNumber = new Map(grouped.map((p) => [p.pageNumber, p]))
+    return Array.from({ length: total }, (_, i) =>
+      byNumber.get(i + 1) || { pageNumber: i + 1, title: `Page ${i + 1}`, chunks: [], highlightBoxes: [], textLength: 0 }
+    )
+  }, [doc, original])
 
   // Sync initial page or highlight chunk
   useEffect(() => {
@@ -314,13 +340,20 @@ export default function PageVisualPreview({
                   onClick={() => setCurrentPage(p.pageNumber)}
                   title={`Jump to Page ${p.pageNumber}`}
                 >
-                  <div className="thumbnail-sheet">
+                  <div className={`thumbnail-sheet ${original ? 'is-real' : ''}`}>
+                    {original ? (
+                      <>
+                        <RealPdfThumb pdf={original.pdf} render={original.render} pageNumber={p.pageNumber} />
+                        {hasCitedChunk && <div className="thumb-marker" />}
+                      </>
+                    ) : (
                     <div className="thumbnail-sheet-lines">
                       <div className="thumb-line full" />
                       <div className="thumb-line mid" />
                       <div className="thumb-line short" />
                       {hasCitedChunk && <div className="thumb-marker" />}
                     </div>
+                    )}
                   </div>
                   <span className="thumbnail-num">Page {p.pageNumber}</span>
                 </button>
@@ -344,8 +377,26 @@ export default function PageVisualPreview({
                 <span className="page-meta-number">Page {activePage.pageNumber}</span>
               </div>
 
+              {original && (
+                <RealPdfPage
+                  pdf={original.pdf}
+                  render={original.render}
+                  pageNumber={activePage.pageNumber}
+                  width={zoomMetrics.width}
+                  chunks={activePage.chunks}
+                  markedChunkIndex={markedChunkIndex}
+                  markedLabel={markedLabel}
+                  docName={doc.name}
+                />
+              )}
+
               {/* Page Body with Text Content and Bounding Box Highlights */}
-              <div className="page-card-surface">
+              <div className={`page-card-surface ${original ? 'is-under-original' : ''}`}>
+                {original && (
+                  <h3 className="real-page-text-heading">
+                    {activePage.chunks.length ? 'Text read from this page' : 'No text was read from this page'}
+                  </h3>
+                )}
                 {activePage.chunks.map((chunk) => {
                   const isCited =
                     markedChunkIndex !== undefined &&
@@ -359,6 +410,11 @@ export default function PageVisualPreview({
                     >
                       <div className="chunk-locator-row">
                         <span className="chunk-locator-pill">{chunk.locator}</span>
+                        {chunk.ocr && (
+                          <span className="chunk-ocr-tag" title="This text was recognised from a scanned page and may contain mistakes">
+                            Read by OCR
+                          </span>
+                        )}
                         {isCited && <span className="chunk-cited-tag">{markedLabel}</span>}
                         <button
                           type="button"
@@ -375,8 +431,8 @@ export default function PageVisualPreview({
                   )
                 })}
 
-                {/* Figure and table passage overlays */}
-                {visualFigures.map((fig) => (
+                {/* Figure and table passage overlays (positioned on the text view only) */}
+                {!original && visualFigures.map((fig) => (
                   <div
                     key={fig.id}
                     className={`visual-chart-overlay ${selectedChartForVLM?.id === fig.id ? 'active' : ''}`}
@@ -399,7 +455,7 @@ export default function PageVisualPreview({
 
               {/* Page Footer */}
               <div className="page-card-footer">
-                <span>Extracted text, not the original page layout</span>
+                <span>{original ? 'Original page, with the text read from it' : 'Extracted text, not the original page layout'}</span>
                 <span>Page {activePage.pageNumber} / {pages.length}</span>
               </div>
             </div>

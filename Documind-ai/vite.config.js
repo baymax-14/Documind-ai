@@ -1,13 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import ocrAssets from './vite.ocrAssets.js'
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), ocrAssets()],
   // The search-model worker imports transformers.js on first use; pre-bundling it
   // stops the dev server from reloading the page mid-session when that happens.
   optimizeDeps: {
-    include: ['@huggingface/transformers'],
+    include: ['@huggingface/transformers', 'tesseract.js'],
   },
   build: {
     chunkSizeWarningLimit: 600,

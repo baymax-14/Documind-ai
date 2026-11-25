@@ -8,6 +8,8 @@ export {
   deleteDocument,
   clearAllDocuments,
   getStorageEstimate,
+  saveDocumentFile,
+  getDocumentFile,
 } from './services/storage.js'
 export {
   searchDocuments,

@@ -26,7 +26,7 @@
   <img src="https://img.shields.io/badge/Redis-7.0-DC382D?style=flat-square&logo=redis&logoColor=white" alt="Redis 7" />
   <img src="https://img.shields.io/badge/WebGPU-Qwen_2.5-0052FF?style=flat-square" alt="WebGPU" />
   <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker" />
-  <img src="https://img.shields.io/badge/Tests-142%20Passing-059669?style=flat-square" alt="142 Passing Tests" />
+  <img src="https://img.shields.io/badge/Tests-146%20Passing-059669?style=flat-square" alt="146 Passing Tests" />
   <img src="https://img.shields.io/badge/License-MIT-black?style=flat-square" alt="License" />
 </p>
 
@@ -60,7 +60,8 @@ The platform can operate **100% locally on-device** (via WebGPU, WebLLM, and cli
 
 ### 3. Reading and Verifying Sources
 - **Read**: The whole document as one flowing text with page markers. Opening a citation lands on the cited passage, framed in red and labelled with why it is marked (*Cited in the answer*, *Search match*, *Compared passage*, *Extracted from here*). Search words are underlined, and the document opens whole; *Show only those passages* filters to the passages containing every search word.
-- **Page View**: The text extracted from each page, one page at a time, with thumbnails and zoom. Highlight boxes use the real positions of the text on the PDF page. It is labelled as extracted text, not the original page layout.
+- **Page View**: For saved PDFs, the original page itself, drawn by PDF.js from the file kept in IndexedDB, with real page thumbnails and zoom. The cited passage is framed in red at the exact place its text sits on the page, and the text read from the page is listed below it. Sample documents and DOCX/TXT files show the extracted text instead, labelled as such.
+- **Scanned PDFs (OCR)**: Pages with no text layer are detected on import instead of failing. *Read scanned pages* recognises their text in the browser with Tesseract (English); the engine and model (~7 MB) are served by this site, never a CDN, and download only on first use. Recognised passages are searchable, citable and framed on the page like any other, and are tagged *Read by OCR*.
 - **Readable Passages**: Markdown headings and pipe tables inside documents are shown as headings and tables, and search snippets are cut on word boundaries.
 - **Keyboard and Screen Readers**: Every dialog takes focus when it opens, keeps Tab inside, closes only the top layer on Esc, and returns focus to whatever opened it. Copying a citation and switching views use real, named buttons.
 - **Phones**: Below 760px the reader is full screen and text first; on touch screens every control is at least 44px.
@@ -79,7 +80,7 @@ The platform can operate **100% locally on-device** (via WebGPU, WebLLM, and cli
 - **Custom Topic Querying**: Enter targeted queries to extract comparative evidence across all staged files.
 
 ### 7. Local-First Privacy & Persistent Chat History
-- **100% Client-Side Extraction**: Client-side parsing via `pdfjs-dist` (PDF), `mammoth` (DOCX), and native text decoders.
+- **100% Client-Side Extraction**: Client-side parsing via `pdfjs-dist` (PDF), `mammoth` (DOCX), native text decoders, and `tesseract.js` for scanned pages. Original PDFs are kept in their own IndexedDB store so the library loads without reading every file.
 - **IndexedDB Session Persistence**: AI chat conversations, parsed document chunks, and user preferences persist securely in IndexedDB across reloads with automatic session hydration.
 - **Token Observability & Governance**: Real-time token usage telemetry, operational budget limits, and hardware diagnostics.
 
@@ -198,7 +199,7 @@ DocuMind AI combines a local-first browser runtime with an enterprise hybrid ret
 
 ### 8. DevOps, Testing & Quality Assurance
 - **Containerization**: [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) defining multi-container orchestration across services.
-- **Frontend Test Suite**: Native Node.js Test Runner (`node:test`, `node:assert/strict`) executing **142 automated unit and integration tests across 28 test suites** with zero third-party testing dependencies.
+- **Frontend Test Suite**: Native Node.js Test Runner (`node:test`, `node:assert/strict`) executing **146 automated unit and integration tests across 29 test suites** with zero third-party testing dependencies.
 - **Backend Test Suite**: [pytest 8](https://docs.pytest.org/), `pytest-asyncio`, and `pytest-cov` for backend API and retrieval tests.
 - **Code Quality**: [ESLint 9](https://eslint.org/) flat configuration enforcing clean code (0 errors, 0 warnings enforced).
 
@@ -305,7 +306,7 @@ DocuMind AI enforces a rigorous automated test suite covering security defenses,
 ```bash
 cd Documind-ai
 
-# Run all unit and integration tests (142 tests across 28 suites)
+# Run all unit and integration tests (146 tests across 29 suites)
 npm test
 
 # Run ESLint check (0 errors, 0 warnings enforced)
@@ -339,7 +340,7 @@ Documind-ai/
 │   │   ├── Workspace.jsx      # Research workspace & assistant interface
 │   │   ├── styles.css         # Workspace styles (Instrument Sheet, light and dark)
 │   │   └── landing.css        # Front page styles (Instrument Sheet)
-│   ├── tests/                 # Frontend node:test suite (142 tests across 28 suites)
+│   ├── tests/                 # Frontend node:test suite (146 tests across 29 suites)
 │   └── package.json           # Frontend dependencies & scripts
 ├── docker-compose.yml         # Multi-container orchestration (PostgreSQL, Redis, Qdrant, Backend)
 └── README.md                  # Project documentation
